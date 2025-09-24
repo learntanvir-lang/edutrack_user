@@ -72,7 +72,7 @@ export function ActivityDialog({ open, onOpenChange, subjectId, paperId, chapter
         title: activity.title,
         type: activity.type,
         target: activity.target,
-        url: activity.url
+        url: activity.url || ''
       } : {
         title: "",
         type: "checkbox",
@@ -118,7 +118,12 @@ export function ActivityDialog({ open, onOpenChange, subjectId, paperId, chapter
   
   const handleDialogChange = (isOpen: boolean) => {
     if (!isOpen) {
-        form.reset(); // Reset form when closing
+        form.reset({
+          title: "",
+          type: "checkbox",
+          target: undefined,
+          url: "",
+        });
     }
     onOpenChange(isOpen);
   };

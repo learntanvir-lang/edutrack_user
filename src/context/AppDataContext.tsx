@@ -100,22 +100,18 @@ const appReducer = (state: AppState, action: Action): AppState => {
             ...state,
             subjects: state.subjects.map(subject => {
                 if (subject.id !== subjectId) return subject;
-                return {
-                    ...subject,
-                    papers: subject.papers.map(paper => {
-                        if (paper.id !== paperId) return paper;
+                const newPapers = subject.papers.map(paper => {
+                    if (paper.id !== paperId) return paper;
+                    const newChapters = paper.chapters.map(chapter => {
+                        if (chapter.id !== chapterId) return chapter;
                         return {
-                            ...paper,
-                            chapters: paper.chapters.map(chapter => {
-                                if (chapter.id !== chapterId) return chapter;
-                                return {
-                                    ...chapter,
-                                    activities: [...chapter.activities, activity],
-                                };
-                            }),
+                            ...chapter,
+                            activities: [...chapter.activities, activity],
                         };
-                    }),
-                };
+                    });
+                    return { ...paper, chapters: newChapters };
+                });
+                return { ...subject, papers: newPapers };
             }),
         };
     }
