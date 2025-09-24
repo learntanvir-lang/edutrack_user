@@ -98,21 +98,25 @@ export function ChapterAccordionItem({ chapter, subjectId, paperId }: ChapterAcc
                 </div>
             </AccordionItem>
 
-            <ChapterDialog
-                open={isEditingChapter}
-                onOpenChange={setIsEditingChapter}
-                subjectId={subjectId}
-                paperId={paperId}
-                chapter={chapter}
-            />
+            {isEditingChapter && (
+                <ChapterDialog
+                    open={isEditingChapter}
+                    onOpenChange={setIsEditingChapter}
+                    subjectId={subjectId}
+                    paperId={paperId}
+                    chapter={chapter}
+                />
+            )}
 
-            <ActivityDialog
-                open={isAddingActivity}
-                onOpenChange={setIsAddingActivity}
-                subjectId={subjectId}
-                paperId={paperId}
-                chapterId={chapter.id}
-            />
+            {isAddingActivity && (
+                <ActivityDialog
+                    open={isAddingActivity}
+                    onOpenChange={setIsAddingActivity}
+                    subjectId={subjectId}
+                    paperId={paperId}
+                    chapterId={chapter.id}
+                />
+            )}
         </>
     );
 }

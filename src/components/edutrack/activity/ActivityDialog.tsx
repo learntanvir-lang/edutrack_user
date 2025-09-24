@@ -30,7 +30,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Activity, ActivityType } from "@/lib/types";
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import { AppDataContext } from "@/context/AppDataContext";
 import { v4 as uuidv4 } from 'uuid';
 
@@ -59,35 +59,73 @@ export function ActivityDialog({ open, onOpenChange, subjectId, paperId, chapter
   const form = useForm<ActivityFormValues>({
     resolver: zodResolver(activitySchema),
     defaultValues: {
-      title: activity?.title || "",
-      type: activity?.type || "checkbox",
-      target: activity?.target ?? undefined,
-      url: activity?.url || "",
+      title: "",
+      type: "checkbox",
+      target: undefined,
+      url: "",
     },
   });
+
+  useEffect(() => {
+    if (open) {
+      form.reset(isEditing ? {
+        title: activity.title,
+        type: activity.type,
+        target: activity.target,
+        url: activity.url
+      } : {
+        title: "",
+        type: "checkbox",
+        target: undefined,
+        url: ""
+      });
+    }
+  }, [open, isEditing, activity, form]);
+
 
   const activityType = form.watch("type");
 
   const onSubmit = (values: ActivityFormValues) => {
-    const newActivity: Activity = {
-      id: activity?.id || uuidv4(),
-      title: values.title,
-      type: values.type as ActivityType,
-      ...(values.type === 'checkbox' && { completed: activity?.completed || false }),
-      ...(values.type === 'counter' && { count: activity?.count || 0, target: values.target || 1 }),
-      ...(values.type === 'link' && { url: values.url }),
-    };
+    if (isEditing) {
+        const updatedActivity: Activity = {
+            ...activity,
+            title: values.title,
+            type: values.type as ActivityType,
+            target: values.type === 'counter' ? values.target || 1 : undefined,
+            url: values.type === 'link' ? values.url : undefined,
+          };
+          dispatch({
+            type: "UPDATE_ACTIVITY",
+            payload: { subjectId, paperId, chapterId, activity: updatedActivity },
+          });
+    } else {
+        const newActivity: Activity = {
+            id: uuidv4(),
+            title: values.title,
+            type: values.type as ActivityType,
+            ...(values.type === 'checkbox' && { completed: false }),
+            ...(values.type === 'counter' && { count: 0, target: values.target || 1 }),
+            ...(values.type === 'link' && { url: values.url }),
+          };
+          dispatch({
+            type: "ADD_ACTIVITY",
+            payload: { subjectId, paperId, chapterId, activity: newActivity },
+          });
+    }
     
-    dispatch({
-      type: isEditing ? "UPDATE_ACTIVITY" : "ADD_ACTIVITY",
-      payload: { subjectId, paperId, chapterId, activity: newActivity },
-    });
     onOpenChange(false);
-    form.reset();
+  };
+  
+  const handleDialogChange = (isOpen: boolean) => {
+    if (!isOpen) {
+        form.reset(); // Reset form when closing
+    }
+    onOpenChange(isOpen);
   };
 
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleDialogChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{isEditing ? "Edit Activity" : "Add Activity"}</DialogTitle>
@@ -140,7 +178,7 @@ export function ActivityDialog({ open, onOpenChange, subjectId, paperId, chapter
                   <FormItem>
                     <FormLabel>Target Count</FormLabel>
                     <FormControl>
-                      <Input type="number" placeholder="e.g., 10 problems" {...field} value={field.value ?? ''} />
+                      <Input type="number" placeholder="e.g., 10 problems" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value === '' ? undefined : +e.target.value)} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
