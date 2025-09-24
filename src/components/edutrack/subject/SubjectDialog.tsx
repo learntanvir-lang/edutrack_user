@@ -28,6 +28,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 const subjectSchema = z.object({
   name: z.string().min(1, "Subject name is required"),
+  code: z.string().optional(),
 });
 
 type SubjectFormValues = z.infer<typeof subjectSchema>;
@@ -46,6 +47,7 @@ export function SubjectDialog({ open, onOpenChange, subject }: SubjectDialogProp
     resolver: zodResolver(subjectSchema),
     defaultValues: {
       name: subject?.name || "",
+      code: subject?.code || "",
     },
   });
 
@@ -55,6 +57,7 @@ export function SubjectDialog({ open, onOpenChange, subject }: SubjectDialogProp
       payload: {
         id: subject?.id || uuidv4(),
         name: values.name,
+        code: values.code,
         papers: subject?.papers || [],
       },
     });
@@ -71,7 +74,7 @@ export function SubjectDialog({ open, onOpenChange, subject }: SubjectDialogProp
         <DialogHeader>
           <DialogTitle>{isEditing ? "Edit Subject" : "Add Subject"}</DialogTitle>
           <DialogDescription>
-            {isEditing ? "Update the name of this subject." : "Add a new subject to track."}
+            {isEditing ? "Update the details of this subject." : "Add a new subject to track."}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -84,6 +87,19 @@ export function SubjectDialog({ open, onOpenChange, subject }: SubjectDialogProp
                   <FormLabel>Subject Name</FormLabel>
                   <FormControl>
                     <Input placeholder="e.g., Physics" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+             <FormField
+              control={form.control}
+              name="code"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Subject Code (Optional)</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g., PHY-101" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

@@ -165,7 +165,14 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
     try {
       const storedData = localStorage.getItem(LOCAL_STORAGE_KEY);
       if (storedData) {
-        dispatch({ type: "SET_STATE", payload: JSON.parse(storedData) });
+        const parsedData = JSON.parse(storedData);
+        // Quick check to see if it's old data structure
+        if (parsedData.subjects && parsedData.subjects.some((s: any) => s.papers === undefined)) {
+            // This is likely old data, load initial data instead
+            dispatch({ type: "SET_STATE", payload: initialData });
+        } else {
+            dispatch({ type: "SET_STATE", payload: parsedData });
+        }
       } else {
         // Load initial seed data if no data is in local storage
         dispatch({ type: "SET_STATE", payload: initialData });

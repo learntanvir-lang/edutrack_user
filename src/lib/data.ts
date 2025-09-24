@@ -12,6 +12,7 @@ export const initialData: { subjects: Subject[], exams: Exam[] } = {
     {
       id: subjectPhysicsId,
       name: "Physics",
+      code: "PHY-101",
       papers: [
         {
           id: uuidv4(),
@@ -42,6 +43,7 @@ export const initialData: { subjects: Subject[], exams: Exam[] } = {
     {
         id: subjectChemistryId,
         name: "Chemistry",
+        code: "CHEM-101",
         papers: [
             {
                 id: uuidv4(),

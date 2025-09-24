@@ -27,6 +27,7 @@ export interface Paper {
 export interface Subject {
   id: string;
   name: string;
+  code?: string;
   papers: Paper[];
 }
 
