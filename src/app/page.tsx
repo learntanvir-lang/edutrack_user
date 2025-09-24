@@ -3,19 +3,18 @@
 import { useState, useMemo, useContext } from 'react';
 import { Button } from '@/components/ui/button';
 import { AppDataContext } from '@/context/AppDataContext';
-import { Exam, Subject } from '@/lib/types';
 import NextExamCard from '@/components/edutrack/exam/NextExamCard';
 import { ExamList } from '@/components/edutrack/exam/ExamList';
 import { SubjectList } from '@/components/edutrack/subject/SubjectList';
 import { PlusCircle, BookOpen, Target } from 'lucide-react';
 import { SubjectDialog } from '@/components/edutrack/subject/SubjectDialog';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import Link from 'next/link';
+import { cn } from '@/lib/utils';
 
-type View = 'exams' | 'subjects';
+type View = 'subjects' | 'exams';
 
 export default function Home() {
-  const [activeView, setActiveView] = useState<View | null>(null);
+  const [activeView, setActiveView] = useState<View>('subjects');
   const [isSubjectDialogOpen, setIsSubjectDialogOpen] = useState(false);
   const { exams, subjects } = useContext(AppDataContext);
 
@@ -39,40 +38,6 @@ export default function Home() {
     }
     return 'N/A';
   };
-
-  const handleViewToggle = (view: View) => {
-    setActiveView(prev => prev === view ? null : view);
-  };
-
-  if (activeView === 'subjects') {
-    return (
-      <div className="container mx-auto p-4 md:p-8">
-        <Button variant="outline" onClick={() => setActiveView(null)} className="mb-4">
-          Back to Dashboard
-        </Button>
-        <div className="flex items-center justify-between mb-6">
-            <h1 className="text-3xl font-bold">Subjects</h1>
-            <Button variant="outline" size="sm" onClick={() => setIsSubjectDialogOpen(true)}>
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Add Subject
-            </Button>
-        </div>
-        <SubjectList />
-        <SubjectDialog open={isSubjectDialogOpen} onOpenChange={setIsSubjectDialogOpen} />
-      </div>
-    );
-  }
-
-  if (activeView === 'exams') {
-    return (
-      <div className="container mx-auto p-4 md:p-8">
-        <Button variant="outline" onClick={() => setActiveView(null)} className="mb-4">
-          Back to Dashboard
-        </Button>
-        <ExamList />
-      </div>
-    );
-  }
 
   return (
     <div className="container mx-auto p-4 md:p-8">
@@ -98,8 +63,11 @@ export default function Home() {
           </Card>
         )}
 
-        <div className="grid md:grid-cols-2 gap-8 mt-8">
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => handleViewToggle('subjects')}>
+        <div className="grid md:grid-cols-2 gap-4 mt-8">
+            <Card 
+              className={cn("hover:shadow-lg transition-all cursor-pointer", activeView === 'subjects' && 'border-primary ring-2 ring-primary')}
+              onClick={() => setActiveView('subjects')}
+            >
                 <CardHeader className="flex flex-row items-center gap-4">
                     <BookOpen className="w-8 h-8 text-primary" />
                     <div>
@@ -108,7 +76,10 @@ export default function Home() {
                     </div>
                 </CardHeader>
             </Card>
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => handleViewToggle('exams')}>
+            <Card 
+              className={cn("hover:shadow-lg transition-all cursor-pointer", activeView === 'exams' && 'border-primary ring-2 ring-primary')}
+              onClick={() => setActiveView('exams')}
+            >
                 <CardHeader className="flex flex-row items-center gap-4">
                     <Target className="w-8 h-8 text-primary" />
                     <div>
@@ -117,6 +88,22 @@ export default function Home() {
                     </div>
                 </CardHeader>
             </Card>
+        </div>
+
+        <div className="mt-8">
+          {activeView === 'subjects' && (
+             <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                    <h2 className="text-2xl font-bold">Subjects</h2>
+                    <Button variant="outline" size="sm" onClick={() => setIsSubjectDialogOpen(true)}>
+                        <PlusCircle className="mr-2 h-4 w-4" />
+                        Add Subject
+                    </Button>
+                </div>
+                <SubjectList />
+             </div>
+          )}
+          {activeView === 'exams' && <ExamList />}
         </div>
       
       <SubjectDialog open={isSubjectDialogOpen} onOpenChange={setIsSubjectDialogOpen} />
