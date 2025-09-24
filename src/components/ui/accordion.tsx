@@ -7,7 +7,15 @@ import { ChevronDown } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
-const Accordion = AccordionPrimitive.Root
+const Accordion = React.forwardRef<
+  React.ElementRef<typeof AccordionPrimitive.Root>,
+  React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Root>
+>(({ asChild, ...props }, ref) => {
+  const Comp = asChild ? AccordionPrimitive.Root : "div";
+  return <Comp ref={ref} {...props} />;
+});
+Accordion.displayName = "Accordion";
+
 
 const AccordionItem = React.forwardRef<
   React.ElementRef<typeof AccordionPrimitive.Item>,

@@ -3,6 +3,7 @@
 import { createContext, useReducer, useEffect, ReactNode } from "react";
 import { Subject, Exam, Paper, Chapter, Activity } from "@/lib/types";
 import { initialData } from "@/lib/data";
+import { v4 as uuidv4 } from 'uuid';
 
 type AppState = {
   subjects: Subject[];
@@ -20,6 +21,8 @@ type Action =
   | { type: "ADD_CHAPTER"; payload: { subjectId: string; paperId: string; chapter: Chapter } }
   | { type: "UPDATE_CHAPTER"; payload: { subjectId: string; paperId: string; chapter: Chapter } }
   | { type: "DELETE_CHAPTER"; payload: { subjectId: string; paperId: string; chapterId: string } }
+  | { type: "DUPLICATE_CHAPTER", payload: { subjectId: string, paperId: string, chapter: Chapter } }
+  | { type: "REORDER_CHAPTERS", payload: { subjectId: string, paperId: string, startIndex: number, endIndex: number } }
   | { type: "ADD_ACTIVITY"; payload: { subjectId: string; paperId: string; chapterId: string; activity: Activity } }
   | { type: "UPDATE_ACTIVITY"; payload: { subjectId: string; paperId: string; chapterId: string; activity: Activity } }
   | { type: "DELETE_ACTIVITY"; payload: { subjectId: string; paperId: string; chapterId: string; activityId: string } }
@@ -52,6 +55,42 @@ const appReducer = (state: AppState, action: Action): AppState => {
         return {...state, subjects: state.subjects.map(s => s.id === action.payload.subjectId ? {...s, papers: s.papers.map(p => p.id === action.payload.paperId ? {...p, chapters: p.chapters.map(c => c.id === action.payload.chapter.id ? action.payload.chapter : c)} : p)} : s)};
     case "DELETE_CHAPTER":
         return {...state, subjects: state.subjects.map(s => s.id === action.payload.subjectId ? {...s, papers: s.papers.map(p => p.id === action.payload.paperId ? {...p, chapters: p.chapters.filter(c => c.id !== action.payload.chapterId)} : p)} : s)};
+    case "DUPLICATE_CHAPTER": {
+      const { subjectId, paperId, chapter } = action.payload;
+      const newChapter: Chapter = {
+        ...chapter,
+        id: uuidv4(),
+        name: `${chapter.name} (Copy)`,
+        activities: chapter.activities.map(activity => ({
+          ...activity,
+          id: uuidv4(),
+        })),
+      };
+      return {...state, subjects: state.subjects.map(s => s.id === subjectId ? {...s, papers: s.papers.map(p => p.id === paperId ? {...p, chapters: [...p.chapters, newChapter]} : p)}: s)};
+    }
+    case "REORDER_CHAPTERS": {
+      const { subjectId, paperId, startIndex, endIndex } = action.payload;
+      return {
+        ...state,
+        subjects: state.subjects.map(s => {
+          if (s.id === subjectId) {
+            return {
+              ...s,
+              papers: s.papers.map(p => {
+                if (p.id === paperId) {
+                  const newChapters = Array.from(p.chapters);
+                  const [removed] = newChapters.splice(startIndex, 1);
+                  newChapters.splice(endIndex, 0, removed);
+                  return { ...p, chapters: newChapters };
+                }
+                return p;
+              }),
+            };
+          }
+          return s;
+        }),
+      };
+    }
     // Activity actions
     case "ADD_ACTIVITY":
         return {...state, subjects: state.subjects.map(s => s.id === action.payload.subjectId ? {...s, papers: s.papers.map(p => p.id === action.payload.paperId ? {...p, chapters: p.chapters.map(c => c.id === action.payload.chapterId ? {...c, activities: [...c.activities, action.payload.activity] } : c)} : p)} : s)};
