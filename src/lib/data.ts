@@ -22,19 +22,11 @@ export const initialData: { subjects: Subject[], exams: Exam[] } = {
               id: physicsChapter1Id,
               name: "Vector",
               isCompleted: false,
-              activities: [
-                { id: uuidv4(), title: "Read Theory", type: 'checkbox', completed: true },
-                { id: uuidv4(), title: "Solve 10 problems", type: 'counter', count: 5, target: 10 },
-                { id: uuidv4(), title: "Watch lecture video", type: 'link', url: "https://www.youtube.com" }
-              ]
             },
             {
               id: physicsChapter2Id,
               name: "Dynamics",
               isCompleted: false,
-              activities: [
-                { id: uuidv4(), title: "Class notes review", type: 'checkbox', completed: false },
-              ]
             }
           ]
         }
@@ -53,7 +45,6 @@ export const initialData: { subjects: Subject[], exams: Exam[] } = {
                         id: chemChapter1Id,
                         name: "Atomic Structure",
                         isCompleted: false,
-                        activities: []
                     }
                 ]
             }

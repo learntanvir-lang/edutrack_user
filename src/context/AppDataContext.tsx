@@ -2,7 +2,7 @@
 "use client";
 
 import { createContext, useReducer, useEffect, ReactNode } from "react";
-import { Subject, Exam, Paper, Chapter, Activity } from "@/lib/types";
+import { Subject, Exam, Paper, Chapter } from "@/lib/types";
 import { initialData } from "@/lib/data";
 import { v4 as uuidv4 } from 'uuid';
 
@@ -24,10 +24,6 @@ type Action =
   | { type: "DELETE_CHAPTER"; payload: { subjectId: string; paperId: string; chapterId: string } }
   | { type: "DUPLICATE_CHAPTER", payload: { subjectId: string, paperId: string, chapter: Chapter } }
   | { type: "REORDER_CHAPTERS", payload: { subjectId: string, paperId: string, startIndex: number, endIndex: number } }
-  | { type: "ADD_ACTIVITY"; payload: { subjectId: string; paperId: string; chapterId: string; activity: Activity } }
-  | { type: "UPDATE_ACTIVITY"; payload: { subjectId: string; paperId: string; chapterId: string; activity: Activity } }
-  | { type: "DELETE_ACTIVITY"; payload: { subjectId: string; paperId: string; chapterId: string; activityId: string } }
-  | { type: "REORDER_ACTIVITIES", payload: { subjectId: string; paperId: string; chapterId: string; startIndex: number; endIndex: number } }
   | { type: "ADD_EXAM"; payload: Exam }
   | { type: "UPDATE_EXAM"; payload: Exam }
   | { type: "DELETE_EXAM"; payload: string };
@@ -63,10 +59,6 @@ const appReducer = (state: AppState, action: Action): AppState => {
         ...chapter,
         id: uuidv4(),
         name: `${chapter.name} (Copy)`,
-        activities: chapter.activities.map(activity => ({
-          ...activity,
-          id: uuidv4(),
-        })),
       };
       return {...state, subjects: state.subjects.map(s => s.id === subjectId ? {...s, papers: s.papers.map(p => p.id === paperId ? {...p, chapters: [...p.chapters, newChapter]} : p)}: s)};
     }
@@ -84,113 +76,6 @@ const appReducer = (state: AppState, action: Action): AppState => {
                   const [removed] = newChapters.splice(startIndex, 1);
                   newChapters.splice(endIndex, 0, removed);
                   return { ...p, chapters: newChapters };
-                }
-                return p;
-              }),
-            };
-          }
-          return s;
-        }),
-      };
-    }
-    // Activity actions
-    case "ADD_ACTIVITY": {
-        const { subjectId, paperId, chapterId, activity } = action.payload;
-        return {
-            ...state,
-            subjects: state.subjects.map(subject => {
-                if (subject.id !== subjectId) return subject;
-                const newPapers = subject.papers.map(paper => {
-                    if (paper.id !== paperId) return paper;
-                    const newChapters = paper.chapters.map(chapter => {
-                        if (chapter.id !== chapterId) return chapter;
-                        return {
-                            ...chapter,
-                            activities: [...chapter.activities, activity],
-                        };
-                    });
-                    return { ...paper, chapters: newChapters };
-                });
-                return { ...subject, papers: newPapers };
-            }),
-        };
-    }
-    case "UPDATE_ACTIVITY": {
-        const { subjectId, paperId, chapterId, activity } = action.payload;
-        return {
-            ...state,
-            subjects: state.subjects.map(subject => {
-                if (subject.id !== subjectId) return subject;
-                return {
-                    ...subject,
-                    papers: subject.papers.map(paper => {
-                        if (paper.id !== paperId) return paper;
-                        return {
-                            ...paper,
-                            chapters: paper.chapters.map(chapter => {
-                                if (chapter.id !== chapterId) return chapter;
-                                return {
-                                    ...chapter,
-                                    activities: chapter.activities.map(act =>
-                                        act.id === activity.id ? activity : act
-                                    ),
-                                };
-                            }),
-                        };
-                    }),
-                };
-            }),
-        };
-    }
-    case "DELETE_ACTIVITY": {
-        const { subjectId, paperId, chapterId, activityId } = action.payload;
-        return {
-            ...state,
-            subjects: state.subjects.map(subject => {
-                if (subject.id !== subjectId) return subject;
-                return {
-                    ...subject,
-                    papers: subject.papers.map(paper => {
-                        if (paper.id !== paperId) return paper;
-                        return {
-                            ...paper,
-                            chapters: paper.chapters.map(chapter => {
-                                if (chapter.id !== chapterId) return chapter;
-                                return {
-                                    ...chapter,
-                                    activities: chapter.activities.filter(
-                                        act => act.id !== activityId
-                                    ),
-                                };
-                            }),
-                        };
-                    }),
-                };
-            }),
-        };
-    }
-    case "REORDER_ACTIVITIES": {
-      const { subjectId, paperId, chapterId, startIndex, endIndex } = action.payload;
-      return {
-        ...state,
-        subjects: state.subjects.map(s => {
-          if (s.id === subjectId) {
-            return {
-              ...s,
-              papers: s.papers.map(p => {
-                if (p.id === paperId) {
-                  return {
-                    ...p,
-                    chapters: p.chapters.map(c => {
-                      if (c.id === chapterId) {
-                        const newActivities = Array.from(c.activities);
-                        const [removed] = newActivities.splice(startIndex, 1);
-                        newActivities.splice(endIndex, 0, removed);
-                        return { ...c, activities: newActivities };
-                      }
-                      return c;
-                    }),
-                  };
                 }
                 return p;
               }),

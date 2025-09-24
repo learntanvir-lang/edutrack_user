@@ -63,7 +63,6 @@ export function ChapterDialog({ open, onOpenChange, subjectId, paperId, chapter 
           id: chapter?.id || uuidv4(),
           name: values.name,
           number: values.number,
-          activities: chapter?.activities || [],
           isCompleted: chapter?.isCompleted || false,
         },
       },

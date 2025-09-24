@@ -1,21 +1,8 @@
-export type ActivityType = 'checkbox' | 'counter' | 'link';
-
-export interface Activity {
-  id: string;
-  title: string;
-  type: ActivityType;
-  completed?: boolean;
-  count?: number;
-  target?: number;
-  url?: string;
-  notes?: string;
-}
 
 export interface Chapter {
   id: string;
   number?: string;
   name: string;
-  activities: Activity[];
   isCompleted: boolean;
 }
 

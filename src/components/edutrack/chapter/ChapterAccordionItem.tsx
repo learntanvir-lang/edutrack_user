@@ -5,7 +5,7 @@ import { useState, useContext } from "react";
 import { Chapter } from "@/lib/types";
 import { AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Pen, PlusCircle, Trash2, ChevronDown, Copy, GripVertical } from "lucide-react";
+import { MoreHorizontal, Pen, Trash2, ChevronDown, Copy, GripVertical } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,9 +14,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { AppDataContext } from "@/context/AppDataContext";
 import { ChapterDialog } from "./ChapterDialog";
-import { ActivityList } from "../activity/ActivityList";
-import { ActivityDialog } from "../activity/ActivityDialog";
-import { SummaryGenerator } from "../SummaryGenerator";
 
 interface ChapterAccordionItemProps {
     chapter: Chapter;
@@ -27,7 +24,6 @@ interface ChapterAccordionItemProps {
 export function ChapterAccordionItem({ chapter, subjectId, paperId }: ChapterAccordionItemProps) {
     const { dispatch } = useContext(AppDataContext);
     const [isEditingChapter, setIsEditingChapter] = useState(false);
-    const [isAddingActivity, setIsAddingActivity] = useState(false);
 
     const handleDelete = () => {
         if (window.confirm("Are you sure you want to delete this chapter?")) {
@@ -61,7 +57,6 @@ export function ChapterAccordionItem({ chapter, subjectId, paperId }: ChapterAcc
                             </div>
                         </AccordionTrigger>
                         <div className="flex items-center gap-1 ml-4">
-                            <SummaryGenerator chapter={chapter} />
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -83,16 +78,8 @@ export function ChapterAccordionItem({ chapter, subjectId, paperId }: ChapterAcc
                         </div>
                     </div>
                     <AccordionContent className="px-3 pb-3 pt-0">
-                        <div className="border-t pt-3">
-                            <ActivityList
-                                activities={chapter.activities}
-                                subjectId={subjectId}
-                                paperId={paperId}
-                                chapterId={chapter.id}
-                            />
-                            <Button variant="outline" size="sm" className="mt-4 w-full" onClick={() => setIsAddingActivity(true)}>
-                                <PlusCircle className="mr-2 h-4 w-4" /> Add Activity
-                            </Button>
+                        <div className="border-t pt-3 text-sm text-muted-foreground">
+                            Activity tracking has been removed.
                         </div>
                     </AccordionContent>
                 </div>
@@ -104,14 +91,6 @@ export function ChapterAccordionItem({ chapter, subjectId, paperId }: ChapterAcc
                 subjectId={subjectId}
                 paperId={paperId}
                 chapter={chapter}
-            />
-
-            <ActivityDialog
-                open={isAddingActivity}
-                onOpenChange={setIsAddingActivity}
-                subjectId={subjectId}
-                paperId={paperId}
-                chapterId={chapter.id}
             />
         </>
     );
