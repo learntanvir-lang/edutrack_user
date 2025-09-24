@@ -68,8 +68,8 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
     if (isEditing && exam) {
       form.reset({
         name: exam.name,
-        subjectIds: [exam.subjectId],
-        chapterIds: [exam.chapterId],
+        subjectIds: exam.subjectIds,
+        chapterIds: exam.chapterIds,
         date: new Date(exam.date),
       })
     } else {
@@ -104,30 +104,24 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
       dispatch({
         type: "UPDATE_EXAM",
         payload: {
-          id: exam.id,
+          ...exam,
           name: values.name,
-          subjectId: values.subjectIds[0],
-          chapterId: values.chapterIds[0], 
+          subjectIds: values.subjectIds,
+          chapterIds: values.chapterIds,
           date: values.date.toISOString(),
-          isCompleted: exam.isCompleted,
         },
       });
     } else {
-      values.chapterIds.forEach((chapterId) => {
-        const chapter = allChapters.find(c => c.id === chapterId);
-        if (chapter) {
-          dispatch({
-            type: "ADD_EXAM",
-            payload: {
-              id: uuidv4(),
-              name: values.name,
-              subjectId: chapter.subjectId,
-              chapterId: chapterId,
-              date: values.date.toISOString(),
-              isCompleted: false,
-            },
-          });
-        }
+      dispatch({
+        type: "ADD_EXAM",
+        payload: {
+          id: uuidv4(),
+          name: values.name,
+          subjectIds: values.subjectIds,
+          chapterIds: values.chapterIds,
+          date: values.date.toISOString(),
+          isCompleted: false,
+        },
       });
     }
 
@@ -160,7 +154,7 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
                 <FormItem>
                   <FormLabel>Exam Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., Daily Exam" {...field} />
+                    <Input placeholder="e.g., Mid-term Exam" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -182,7 +176,6 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
                                   "w-full justify-between h-auto min-h-10",
                                   !field.value?.length && "text-muted-foreground"
                               )}
-                              disabled={isEditing}
                               >
                               <div className="flex gap-1 flex-wrap">
                                   {selectedSubjectIds.length > 0 ? selectedSubjectIds.map(subjectId => {
@@ -205,13 +198,21 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
                                         value={subject.name}
                                         key={subject.id}
                                         onSelect={() => {
-                                            if (isEditing) return;
                                             const currentIds = field.value || [];
                                             const newIds = currentIds.includes(subject.id)
                                                 ? currentIds.filter((id) => id !== subject.id)
                                                 : [...currentIds, subject.id];
                                             form.setValue("subjectIds", newIds, { shouldValidate: true });
-                                            form.setValue("chapterIds", []);
+                                            
+                                            // Filter out chapters from deselected subjects
+                                            const availableChapterIds = subjects
+                                              .filter(s => newIds.includes(s.id))
+                                              .flatMap(s => s.papers)
+                                              .flatMap(p => p.chapters)
+                                              .map(c => c.id);
+                                            
+                                            const newChapterIds = selectedChapterIds.filter(id => availableChapterIds.includes(id));
+                                            form.setValue("chapterIds", newChapterIds, { shouldValidate: true });
                                         }}
                                     >
                                         <Check
@@ -248,7 +249,7 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
                                     "w-full justify-between h-auto min-h-10",
                                     !field.value?.length && "text-muted-foreground"
                                 )}
-                                disabled={!selectedSubjectIds.length || isEditing}
+                                disabled={!selectedSubjectIds.length}
                                 >
                                 <div className="flex gap-1 flex-wrap">
                                     {selectedChapterIds.length > 0 ? selectedChapterIds.map(chapterId => {
@@ -272,7 +273,6 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
                                         value={`${subject.subjectName}-${chapter.name}`}
                                         key={chapter.id}
                                         onSelect={() => {
-                                            if (isEditing) return;
                                             const currentIds = field.value || [];
                                             const newIds = currentIds.includes(chapter.id)
                                                 ? currentIds.filter((id) => id !== chapter.id)
@@ -341,7 +341,7 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
               )}
             />
             <DialogFooter>
-              <Button type="submit">{isEditing ? "Save Changes" : "Add Exam(s)"}</Button>
+              <Button type="submit">{isEditing ? "Save Changes" : "Add Exam"}</Button>
             </DialogFooter>
           </form>
         </Form>

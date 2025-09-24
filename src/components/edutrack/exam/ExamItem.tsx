@@ -11,15 +11,14 @@ import { ExamDialog } from "./ExamDialog";
 import { Pen, Trash2, Calendar, BookOpen, Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Countdown } from "../Countdown";
+import { Badge } from "@/components/ui/badge";
 
 interface ExamItemProps {
   exam: Exam;
-  subjectName: string;
-  chapterName: string;
 }
 
-export function ExamItem({ exam, subjectName, chapterName }: ExamItemProps) {
-  const { dispatch } = useContext(AppDataContext);
+export function ExamItem({ exam }: ExamItemProps) {
+  const { subjects, dispatch } = useContext(AppDataContext);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   const handleStatusChange = (isCompleted: boolean) => {
@@ -39,6 +38,23 @@ export function ExamItem({ exam, subjectName, chapterName }: ExamItemProps) {
   }
 
   const isPast = new Date(exam.date) < new Date();
+
+  const examDetails = exam.chapterIds.map(chapterId => {
+    for (const subject of subjects) {
+      if (exam.subjectIds.includes(subject.id)) {
+        for (const paper of subject.papers) {
+          const chapter = paper.chapters.find(c => c.id === chapterId);
+          if (chapter) {
+            return {
+              subjectName: subject.name,
+              chapterName: chapter.name
+            };
+          }
+        }
+      }
+    }
+    return null;
+  }).filter(Boolean);
 
   return (
     <>
@@ -63,10 +79,14 @@ export function ExamItem({ exam, subjectName, chapterName }: ExamItemProps) {
         </CardHeader>
         <CardContent className="space-y-4 px-6 pb-4">
           <div className="space-y-2 text-sm text-muted-foreground">
-            <p className="flex items-center gap-2">
-              <BookOpen className="h-4 w-4" /> {subjectName} - {chapterName}
-            </p>
-            <p className="flex items-center gap-2">
+            <div className="flex flex-wrap gap-1">
+              {examDetails.map((detail, index) => detail && (
+                <Badge key={index} variant={exam.isCompleted ? 'default' : 'destructive'} className={cn(exam.isCompleted ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800')}>
+                  {detail.subjectName} - {detail.chapterName}
+                </Badge>
+              ))}
+            </div>
+            <p className="flex items-center gap-2 pt-2">
               <Calendar className="h-4 w-4" /> {format(new Date(exam.date), "P")}
             </p>
           </div>

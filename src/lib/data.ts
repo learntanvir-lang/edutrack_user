@@ -62,24 +62,24 @@ export const initialData: { subjects: Subject[], exams: Exam[] } = {
     {
       id: uuidv4(),
       name: "Daily Exam-03",
-      subjectId: subjectPhysicsId,
-      chapterId: physicsChapter1Id,
+      subjectIds: [subjectPhysicsId],
+      chapterIds: [physicsChapter1Id],
       date: new Date(new Date().setDate(new Date().getDate() + 7)).toISOString(), // 7 days from now
       isCompleted: false
     },
     {
         id: uuidv4(),
-        name: "Mid-term Physics",
-        subjectId: subjectPhysicsId,
-        chapterId: physicsChapter2Id,
+        name: "Mid-term Exam",
+        subjectIds: [subjectPhysicsId, subjectChemistryId],
+        chapterIds: [physicsChapter2Id, chemChapter1Id],
         date: new Date(new Date().setDate(new Date().getDate() + 30)).toISOString(), // 30 days from now
         isCompleted: false
       },
     {
         id: uuidv4(),
         name: "Final Chemistry",
-        subjectId: subjectChemistryId,
-        chapterId: chemChapter1Id,
+        subjectIds: [subjectChemistryId],
+        chapterIds: [chemChapter1Id],
         date: new Date(new Date().setDate(new Date().getDate() - 14)).toISOString(), // 14 days ago
         isCompleted: true
       }

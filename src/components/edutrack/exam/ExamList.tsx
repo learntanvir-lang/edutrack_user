@@ -7,21 +7,10 @@ import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
 import { ExamDialog } from "./ExamDialog";
 import { Separator } from "@/components/ui/separator";
-import { Subject } from "@/lib/types";
 
 export function ExamList() {
-  const { exams, subjects } = useContext(AppDataContext);
+  const { exams } = useContext(AppDataContext);
   const [isExamDialogOpen, setIsExamDialogOpen] = useState(false);
-
-  const findChapterDetails = (subjectId: string, chapterId: string) => {
-    const subject = subjects.find(s => s.id === subjectId) as Subject | undefined;
-    if (!subject) return { subjectName: 'N/A', chapterName: 'N/A' };
-    for (const paper of subject.papers) {
-      const chapter = paper.chapters.find(c => c.id === chapterId);
-      if (chapter) return { subjectName: subject.name, chapterName: chapter.name };
-    }
-    return { subjectName: subject.name, chapterName: 'N/A' };
-  };
 
   const { upcomingExams, pastExams } = useMemo(() => {
     const now = new Date();
@@ -54,17 +43,12 @@ export function ExamList() {
             <div>
               <h2 className="text-2xl font-semibold mb-4">Upcoming</h2>
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {upcomingExams.map(exam => {
-                  const { subjectName, chapterName } = findChapterDetails(exam.subjectId, exam.chapterId);
-                  return (
-                    <ExamItem 
-                      key={exam.id} 
-                      exam={exam} 
-                      subjectName={subjectName}
-                      chapterName={chapterName}
-                    />
-                  )
-                })}
+                {upcomingExams.map(exam => (
+                  <ExamItem 
+                    key={exam.id} 
+                    exam={exam} 
+                  />
+                ))}
               </div>
             </div>
           )}
@@ -74,17 +58,12 @@ export function ExamList() {
               {upcomingExams.length > 0 && <Separator className="my-8" />}
               <h2 className="text-2xl font-semibold mb-4">Past</h2>
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {pastExams.map(exam => {
-                    const { subjectName, chapterName } = findChapterDetails(exam.subjectId, exam.chapterId);
-                    return (
-                      <ExamItem 
-                        key={exam.id} 
-                        exam={exam} 
-                        subjectName={subjectName}
-                        chapterName={chapterName}
-                      />
-                    )
-                })}
+                {pastExams.map(exam => (
+                  <ExamItem 
+                    key={exam.id} 
+                    exam={exam} 
+                  />
+                ))}
               </div>
             </div>
           )}

@@ -26,25 +26,6 @@ export default function Home() {
     return upcoming[0];
   }, [exams]);
 
-  const findChapter = (subjectId: string, chapterId: string) => {
-    const subject = subjects.find(s => s.id === subjectId) as Subject | undefined;
-    if (!subject) return null;
-    for (const paper of subject.papers) {
-        const chapter = paper.chapters.find(c => c.id === chapterId);
-        if (chapter) return { chapter, paper, subject };
-    }
-    return null;
-  }
-
-  const examDetails = useMemo(() => {
-    if (!nextExam) return { subjectName: 'N/A', chapterName: 'N/A' };
-    const details = findChapter(nextExam.subjectId, nextExam.chapterId);
-    return {
-      subjectName: details?.subject?.name || 'N/A',
-      chapterName: details?.chapter?.name || 'N/A'
-    };
-  }, [nextExam, subjects]);
-
   return (
     <div className="container mx-auto p-4 md:p-8">
         <h1 className="text-3xl font-bold text-foreground mb-6">
@@ -54,8 +35,6 @@ export default function Home() {
         {nextExam ? (
           <NextExamCard
             exam={nextExam}
-            subjectName={examDetails.subjectName}
-            chapterName={examDetails.chapterName}
           />
         ) : (
           <Card className="bg-primary text-primary-foreground border-0">
