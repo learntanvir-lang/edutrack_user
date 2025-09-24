@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useContext } from "react";
@@ -30,9 +31,7 @@ export function PaperList({ papers, subjectId }: PaperListProps) {
 
 
   const handleDelete = (paperId: string) => {
-    if (confirm("Are you sure you want to delete this paper and all its chapters?")) {
-      dispatch({ type: "DELETE_PAPER", payload: { subjectId, paperId } });
-    }
+    dispatch({ type: "DELETE_PAPER", payload: { subjectId, paperId } });
   };
 
   const handleAddChapterClick = (paperId: string) => {

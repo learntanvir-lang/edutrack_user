@@ -35,12 +35,10 @@ export function ChapterList({ chapters, subjectId, paperId }: ChapterListProps) 
   const [dragOverItem, setDragOverItem] = useState<Chapter | null>(null);
 
   const handleDelete = (chapterId: string) => {
-    if (confirm("Are you sure you want to delete this chapter and all its activities?")) {
-      dispatch({
-        type: "DELETE_CHAPTER",
-        payload: { subjectId, paperId, chapterId },
-      });
-    }
+    dispatch({
+      type: "DELETE_CHAPTER",
+      payload: { subjectId, paperId, chapterId },
+    });
   };
 
   const handleDuplicate = (chapter: Chapter) => {

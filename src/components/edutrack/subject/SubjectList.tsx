@@ -30,9 +30,7 @@ export function SubjectList() {
   const [activeSubjectId, setActiveSubjectId] = useState<string | null>(null);
 
   const handleDelete = (subjectId: string) => {
-    if (confirm('Are you sure you want to delete this subject and all its content?')) {
-      dispatch({ type: 'DELETE_SUBJECT', payload: subjectId });
-    }
+    dispatch({ type: 'DELETE_SUBJECT', payload: subjectId });
   };
 
   const handleAddPaperClick = (subjectId: string) => {
