@@ -22,7 +22,7 @@ export default function NextExamCard({ exam, subjectName, chapterName }: NextExa
   return (
     <>
       <Card className="bg-primary text-primary-foreground border-0 shadow-xl rounded-2xl [--card-foreground:theme(colors.primary.foreground)] [--muted-foreground:theme(colors.primary.foreground/0.8)]">
-        <CardHeader>
+        <CardHeader className="pb-4">
             <div className="flex justify-between items-start">
               <div>
                   <div className="flex items-center gap-2 text-sm font-medium text-primary-foreground/80 mb-2">
