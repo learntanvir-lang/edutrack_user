@@ -68,17 +68,21 @@ export function ActivityDialog({ open, onOpenChange, subjectId, paperId, chapter
 
   useEffect(() => {
     if (open) {
-      form.reset(isEditing ? {
-        title: activity.title,
-        type: activity.type,
-        target: activity.target,
-        url: activity.url || ''
-      } : {
-        title: "",
-        type: "checkbox",
-        target: undefined,
-        url: ""
-      });
+      if (isEditing && activity) {
+        form.reset({
+          title: activity.title,
+          type: activity.type,
+          target: activity.target,
+          url: activity.url || ''
+        });
+      } else {
+        form.reset({
+          title: "",
+          type: "checkbox",
+          target: undefined,
+          url: ""
+        });
+      }
     }
   }, [open, isEditing, activity, form]);
 
@@ -116,21 +120,8 @@ export function ActivityDialog({ open, onOpenChange, subjectId, paperId, chapter
     onOpenChange(false);
   };
   
-  const handleDialogChange = (isOpen: boolean) => {
-    if (!isOpen) {
-        form.reset({
-          title: "",
-          type: "checkbox",
-          target: undefined,
-          url: "",
-        });
-    }
-    onOpenChange(isOpen);
-  };
-
-
   return (
-    <Dialog open={open} onOpenChange={handleDialogChange}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{isEditing ? "Edit Activity" : "Add Activity"}</DialogTitle>
