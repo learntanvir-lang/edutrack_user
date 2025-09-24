@@ -21,12 +21,22 @@ export const initialData: { subjects: Subject[], exams: Exam[] } = {
             {
               id: physicsChapter1Id,
               name: "Vector",
+              number: "1",
               isCompleted: false,
+              classSessions: { total: 10, attended: 8 },
+              practiceProblems: { total: 50, completed: 25 },
+              resourceLinks: [
+                { id: uuidv4(), url: 'https://www.youtube.com/watch?v=1G5E_C2e2fE', description: 'Vector Intro Video' }
+              ]
             },
             {
               id: physicsChapter2Id,
               name: "Dynamics",
+              number: "2",
               isCompleted: false,
+              classSessions: { total: 12, attended: 5 },
+              practiceProblems: { total: 60, completed: 10 },
+              resourceLinks: []
             }
           ]
         }
@@ -44,7 +54,11 @@ export const initialData: { subjects: Subject[], exams: Exam[] } = {
                     {
                         id: chemChapter1Id,
                         name: "Atomic Structure",
+                        number: "1",
                         isCompleted: false,
+                        classSessions: { total: 15, attended: 15 },
+                        practiceProblems: { total: 80, completed: 80 },
+                        resourceLinks: []
                     }
                 ]
             }

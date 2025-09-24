@@ -54,17 +54,22 @@ export function ChapterDialog({ open, onOpenChange, subjectId, paperId, chapter 
   });
 
   const onSubmit = (values: ChapterFormValues) => {
+    const chapterData: Chapter = {
+      id: chapter?.id || uuidv4(),
+      name: values.name,
+      number: values.number,
+      isCompleted: chapter?.isCompleted || false,
+      classSessions: chapter?.classSessions || { total: 0, attended: 0 },
+      practiceProblems: chapter?.practiceProblems || { total: 0, completed: 0 },
+      resourceLinks: chapter?.resourceLinks || [],
+    };
+
     dispatch({
       type: isEditing ? "UPDATE_CHAPTER" : "ADD_CHAPTER",
       payload: {
         subjectId,
         paperId,
-        chapter: {
-          id: chapter?.id || uuidv4(),
-          name: values.name,
-          number: values.number,
-          isCompleted: chapter?.isCompleted || false,
-        },
+        chapter: chapterData,
       },
     });
     onOpenChange(false);

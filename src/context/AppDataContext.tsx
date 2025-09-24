@@ -122,7 +122,7 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
       if (storedData) {
         const parsedData = JSON.parse(storedData);
         // Quick check to see if it's old data structure
-        if (parsedData.subjects && parsedData.subjects.some((s: any) => s.papers === undefined)) {
+        if (parsedData.subjects && parsedData.subjects.some((s: any) => s.papers === undefined || s.papers.some((p: any) => p.chapters.some((c: any) => !c.classSessions)))) {
             // This is likely old data, load initial data instead
             dispatch({ type: "SET_STATE", payload: initialData });
         } else {

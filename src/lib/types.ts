@@ -1,9 +1,18 @@
 
+export interface ResourceLink {
+  id: string;
+  url: string;
+  description: string;
+}
+
 export interface Chapter {
   id: string;
   number?: string;
   name: string;
   isCompleted: boolean;
+  classSessions: { total: number; attended: number };
+  practiceProblems: { total: number; completed: number };
+  resourceLinks: ResourceLink[];
 }
 
 export interface Paper {
