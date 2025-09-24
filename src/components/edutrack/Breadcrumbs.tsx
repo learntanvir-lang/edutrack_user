@@ -17,7 +17,7 @@ export function Breadcrumbs({ segments, className }: BreadcrumbsProps) {
     <nav aria-label="Breadcrumb" className={cn('text-sm text-muted-foreground', className)}>
       <ol className="flex items-center space-x-1.5">
         {segments.map((segment, index) => (
-          <li key={segment.href} className="flex items-center space-x-1.5">
+          <li key={`${segment.href}-${index}`} className="flex items-center space-x-1.5">
             <Link
               href={segment.href}
               className={cn(
