@@ -1,7 +1,7 @@
 "use client";
 
 import { useContext, useState } from "react";
-import { useParams, notFound } from "next/navigation";
+import { useParams, notFound, useRouter } from "next/navigation";
 import { AppDataContext } from "@/context/AppDataContext";
 import { Breadcrumbs } from "@/components/edutrack/Breadcrumbs";
 import { PaperList } from "@/components/edutrack/paper/PaperList";
@@ -14,10 +14,19 @@ export default function SubjectPage() {
   const { id } = useParams();
   const { subjects } = useContext(AppDataContext);
   const [isPaperDialogOpen, setIsPaperDialogOpen] = useState(false);
+  const router = useRouter();
 
   const subjectId = Array.isArray(id) ? id[0] : id;
   const subject = subjects.find((s) => s.id === subjectId) as Subject | undefined;
 
+  if (!subject) {
+    // Redirect or handle appropriately
+    // For now, let's just notFound(), but a redirect might be better UX
+    notFound();
+  }
+  
+  // This page might become redundant if all chapter management happens on the dashboard.
+  // For now, we'll keep it as a dedicated view.
   if (!subject) {
     notFound();
   }
