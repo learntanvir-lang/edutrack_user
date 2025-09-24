@@ -1,7 +1,7 @@
 
 import { useState, useContext } from "react";
 import { Chapter } from "@/lib/types";
-import { Accordion } from "@/components/ui/accordion";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal, Pen, PlusCircle, Trash2, ChevronDown, Copy, GripVertical } from "lucide-react";
 import {
@@ -84,68 +84,66 @@ export function ChapterList({ chapters, subjectId, paperId }: ChapterListProps) 
       <DragDropContext onDragEnd={onDragEnd}>
         <Droppable droppableId={`chapters-${paperId}`}>
           {(provided) => (
-            <Accordion asChild type="multiple" className="w-full space-y-2" {...provided.droppableProps} ref={provided.innerRef}>
-              <div>
+            <div {...provided.droppableProps} ref={provided.innerRef}>
+              <Accordion type="multiple" className="w-full space-y-2">
                 {chapters.map((chapter, index) => (
                   <Draggable key={chapter.id} draggableId={chapter.id} index={index}>
                     {(provided) => (
-                      <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
-                        <div className="bg-card rounded-lg shadow-sm">
-                          <div className="flex items-center justify-between w-full p-3">
-                            <div className="flex items-center gap-2">
-                              <GripVertical className="h-5 w-5 text-muted-foreground" />
-                              <span className="font-medium text-base">{chapter.name}</span>
-                            </div>
-                            <div className="flex items-center gap-1 ml-4">
-                              <SummaryGenerator chapter={chapter} />
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" size="icon" className="h-8 w-8">
-                                    <MoreHorizontal className="h-4 w-4" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent>
-                                  <DropdownMenuItem onClick={() => setEditingChapter(chapter)}>
-                                    <Pen className="mr-2 h-4 w-4" /> Edit
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleDuplicate(chapter)}>
-                                    <Copy className="mr-2 h-4 w-4" /> Duplicate
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleDelete(chapter.id)} className="text-destructive">
-                                    <Trash2 className="mr-2 h-4 w-4" /> Delete
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                              <Accordion.Item value={chapter.id} className="border-none p-0">
-                                <Accordion.Trigger asChild>
-                                  <Button variant="ghost" size="icon" className="h-8 w-8 group">
-                                     <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
-                                  </Button>
-                                </Accordion.Trigger>
-                                <Accordion.Content className="px-3 pb-3 pt-0">
-                                  <div className="border-t pt-3">
-                                    <ActivityList
-                                      activities={chapter.activities}
-                                      subjectId={subjectId}
-                                      paperId={paperId}
-                                      chapterId={chapter.id}
-                                    />
-                                    <Button variant="outline" size="sm" className="mt-4 w-full" onClick={() => setAddingActivityToChapter(chapter.id)}>
-                                      <PlusCircle className="mr-2 h-4 w-4" /> Add Activity
+                      <div ref={provided.innerRef} {...provided.draggableProps}>
+                        <AccordionItem value={chapter.id} className="border-none">
+                            <div className="bg-card rounded-lg shadow-sm">
+                            <div className="flex items-center justify-between w-full p-3" {...provided.dragHandleProps}>
+                                <AccordionTrigger className="p-0 hover:no-underline flex-1 group">
+                                <div className="flex items-center gap-2">
+                                    <GripVertical className="h-5 w-5 text-muted-foreground" />
+                                    <span className="font-medium text-base">{chapter.name}</span>
+                                    <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                                </div>
+                                </AccordionTrigger>
+                                <div className="flex items-center gap-1 ml-4">
+                                <SummaryGenerator chapter={chapter} />
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                                        <MoreHorizontal className="h-4 w-4" />
                                     </Button>
-                                  </div>
-                                </Accordion.Content>
-                              </Accordion.Item>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent>
+                                    <DropdownMenuItem onClick={() => setEditingChapter(chapter)}>
+                                        <Pen className="mr-2 h-4 w-4" /> Edit
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => handleDuplicate(chapter)}>
+                                        <Copy className="mr-2 h-4 w-4" /> Duplicate
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => handleDelete(chapter.id)} className="text-destructive">
+                                        <Trash2 className="mr-2 h-4 w-4" /> Delete
+                                    </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                                </div>
                             </div>
-                          </div>
-                        </div>
+                            <AccordionContent className="px-3 pb-3 pt-0">
+                                <div className="border-t pt-3">
+                                <ActivityList
+                                    activities={chapter.activities}
+                                    subjectId={subjectId}
+                                    paperId={paperId}
+                                    chapterId={chapter.id}
+                                />
+                                <Button variant="outline" size="sm" className="mt-4 w-full" onClick={() => setAddingActivityToChapter(chapter.id)}>
+                                    <PlusCircle className="mr-2 h-4 w-4" /> Add Activity
+                                </Button>
+                                </div>
+                            </AccordionContent>
+                            </div>
+                        </AccordionItem>
                       </div>
                     )}
                   </Draggable>
                 ))}
                 {provided.placeholder}
-              </div>
-            </Accordion>
+              </Accordion>
+            </div>
           )}
         </Droppable>
       </DragDropContext>
