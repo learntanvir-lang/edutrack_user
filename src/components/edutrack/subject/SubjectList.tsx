@@ -66,7 +66,6 @@ export function SubjectList() {
                 <AccordionTrigger className="p-0 hover:no-underline flex-1 group">
                    <div className="flex items-center gap-4">
                      <CardTitle>
-                       {subject.code && <span className="text-muted-foreground font-normal">{subject.code} - </span>}
                        {subject.name}
                       </CardTitle>
                      <ChevronDown className="h-5 w-5 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
