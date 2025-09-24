@@ -31,7 +31,9 @@ export function PaperList({ papers, subjectId }: PaperListProps) {
 
 
   const handleDelete = (paperId: string) => {
-    dispatch({ type: "DELETE_PAPER", payload: { subjectId, paperId } });
+    if (window.confirm("Are you sure you want to delete this paper? This will also delete all chapters and activities within it.")) {
+      dispatch({ type: "DELETE_PAPER", payload: { subjectId, paperId } });
+    }
   };
 
   const handleAddChapterClick = (paperId: string) => {
