@@ -5,7 +5,7 @@ import { Paper } from "@/lib/types";
 import { AppDataContext } from "@/context/AppDataContext";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Pen, Trash2, ChevronDown } from "lucide-react";
+import { MoreHorizontal, Pen, Trash2, ChevronDown, PlusCircle } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,6 +15,7 @@ import {
 import { PaperDialog } from "./PaperDialog";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { ChapterList } from "../chapter/ChapterList";
+import { ChapterDialog } from "../chapter/ChapterDialog";
 
 interface PaperListProps {
   papers: Paper[];
@@ -24,12 +25,27 @@ interface PaperListProps {
 export function PaperList({ papers, subjectId }: PaperListProps) {
   const { dispatch } = useContext(AppDataContext);
   const [editingPaper, setEditingPaper] = useState<Paper | null>(null);
+  const [isChapterDialogOpen, setIsChapterDialogOpen] = useState(false);
+  const [activePaperId, setActivePaperId] = useState<string | null>(null);
+
 
   const handleDelete = (paperId: string) => {
     if (confirm("Are you sure you want to delete this paper and all its chapters?")) {
       dispatch({ type: "DELETE_PAPER", payload: { subjectId, paperId } });
     }
   };
+
+  const handleAddChapterClick = (paperId: string) => {
+    setActivePaperId(paperId);
+    setIsChapterDialogOpen(true);
+  };
+
+  const onChapterDialogChange = (open: boolean) => {
+    if (!open) {
+      setActivePaperId(null);
+    }
+    setIsChapterDialogOpen(open);
+  }
 
   if (papers.length === 0) {
     return (
@@ -72,8 +88,12 @@ export function PaperList({ papers, subjectId }: PaperListProps) {
                 </div>
               </div>
               <AccordionContent className="px-4 pb-4 pt-0">
-                 <div className="border-t pt-4">
+                 <div className="border-t pt-4 space-y-4">
                     <ChapterList subjectId={subjectId} paperId={paper.id} chapters={paper.chapters} />
+                     <Button variant="outline" size="sm" className="w-full" onClick={() => handleAddChapterClick(paper.id)}>
+                        <PlusCircle className="mr-2 h-4 w-4" />
+                        Add Chapter
+                    </Button>
                  </div>
               </AccordionContent>
             </Card>
@@ -86,6 +106,14 @@ export function PaperList({ papers, subjectId }: PaperListProps) {
           onOpenChange={() => setEditingPaper(null)}
           subjectId={subjectId}
           paper={editingPaper}
+        />
+      )}
+       {activePaperId && (
+        <ChapterDialog
+            open={isChapterDialogOpen}
+            onOpenChange={onChapterDialogChange}
+            subjectId={subjectId}
+            paperId={activePaperId}
         />
       )}
     </>
