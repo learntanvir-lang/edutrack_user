@@ -87,7 +87,7 @@ export function ExamItem({ exam }: ExamItemProps) {
               ))}
             </div>
             <p className="flex items-center gap-2 pt-2">
-              <Calendar className="h-4 w-4" /> {format(new Date(exam.date), "d MMMM, yyyy")}
+              <Calendar className="h-4 w-4" /> {format(new Date(exam.date), "d MMMM, yyyy, p")}
             </p>
           </div>
           <Countdown targetDate={exam.date} isPastOrCompleted={isPast || exam.isCompleted} />

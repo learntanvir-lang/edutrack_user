@@ -1,3 +1,4 @@
+
 import { Subject, Exam } from './types';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -6,6 +7,20 @@ const physicsChapter2Id = uuidv4();
 const chemChapter1Id = uuidv4();
 const subjectPhysicsId = uuidv4();
 const subjectChemistryId = uuidv4();
+
+const getFutureDate = (days: number, hours: number, minutes: number) => {
+    const date = new Date();
+    date.setDate(date.getDate() + days);
+    date.setHours(hours, minutes, 0, 0);
+    return date.toISOString();
+}
+
+const getPastDate = (days: number, hours: number, minutes: number) => {
+    const date = new Date();
+    date.setDate(date.getDate() - days);
+    date.setHours(hours, minutes, 0, 0);
+    return date.toISOString();
+}
 
 export const initialData: { subjects: Subject[], exams: Exam[] } = {
   subjects: [
@@ -77,7 +92,7 @@ export const initialData: { subjects: Subject[], exams: Exam[] } = {
       name: "Daily Exam-03",
       subjectIds: [subjectPhysicsId],
       chapterIds: [physicsChapter1Id],
-      date: new Date(new Date().setDate(new Date().getDate() + 7)).toISOString(), // 7 days from now
+      date: getFutureDate(7, 10, 30), // 7 days from now at 10:30 AM
       isCompleted: false
     },
     {
@@ -85,7 +100,7 @@ export const initialData: { subjects: Subject[], exams: Exam[] } = {
         name: "Mid-term Exam",
         subjectIds: [subjectPhysicsId, subjectChemistryId],
         chapterIds: [physicsChapter2Id, chemChapter1Id],
-        date: new Date(new Date().setDate(new Date().getDate() + 30)).toISOString(), // 30 days from now
+        date: getFutureDate(30, 14, 0), // 30 days from now at 2:00 PM
         isCompleted: false
       },
     {
@@ -93,7 +108,7 @@ export const initialData: { subjects: Subject[], exams: Exam[] } = {
         name: "Final Chemistry",
         subjectIds: [subjectChemistryId],
         chapterIds: [chemChapter1Id],
-        date: new Date(new Date().setDate(new Date().getDate() - 14)).toISOString(), // 14 days ago
+        date: getPastDate(14, 9, 0), // 14 days ago at 9:00 AM
         isCompleted: true
       }
   ]

@@ -53,7 +53,7 @@ export default function NextExamCard({ exam }: NextExamCardProps) {
                     {exam.name}
                   </CardTitle>
                   <CardDescription className="flex items-center gap-2 mt-2 text-primary-foreground/90">
-                      <Calendar className="h-4 w-4" /> {format(new Date(exam.date), "EEEE, MMMM dd, yyyy")}
+                      <Calendar className="h-4 w-4" /> {format(new Date(exam.date), "PPPPp")}
                   </CardDescription>
               </div>
               <Button variant="secondary" size="sm" onClick={() => setIsEditDialogOpen(true)}>

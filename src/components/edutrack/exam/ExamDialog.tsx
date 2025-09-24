@@ -1,3 +1,4 @@
+
 "use client";
 
 import { z } from "zod";
@@ -38,6 +39,7 @@ const examSchema = z.object({
   subjectIds: z.array(z.string()).min(1, "At least one subject is required"),
   chapterIds: z.array(z.string()).min(1, "At least one chapter is required"),
   date: z.date({ required_error: "Exam date is required" }),
+  time: z.string().optional(),
 });
 
 type ExamFormValues = z.infer<typeof examSchema>;
@@ -61,16 +63,19 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
       subjectIds: [],
       chapterIds: [],
       date: undefined,
+      time: '09:00',
     },
   });
 
   useEffect(() => {
     if (isEditing && exam) {
+        const examDate = new Date(exam.date);
       form.reset({
         name: exam.name,
         subjectIds: exam.subjectIds,
         chapterIds: exam.chapterIds,
-        date: new Date(exam.date),
+        date: examDate,
+        time: format(examDate, "HH:mm"),
       })
     } else {
       form.reset({
@@ -78,6 +83,7 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
         subjectIds: [],
         chapterIds: [],
         date: undefined,
+        time: '09:00',
       })
     }
   }, [exam, isEditing, form, open]);
@@ -100,6 +106,10 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
 
 
   const onSubmit = (values: ExamFormValues) => {
+    const [hours, minutes] = (values.time || "00:00").split(':').map(Number);
+    const combinedDate = new Date(values.date);
+    combinedDate.setHours(hours, minutes);
+
     if (isEditing && exam) {
       dispatch({
         type: "UPDATE_EXAM",
@@ -108,7 +118,7 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
           name: values.name,
           subjectIds: values.subjectIds,
           chapterIds: values.chapterIds,
-          date: values.date.toISOString(),
+          date: combinedDate.toISOString(),
         },
       });
     } else {
@@ -119,7 +129,7 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
           name: values.name,
           subjectIds: values.subjectIds,
           chapterIds: values.chapterIds,
-          date: values.date.toISOString(),
+          date: combinedDate.toISOString(),
           isCompleted: false,
         },
       });
@@ -302,44 +312,59 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
                 </FormItem>
                 )}
             />
-            <FormField
-              control={form.control}
-              name="date"
-              render={({ field }) => (
-                <FormItem className="flex flex-col">
-                  <FormLabel>Exam Date</FormLabel>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          variant={"outline"}
-                          className={cn(
-                            "w-full pl-3 text-left font-normal",
-                            !field.value && "text-muted-foreground"
-                          )}
-                        >
-                          {field.value ? (
-                            format(field.value, "PPP")
-                          ) : (
-                            <span>Pick a date</span>
-                          )}
-                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={field.value}
-                        onSelect={field.onChange}
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="date"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <FormLabel>Exam Date</FormLabel>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant={"outline"}
+                            className={cn(
+                              "w-full pl-3 text-left font-normal",
+                              !field.value && "text-muted-foreground"
+                            )}
+                          >
+                            {field.value ? (
+                              format(field.value, "PPP")
+                            ) : (
+                              <span>Pick a date</span>
+                            )}
+                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={field.value}
+                          onSelect={field.onChange}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="time"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Exam Time</FormLabel>
+                    <FormControl>
+                      <Input type="time" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
             <DialogFooter>
               <Button type="submit">{isEditing ? "Save Changes" : "Add Exam"}</Button>
             </DialogFooter>
