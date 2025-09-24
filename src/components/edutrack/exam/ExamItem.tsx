@@ -41,10 +41,13 @@ export function ExamItem({ exam, subjectName, chapterName }: ExamItemProps) {
 
   return (
     <>
-      <Card className="shadow-sm hover:shadow-md transition-shadow bg-red-50/20 border-red-200 rounded-2xl">
+      <Card className={cn(
+          "shadow-sm hover:shadow-md transition-shadow",
+          exam.isCompleted ? "bg-green-50 border-green-200" : "bg-red-50 border-red-200"
+      )}>
         <CardHeader className="pb-4">
           <div className="flex justify-between items-start">
-            <CardTitle className="font-bold text-2xl">
+            <CardTitle className="font-bold text-xl">
               {exam.name}
             </CardTitle>
             <div className="flex gap-1">
@@ -66,27 +69,29 @@ export function ExamItem({ exam, subjectName, chapterName }: ExamItemProps) {
               <Calendar className="h-4 w-4" /> {format(new Date(exam.date), "P")}
             </p>
           </div>
-          {!isPast && <Countdown targetDate={exam.date} />}
+          {!isPast && !exam.isCompleted && <Countdown targetDate={exam.date} />}
         </CardContent>
         <CardFooter className="flex justify-between gap-2">
-          <Button
-            onClick={() => handleStatusChange(false)}
-            variant={!exam.isCompleted ? "destructive" : "outline"}
-            size="sm"
-            className={cn("w-full", !exam.isCompleted ? "bg-red-500 text-white" : "")}
-          >
-            <X className="mr-2 h-4 w-4"/>
-            Not Completed
-          </Button>
-          <Button
-            onClick={() => handleStatusChange(true)}
-            variant={exam.isCompleted ? "default" : "outline"}
-            size="sm"
-            className={cn("w-full", exam.isCompleted ? "bg-green-600 hover:bg-green-700 text-white" : "")}
-          >
-            <Check className="mr-2 h-4 w-4" />
-            Completed
-          </Button>
+           <div className="flex w-full items-center space-x-2">
+                <Button
+                    onClick={() => handleStatusChange(false)}
+                    variant={!exam.isCompleted ? "destructive" : "outline"}
+                    size="sm"
+                    className="w-full"
+                >
+                    <X className="mr-2 h-4 w-4" />
+                    Not Completed
+                </Button>
+                <Button
+                    onClick={() => handleStatusChange(true)}
+                    variant={exam.isCompleted ? "default" : "outline"}
+                    size="sm"
+                    className={cn("w-full", exam.isCompleted && "bg-green-600 hover:bg-green-700")}
+                >
+                    <Check className="mr-2 h-4 w-4" />
+                    Completed
+                </Button>
+            </div>
         </CardFooter>
       </Card>
       <ExamDialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen} exam={exam} />
