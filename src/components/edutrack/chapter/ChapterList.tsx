@@ -8,7 +8,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Pen, PlusCircle, Trash2 } from "lucide-react";
+import { MoreHorizontal, Pen, PlusCircle, Trash2, ChevronDown } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -53,15 +53,18 @@ export function ChapterList({ chapters, subjectId, paperId }: ChapterListProps) 
 
   return (
     <>
-      <Accordion type="multiple" className="w-full space-y-4">
+      <Accordion type="multiple" className="w-full space-y-2">
         {chapters.map((chapter) => (
           <AccordionItem key={chapter.id} value={chapter.id} className="border-none">
              <div className="bg-card rounded-lg shadow-sm">
-              <div className="flex items-center justify-between w-full p-4">
-                <AccordionTrigger className="p-0 hover:no-underline flex-1">
-                  <span className="font-medium text-lg">{chapter.name}</span>
+              <div className="flex items-center justify-between w-full p-3">
+                <AccordionTrigger className="p-0 hover:no-underline flex-1 group">
+                  <div className="flex items-center gap-3">
+                    <span className="font-medium text-base">{chapter.name}</span>
+                    <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                  </div>
                 </AccordionTrigger>
-                <div className="flex items-center gap-2 ml-4">
+                <div className="flex items-center gap-1 ml-4">
                   <SummaryGenerator chapter={chapter} />
                   <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -80,8 +83,8 @@ export function ChapterList({ chapters, subjectId, paperId }: ChapterListProps) 
                   </DropdownMenu>
                  </div>
               </div>
-              <AccordionContent className="p-4 pt-0">
-                <div className="border-t pt-4">
+              <AccordionContent className="px-3 pb-3 pt-0">
+                <div className="border-t pt-3">
                   <ActivityList
                     activities={chapter.activities}
                     subjectId={subjectId}
