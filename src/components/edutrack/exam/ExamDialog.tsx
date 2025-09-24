@@ -27,7 +27,7 @@ import { cn } from "@/lib/utils";
 import { CalendarIcon, Check, ChevronsUpDown } from "lucide-react";
 import { format } from "date-fns";
 import { Exam } from "@/lib/types";
-import { useContext, useMemo, useState } from "react";
+import { useContext, useMemo, useState, useEffect } from "react";
 import { AppDataContext } from "@/context/AppDataContext";
 import { v4 as uuidv4 } from 'uuid';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
@@ -56,18 +56,31 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
 
   const form = useForm<ExamFormValues>({
     resolver: zodResolver(examSchema),
-    defaultValues: isEditing && exam ? {
-      name: exam.name,
-      subjectIds: [exam.subjectId],
-      chapterIds: [exam.chapterId],
-      date: new Date(exam.date),
-    } : {
+    defaultValues: {
       name: "",
       subjectIds: [],
       chapterIds: [],
       date: undefined,
     },
   });
+
+  useEffect(() => {
+    if (isEditing && exam) {
+      form.reset({
+        name: exam.name,
+        subjectIds: [exam.subjectId],
+        chapterIds: [exam.chapterId],
+        date: new Date(exam.date),
+      })
+    } else {
+      form.reset({
+        name: "",
+        subjectIds: [],
+        chapterIds: [],
+        date: undefined,
+      })
+    }
+  }, [exam, isEditing, form, open]);
 
   const selectedSubjectIds = form.watch("subjectIds") || [];
   const selectedChapterIds = form.watch("chapterIds") || [];
@@ -122,8 +135,15 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
     form.reset();
   };
   
+  const handleDialogChange = (isOpen: boolean) => {
+    if (!isOpen) {
+        form.reset();
+    }
+    onOpenChange(isOpen);
+  };
+  
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleDialogChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{isEditing ? "Edit Exam" : "Add Exam"}</DialogTitle>
@@ -185,6 +205,7 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
                                         value={subject.name}
                                         key={subject.id}
                                         onSelect={() => {
+                                            if (isEditing) return;
                                             const currentIds = field.value || [];
                                             const newIds = currentIds.includes(subject.id)
                                                 ? currentIds.filter((id) => id !== subject.id)
@@ -248,9 +269,10 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
                                   <CommandGroup key={subject.subjectId} heading={subject.subjectName}>
                                     {subject.chapters.map((chapter) => (
                                     <CommandItem
-                                        value={chapter.name}
+                                        value={`${subject.subjectName}-${chapter.name}`}
                                         key={chapter.id}
                                         onSelect={() => {
+                                            if (isEditing) return;
                                             const currentIds = field.value || [];
                                             const newIds = currentIds.includes(chapter.id)
                                                 ? currentIds.filter((id) => id !== chapter.id)

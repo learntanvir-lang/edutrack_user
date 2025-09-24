@@ -7,23 +7,20 @@ import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
 import { ExamDialog } from "./ExamDialog";
 import { Separator } from "@/components/ui/separator";
+import { Subject } from "@/lib/types";
 
 export function ExamList() {
   const { exams, subjects } = useContext(AppDataContext);
   const [isExamDialogOpen, setIsExamDialogOpen] = useState(false);
 
-  const getSubjectName = (subjectId: string) => {
-    return subjects.find(s => s.id === subjectId)?.name || 'N/A';
-  };
-
-  const getChapterName = (subjectId: string, chapterId: string) => {
-    const subject = subjects.find(s => s.id === subjectId);
-    if (!subject) return 'N/A';
+  const findChapterDetails = (subjectId: string, chapterId: string) => {
+    const subject = subjects.find(s => s.id === subjectId) as Subject | undefined;
+    if (!subject) return { subjectName: 'N/A', chapterName: 'N/A' };
     for (const paper of subject.papers) {
       const chapter = paper.chapters.find(c => c.id === chapterId);
-      if (chapter) return chapter.name;
+      if (chapter) return { subjectName: subject.name, chapterName: chapter.name };
     }
-    return 'N/A';
+    return { subjectName: subject.name, chapterName: 'N/A' };
   };
 
   const { upcomingExams, pastExams } = useMemo(() => {
@@ -57,14 +54,17 @@ export function ExamList() {
             <div>
               <h2 className="text-2xl font-semibold mb-4">Upcoming</h2>
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {upcomingExams.map(exam => (
-                  <ExamItem 
-                    key={exam.id} 
-                    exam={exam} 
-                    subjectName={getSubjectName(exam.subjectId)}
-                    chapterName={getChapterName(exam.subjectId, exam.chapterId)}
-                  />
-                ))}
+                {upcomingExams.map(exam => {
+                  const { subjectName, chapterName } = findChapterDetails(exam.subjectId, exam.chapterId);
+                  return (
+                    <ExamItem 
+                      key={exam.id} 
+                      exam={exam} 
+                      subjectName={subjectName}
+                      chapterName={chapterName}
+                    />
+                  )
+                })}
               </div>
             </div>
           )}
@@ -74,14 +74,17 @@ export function ExamList() {
               {upcomingExams.length > 0 && <Separator className="my-8" />}
               <h2 className="text-2xl font-semibold mb-4">Past</h2>
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {pastExams.map(exam => (
-                  <ExamItem 
-                    key={exam.id} 
-                    exam={exam} 
-                    subjectName={getSubjectName(exam.subjectId)}
-                    chapterName={getChapterName(exam.subjectId, exam.chapterId)}
-                  />
-                ))}
+                {pastExams.map(exam => {
+                    const { subjectName, chapterName } = findChapterDetails(exam.subjectId, exam.chapterId);
+                    return (
+                      <ExamItem 
+                        key={exam.id} 
+                        exam={exam} 
+                        subjectName={subjectName}
+                        chapterName={chapterName}
+                      />
+                    )
+                })}
               </div>
             </div>
           )}

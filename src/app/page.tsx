@@ -10,6 +10,7 @@ import { PlusCircle, BookOpen, Target } from 'lucide-react';
 import { SubjectDialog } from '@/components/edutrack/subject/SubjectDialog';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
+import { Paper, Subject } from '@/lib/types';
 
 type View = 'subjects' | 'exams' | null;
 
@@ -25,19 +26,24 @@ export default function Home() {
     return upcoming[0];
   }, [exams]);
 
-  const getSubjectName = (subjectId: string) => {
-    return subjects.find(s => s.id === subjectId)?.name || 'N/A';
-  };
-
-  const getChapterName = (subjectId: string, chapterId: string) => {
-    const subject = subjects.find(s => s.id === subjectId);
-    if (!subject) return 'N/A';
+  const findChapter = (subjectId: string, chapterId: string) => {
+    const subject = subjects.find(s => s.id === subjectId) as Subject | undefined;
+    if (!subject) return null;
     for (const paper of subject.papers) {
-      const chapter = paper.chapters.find(c => c.id === chapterId);
-      if (chapter) return chapter.name;
+        const chapter = paper.chapters.find(c => c.id === chapterId);
+        if (chapter) return { chapter, paper, subject };
     }
-    return 'N/A';
-  };
+    return null;
+  }
+
+  const examDetails = useMemo(() => {
+    if (!nextExam) return { subjectName: 'N/A', chapterName: 'N/A' };
+    const details = findChapter(nextExam.subjectId, nextExam.chapterId);
+    return {
+      subjectName: details?.subject?.name || 'N/A',
+      chapterName: details?.chapter?.name || 'N/A'
+    };
+  }, [nextExam, subjects]);
 
   return (
     <div className="container mx-auto p-4 md:p-8">
@@ -48,8 +54,8 @@ export default function Home() {
         {nextExam ? (
           <NextExamCard
             exam={nextExam}
-            subjectName={getSubjectName(nextExam.subjectId)}
-            chapterName={getChapterName(nextExam.subjectId, nextExam.chapterId)}
+            subjectName={examDetails.subjectName}
+            chapterName={examDetails.chapterName}
           />
         ) : (
           <Card className="bg-primary text-primary-foreground border-0">
