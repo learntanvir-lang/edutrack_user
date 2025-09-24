@@ -1,11 +1,12 @@
 
+
 "use client";
 
 import { useState, useContext } from "react";
 import { Chapter } from "@/lib/types";
 import { AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Pen, Trash2, ChevronDown, Copy, GripVertical, CheckCircle, Target, Link as LinkIcon, Edit } from "lucide-react";
+import { MoreHorizontal, Pen, Trash2, ChevronDown, Copy, GripVertical, Link as LinkIcon, Edit } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import {
   DropdownMenu,
@@ -15,7 +16,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { AppDataContext } from "@/context/AppDataContext";
 import { ChapterDialog } from "./ChapterDialog";
-import { ChapterProgressDialog } from "./ChapterProgressDialog"; // New component
 
 interface ChapterAccordionItemProps {
     chapter: Chapter;
@@ -26,7 +26,6 @@ interface ChapterAccordionItemProps {
 export function ChapterAccordionItem({ chapter, subjectId, paperId }: ChapterAccordionItemProps) {
     const { dispatch } = useContext(AppDataContext);
     const [isEditingChapter, setIsEditingChapter] = useState(false);
-    const [isProgressDialogOpen, setIsProgressDialogOpen] = useState(false);
 
     const handleDelete = () => {
         if (window.confirm("Are you sure you want to delete this chapter?")) {
@@ -43,10 +42,7 @@ export function ChapterAccordionItem({ chapter, subjectId, paperId }: ChapterAcc
             payload: { subjectId, paperId, chapter },
         });
     };
-
-    const classProgress = chapter.classSessions.total > 0 ? (chapter.classSessions.attended / chapter.classSessions.total) * 100 : 0;
-    const practiceProgress = chapter.practiceProblems.total > 0 ? (chapter.practiceProblems.completed / chapter.practiceProblems.total) * 100 : 0;
-
+    
     return (
         <>
             <AccordionItem value={chapter.id} className="border-none">
@@ -71,10 +67,7 @@ export function ChapterAccordionItem({ chapter, subjectId, paperId }: ChapterAcc
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent>
                                     <DropdownMenuItem onClick={() => setIsEditingChapter(true)}>
-                                        <Pen className="mr-2 h-4 w-4" /> Edit Details
-                                    </DropdownMenuItem>
-                                     <DropdownMenuItem onClick={() => setIsProgressDialogOpen(true)}>
-                                        <Edit className="mr-2 h-4 w-4" /> Edit Progress
+                                        <Pen className="mr-2 h-4 w-4" /> Edit Chapter
                                     </DropdownMenuItem>
                                     <DropdownMenuItem onClick={handleDuplicate}>
                                         <Copy className="mr-2 h-4 w-4" /> Duplicate
@@ -88,30 +81,21 @@ export function ChapterAccordionItem({ chapter, subjectId, paperId }: ChapterAcc
                     </div>
                     <AccordionContent className="px-3 pb-3 pt-0">
                         <div className="border-t pt-4 space-y-4">
-                            <div className="space-y-3">
-                                <div>
-                                    <div className="flex justify-between items-center mb-1">
-                                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                            <CheckCircle className="w-4 h-4" />
-                                            <span>Class Completion</span>
+                            {chapter.progressItems.map(item => {
+                                const progress = item.total > 0 ? (item.completed / item.total) * 100 : 0;
+                                return (
+                                    <div key={item.id}>
+                                        <div className="flex justify-between items-center mb-1">
+                                            <span className="text-sm text-muted-foreground">{item.name}</span>
+                                            <span className="text-sm font-medium">{item.completed} / {item.total}</span>
                                         </div>
-                                        <span className="text-sm font-medium">{chapter.classSessions.attended} / {chapter.classSessions.total}</span>
+                                        <Progress value={progress} />
                                     </div>
-                                    <Progress value={classProgress} />
-                                </div>
-                                <div>
-                                    <div className="flex justify-between items-center mb-1">
-                                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                            <Target className="w-4 h-4" />
-                                            <span>Practice Problems</span>
-                                        </div>
-                                        <span className="text-sm font-medium">{chapter.practiceProblems.completed} / {chapter.practiceProblems.total}</span>
-                                    </div>
-                                    <Progress value={practiceProgress} />
-                                </div>
-                            </div>
+                                );
+                            })}
+                            
                             {chapter.resourceLinks && chapter.resourceLinks.length > 0 && (
-                                <div className="space-y-2">
+                                <div className="space-y-2 pt-4">
                                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                             <LinkIcon className="w-4 h-4" />
                                             <span>Resources</span>
@@ -125,26 +109,19 @@ export function ChapterAccordionItem({ chapter, subjectId, paperId }: ChapterAcc
                                     </div>
                                 </div>
                             )}
-                             <Button variant="outline" size="sm" className="w-full mt-4" onClick={() => setIsProgressDialogOpen(true)}>
+                             <Button variant="outline" size="sm" className="w-full mt-4" onClick={() => setIsEditingChapter(true)}>
                                 <Edit className="mr-2 h-4 w-4" />
-                                Edit Progress
+                                Edit Chapter
                             </Button>
                         </div>
                     </AccordionContent>
                 </div>
             </AccordionItem>
 
+            {/* This dialog now handles everything */}
             <ChapterDialog
                 open={isEditingChapter}
                 onOpenChange={setIsEditingChapter}
-                subjectId={subjectId}
-                paperId={paperId}
-                chapter={chapter}
-            />
-
-            <ChapterProgressDialog
-                open={isProgressDialogOpen}
-                onOpenChange={setIsProgressDialogOpen}
                 subjectId={subjectId}
                 paperId={paperId}
                 chapter={chapter}

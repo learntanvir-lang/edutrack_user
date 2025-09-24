@@ -1,8 +1,16 @@
 
+
 export interface ResourceLink {
   id: string;
   url: string;
   description: string;
+}
+
+export interface ProgressItem {
+  id: string;
+  name: string;
+  completed: number;
+  total: number;
 }
 
 export interface Chapter {
@@ -10,8 +18,7 @@ export interface Chapter {
   number?: string;
   name: string;
   isCompleted: boolean;
-  classSessions: { total: number; attended: number };
-  practiceProblems: { total: number; completed: number };
+  progressItems: ProgressItem[];
   resourceLinks: ResourceLink[];
 }
 

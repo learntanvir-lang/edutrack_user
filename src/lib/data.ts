@@ -23,8 +23,10 @@ export const initialData: { subjects: Subject[], exams: Exam[] } = {
               name: "Vector",
               number: "1",
               isCompleted: false,
-              classSessions: { total: 10, attended: 8 },
-              practiceProblems: { total: 50, completed: 25 },
+              progressItems: [
+                { id: uuidv4(), name: 'Class Sessions', completed: 8, total: 10 },
+                { id: uuidv4(), name: 'Practice Problems', completed: 25, total: 50 },
+              ],
               resourceLinks: [
                 { id: uuidv4(), url: 'https://www.youtube.com/watch?v=1G5E_C2e2fE', description: 'Vector Intro Video' }
               ]
@@ -34,8 +36,10 @@ export const initialData: { subjects: Subject[], exams: Exam[] } = {
               name: "Dynamics",
               number: "2",
               isCompleted: false,
-              classSessions: { total: 12, attended: 5 },
-              practiceProblems: { total: 60, completed: 10 },
+              progressItems: [
+                { id: uuidv4(), name: 'Class Sessions', completed: 5, total: 12 },
+                { id: uuidv4(), name: 'Practice Problems', completed: 10, total: 60 },
+              ],
               resourceLinks: []
             }
           ]
@@ -55,9 +59,11 @@ export const initialData: { subjects: Subject[], exams: Exam[] } = {
                         id: chemChapter1Id,
                         name: "Atomic Structure",
                         number: "1",
-                        isCompleted: false,
-                        classSessions: { total: 15, attended: 15 },
-                        practiceProblems: { total: 80, completed: 80 },
+                        isCompleted: true,
+                        progressItems: [
+                          { id: uuidv4(), name: 'Class Sessions', completed: 15, total: 15 },
+                          { id: uuidv4(), name: 'Practice Problems', completed: 80, total: 80 },
+                        ],
                         resourceLinks: []
                     }
                 ]
