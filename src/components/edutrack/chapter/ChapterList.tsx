@@ -15,8 +15,9 @@ import { ChapterDialog } from "./ChapterDialog";
 import { ActivityList } from "../activity/ActivityList";
 import { ActivityDialog } from "../activity/ActivityDialog";
 import { SummaryGenerator } from "../SummaryGenerator";
-import { DragDropContext, Droppable, Draggable, DropResult } from "react-beautiful-dnd";
+import { DragDropContext, Draggable, DropResult } from "react-beautiful-dnd";
 import { v4 as uuidv4 } from 'uuid';
+import { DroppableWrapper } from "../dnd/DroppableWrapper";
 
 interface ChapterListProps {
   chapters: Chapter[];
@@ -82,7 +83,7 @@ export function ChapterList({ chapters, subjectId, paperId }: ChapterListProps) 
   return (
     <>
       <DragDropContext onDragEnd={onDragEnd}>
-        <Droppable droppableId={`chapters-${paperId}`}>
+        <DroppableWrapper droppableId={`chapters-${paperId}`}>
           {(provided) => (
             <div {...provided.droppableProps} ref={provided.innerRef}>
               <Accordion type="multiple" className="w-full space-y-2">
@@ -145,7 +146,7 @@ export function ChapterList({ chapters, subjectId, paperId }: ChapterListProps) 
               </Accordion>
             </div>
           )}
-        </Droppable>
+        </DroppableWrapper>
       </DragDropContext>
       
       {editingChapter && (
