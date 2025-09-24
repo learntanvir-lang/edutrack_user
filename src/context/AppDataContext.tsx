@@ -97,85 +97,79 @@ const appReducer = (state: AppState, action: Action): AppState => {
         const { subjectId, paperId, chapterId, activity } = action.payload;
         return {
             ...state,
-            subjects: state.subjects.map(subject => 
-                subject.id === subjectId 
-                ? {
+            subjects: state.subjects.map(subject => {
+                if (subject.id !== subjectId) return subject;
+                return {
                     ...subject,
-                    papers: subject.papers.map(paper => 
-                        paper.id === paperId
-                        ? {
+                    papers: subject.papers.map(paper => {
+                        if (paper.id !== paperId) return paper;
+                        return {
                             ...paper,
-                            chapters: paper.chapters.map(chapter => 
-                                chapter.id === chapterId
-                                ? { ...chapter, activities: [...chapter.activities, activity] }
-                                : chapter
-                            )
-                          }
-                        : paper
-                    )
-                  }
-                : subject
-            ),
+                            chapters: paper.chapters.map(chapter => {
+                                if (chapter.id !== chapterId) return chapter;
+                                return {
+                                    ...chapter,
+                                    activities: [...chapter.activities, activity],
+                                };
+                            }),
+                        };
+                    }),
+                };
+            }),
         };
     }
     case "UPDATE_ACTIVITY": {
         const { subjectId, paperId, chapterId, activity } = action.payload;
         return {
             ...state,
-            subjects: state.subjects.map(subject =>
-                subject.id === subjectId
-                ? {
+            subjects: state.subjects.map(subject => {
+                if (subject.id !== subjectId) return subject;
+                return {
                     ...subject,
-                    papers: subject.papers.map(paper =>
-                        paper.id === paperId
-                        ? {
+                    papers: subject.papers.map(paper => {
+                        if (paper.id !== paperId) return paper;
+                        return {
                             ...paper,
-                            chapters: paper.chapters.map(chapter =>
-                                chapter.id === chapterId
-                                ? {
+                            chapters: paper.chapters.map(chapter => {
+                                if (chapter.id !== chapterId) return chapter;
+                                return {
                                     ...chapter,
                                     activities: chapter.activities.map(act =>
                                         act.id === activity.id ? activity : act
                                     ),
-                                  }
-                                : chapter
-                            ),
-                          }
-                        : paper
-                    ),
-                  }
-                : subject
-            ),
+                                };
+                            }),
+                        };
+                    }),
+                };
+            }),
         };
     }
     case "DELETE_ACTIVITY": {
         const { subjectId, paperId, chapterId, activityId } = action.payload;
         return {
             ...state,
-            subjects: state.subjects.map(subject =>
-                subject.id === subjectId
-                ? {
+            subjects: state.subjects.map(subject => {
+                if (subject.id !== subjectId) return subject;
+                return {
                     ...subject,
-                    papers: subject.papers.map(paper =>
-                        paper.id === paperId
-                        ? {
+                    papers: subject.papers.map(paper => {
+                        if (paper.id !== paperId) return paper;
+                        return {
                             ...paper,
-                            chapters: paper.chapters.map(chapter =>
-                                chapter.id === chapterId
-                                ? {
+                            chapters: paper.chapters.map(chapter => {
+                                if (chapter.id !== chapterId) return chapter;
+                                return {
                                     ...chapter,
                                     activities: chapter.activities.filter(
                                         act => act.id !== activityId
                                     ),
-                                  }
-                                : chapter
-                            ),
-                          }
-                        : paper
-                    ),
-                  }
-                : subject
-            ),
+                                };
+                            }),
+                        };
+                    }),
+                };
+            }),
         };
     }
     case "REORDER_ACTIVITIES": {
