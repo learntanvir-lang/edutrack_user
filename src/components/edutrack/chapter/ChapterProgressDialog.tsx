@@ -23,11 +23,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Chapter, ResourceLink } from "@/lib/types";
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState, DragEvent } from "react";
 import { AppDataContext } from "@/context/AppDataContext";
 import { v4 as uuidv4 } from 'uuid';
-import { PlusCircle, Trash2 } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
+import { PlusCircle, Trash2, GripVertical } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const progressSchema = z.object({
   classSessions: z.object({
@@ -69,10 +69,13 @@ export function ChapterProgressDialog({ open, onOpenChange, subjectId, paperId, 
     },
   });
   
-  const { fields, append, remove } = useFieldArray({
+  const { fields, append, remove, move } = useFieldArray({
     control: form.control,
     name: "resourceLinks"
   });
+
+  // Drag and drop state
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
 
   useEffect(() => {
     if (chapter && open) {
@@ -105,6 +108,18 @@ export function ChapterProgressDialog({ open, onOpenChange, subjectId, paperId, 
       },
     });
     onOpenChange(false);
+  };
+  
+  const handleDragStart = (index: number) => {
+    setDraggedIndex(index);
+  };
+
+  const handleDrop = (e: DragEvent<HTMLDivElement>, index: number) => {
+    e.preventDefault();
+    if (draggedIndex !== null && draggedIndex !== index) {
+      move(draggedIndex, index);
+    }
+    setDraggedIndex(null);
   };
 
   return (
@@ -184,9 +199,20 @@ export function ChapterProgressDialog({ open, onOpenChange, subjectId, paperId, 
 
             <div className="space-y-4 rounded-md border p-4">
                 <h3 className="text-lg font-medium">Resource Links</h3>
-                <div className="space-y-4">
+                <div className="space-y-2">
                 {fields.map((field, index) => (
-                    <div key={field.id} className="flex items-start gap-2">
+                    <div 
+                        key={field.id} 
+                        className={cn(
+                            "flex items-start gap-2 p-2 rounded-md border border-transparent",
+                            draggedIndex === index && "opacity-50 border-dashed border-primary"
+                        )}
+                        draggable
+                        onDragStart={() => handleDragStart(index)}
+                        onDragOver={(e) => e.preventDefault()}
+                        onDrop={(e) => handleDrop(e, index)}
+                    >
+                        <GripVertical className="h-5 w-5 text-muted-foreground cursor-grab mt-2" />
                         <div className="flex-grow space-y-2">
                             <FormField
                                 control={form.control}
