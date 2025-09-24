@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Chapter } from "@/lib/types";
 import {
@@ -56,29 +57,29 @@ export function ChapterList({ chapters, subjectId, paperId }: ChapterListProps) 
         {chapters.map((chapter) => (
           <AccordionItem key={chapter.id} value={chapter.id} className="border-none">
              <div className="bg-card rounded-lg shadow-sm">
-              <AccordionTrigger className="p-4 hover:no-underline">
-                <div className="flex items-center justify-between w-full">
+              <div className="flex items-center justify-between w-full p-4">
+                <AccordionTrigger className="p-0 hover:no-underline flex-1">
                   <span className="font-medium text-lg">{chapter.name}</span>
-                  <div className="flex items-center gap-2">
-                    <SummaryGenerator chapter={chapter} />
-                    <DropdownMenu onOpenChange={(open) => open && event?.stopPropagation()}>
-                        <DropdownMenuTrigger asChild>
-                             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => e.stopPropagation()}>
-                                <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent onClick={(e) => e.stopPropagation()}>
-                            <DropdownMenuItem onClick={() => setEditingChapter(chapter)}>
-                                <Pen className="mr-2 h-4 w-4" /> Edit
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleDelete(chapter.id)} className="text-destructive">
-                                <Trash2 className="mr-2 h-4 w-4" /> Delete
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                   </div>
-                </div>
-              </AccordionTrigger>
+                </AccordionTrigger>
+                <div className="flex items-center gap-2 ml-4">
+                  <SummaryGenerator chapter={chapter} />
+                  <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                           <Button variant="ghost" size="icon" className="h-8 w-8">
+                              <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent>
+                          <DropdownMenuItem onClick={() => setEditingChapter(chapter)}>
+                              <Pen className="mr-2 h-4 w-4" /> Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleDelete(chapter.id)} className="text-destructive">
+                              <Trash2 className="mr-2 h-4 w-4" /> Delete
+                          </DropdownMenuItem>
+                      </DropdownMenuContent>
+                  </DropdownMenu>
+                 </div>
+              </div>
               <AccordionContent className="p-4 pt-0">
                 <div className="border-t pt-4">
                   <ActivityList
