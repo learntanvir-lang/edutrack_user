@@ -25,17 +25,19 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Check, ChevronsUpDown } from "lucide-react";
 import { format } from "date-fns";
 import { Exam, Subject } from "@/lib/types";
-import { useContext, useMemo } from "react";
+import { useContext, useMemo, useState } from "react";
 import { AppDataContext } from "@/context/AppDataContext";
 import { v4 as uuidv4 } from 'uuid';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
+import { Badge } from "@/components/ui/badge";
 
 const examSchema = z.object({
   name: z.string().min(1, "Exam name is required"),
   subjectId: z.string().min(1, "Subject is required"),
-  chapterId: z.string().min(1, "Chapter is required"),
+  chapterIds: z.array(z.string()).min(1, "At least one chapter is required"),
   date: z.date({ required_error: "Exam date is required" }),
 });
 
@@ -50,37 +52,59 @@ interface ExamDialogProps {
 export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
   const { subjects, dispatch } = useContext(AppDataContext);
   const isEditing = !!exam;
+  const [isChapterSelectOpen, setChapterSelectOpen] = useState(false);
 
   const form = useForm<ExamFormValues>({
     resolver: zodResolver(examSchema),
     defaultValues: {
       name: exam?.name || "",
       subjectId: exam?.subjectId || "",
-      chapterId: exam?.chapterId || "",
+      chapterIds: exam ? [exam.chapterId] : [],
       date: exam ? new Date(exam.date) : undefined,
     },
   });
 
   const selectedSubjectId = form.watch("subjectId");
+  
   const chapters = useMemo(() => {
+    if (!selectedSubjectId) return [];
     const selectedSubject = subjects.find(s => s.id === selectedSubjectId);
     if (!selectedSubject) return [];
-    return selectedSubject.papers.flatMap(p => p.chapters);
+    return selectedSubject.papers.flatMap(p => p.chapters.map(c => ({...c, paperName: p.name})));
   }, [selectedSubjectId, subjects]);
+
+  const selectedChapterIds = form.watch("chapterIds") || [];
 
 
   const onSubmit = (values: ExamFormValues) => {
-    dispatch({
-      type: isEditing ? "UPDATE_EXAM" : "ADD_EXAM",
-      payload: {
-        id: exam?.id || uuidv4(),
-        name: values.name,
-        subjectId: values.subjectId,
-        chapterId: values.chapterId,
-        date: values.date.toISOString(),
-        isCompleted: exam?.isCompleted || false,
-      },
-    });
+    if (isEditing && exam) {
+      dispatch({
+        type: "UPDATE_EXAM",
+        payload: {
+          id: exam.id,
+          name: values.name,
+          subjectId: values.subjectId,
+          chapterId: values.chapterIds[0], // Can only edit one
+          date: values.date.toISOString(),
+          isCompleted: exam.isCompleted,
+        },
+      });
+    } else {
+      values.chapterIds.forEach((chapterId) => {
+        dispatch({
+          type: "ADD_EXAM",
+          payload: {
+            id: uuidv4(),
+            name: values.name,
+            subjectId: values.subjectId,
+            chapterId: chapterId,
+            date: values.date.toISOString(),
+            isCompleted: false,
+          },
+        });
+      });
+    }
+
     onOpenChange(false);
     form.reset();
   };
@@ -91,7 +115,7 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
         <DialogHeader>
           <DialogTitle>{isEditing ? "Edit Exam" : "Add Exam"}</DialogTitle>
           <DialogDescription>
-            {isEditing ? "Update the details of your exam." : "Add a new exam to your schedule."}
+            {isEditing ? "Update the details of your exam." : "Add a new exam to your schedule. You can select multiple chapters to create exams for each."}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -103,7 +127,7 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
                 <FormItem>
                   <FormLabel>Exam Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., Daily Exam-03" {...field} />
+                    <Input placeholder="e.g., Daily Exam" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -115,7 +139,14 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Subject</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select 
+                    onValueChange={(value) => {
+                        field.onChange(value);
+                        form.setValue('chapterIds', []);
+                    }} 
+                    defaultValue={field.value}
+                    disabled={isEditing}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select a subject" />
@@ -132,26 +163,69 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
               )}
             />
              <FormField
-              control={form.control}
-              name="chapterId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Chapter</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value} disabled={!selectedSubjectId}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a chapter" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {chapters.map((chapter) => (
-                        <SelectItem key={chapter.id} value={chapter.id}>{chapter.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
+                control={form.control}
+                name="chapterIds"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <FormLabel>Chapter(s)</FormLabel>
+                    <Popover open={isChapterSelectOpen} onOpenChange={setChapterSelectOpen}>
+                        <PopoverTrigger asChild>
+                            <FormControl>
+                                <Button
+                                variant="outline"
+                                role="combobox"
+                                className={cn(
+                                    "w-full justify-between h-auto min-h-10",
+                                    !field.value?.length && "text-muted-foreground"
+                                )}
+                                disabled={!selectedSubjectId || isEditing}
+                                >
+                                <div className="flex gap-1 flex-wrap">
+                                    {selectedChapterIds.length > 0 ? selectedChapterIds.map(chapterId => {
+                                        const chapter = chapters.find(c => c.id === chapterId);
+                                        return <Badge key={chapterId} variant="secondary">{chapter?.name}</Badge>
+                                    }) : "Select chapters..."}
+                                </div>
+                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                </Button>
+                            </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                            <Command>
+                                <CommandInput placeholder="Search chapters..." />
+                                <CommandEmpty>No chapters found.</CommandEmpty>
+                                <CommandGroup className="max-h-64 overflow-auto">
+                                    {chapters.map((chapter) => (
+                                    <CommandItem
+                                        value={chapter.name}
+                                        key={chapter.id}
+                                        onSelect={() => {
+                                            const currentIds = field.value || [];
+                                            const newIds = currentIds.includes(chapter.id)
+                                                ? currentIds.filter((id) => id !== chapter.id)
+                                                : [...currentIds, chapter.id];
+                                            form.setValue("chapterIds", newIds);
+                                        }}
+                                    >
+                                        <Check
+                                        className={cn(
+                                            "mr-2 h-4 w-4",
+                                            selectedChapterIds.includes(chapter.id) ? "opacity-100" : "opacity-0"
+                                        )}
+                                        />
+                                        <div>
+                                            <p>{chapter.name}</p>
+                                            <p className="text-xs text-muted-foreground">{chapter.paperName}</p>
+                                        </div>
+                                    </CommandItem>
+                                    ))}
+                                </CommandGroup>
+                            </Command>
+                        </PopoverContent>
+                    </Popover>
+                    <FormMessage />
                 </FormItem>
-              )}
+                )}
             />
             <FormField
               control={form.control}
@@ -192,7 +266,7 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
               )}
             />
             <DialogFooter>
-              <Button type="submit">{isEditing ? "Save Changes" : "Add Exam"}</Button>
+              <Button type="submit">{isEditing ? "Save Changes" : "Add Exam(s)"}</Button>
             </DialogFooter>
           </form>
         </Form>
