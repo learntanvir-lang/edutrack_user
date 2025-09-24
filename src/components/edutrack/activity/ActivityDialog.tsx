@@ -125,6 +125,7 @@ export function ActivityDialog({ open, onOpenChange, subjectId, paperId, chapter
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{isEditing ? "Edit Activity" : "Add Activity"}</DialogTitle>
+
           <DialogDescription>
             {isEditing ? "Update the details of your activity." : "Add a new activity to this chapter."}
           </DialogDescription>
