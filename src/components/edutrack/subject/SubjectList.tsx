@@ -1,10 +1,11 @@
+
 "use client";
 
 import { useState, useContext } from 'react';
 import { Subject } from '@/lib/types';
 import { AppDataContext } from '@/context/AppDataContext';
 import { Button } from '@/components/ui/button';
-import { MoreHorizontal, Pen, Trash2, ChevronDown } from 'lucide-react';
+import { MoreHorizontal, Pen, Trash2, ChevronDown, PlusCircle } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,16 +21,31 @@ import {
 } from '@/components/ui/accordion';
 import { PaperList } from '../paper/PaperList';
 import { Card, CardTitle } from '@/components/ui/card';
+import { PaperDialog } from '../paper/PaperDialog';
 
 export function SubjectList() {
   const { subjects, dispatch } = useContext(AppDataContext);
   const [editingSubject, setEditingSubject] = useState<Subject | null>(null);
+  const [isPaperDialogOpen, setIsPaperDialogOpen] = useState(false);
+  const [activeSubjectId, setActiveSubjectId] = useState<string | null>(null);
 
   const handleDelete = (subjectId: string) => {
     if (confirm('Are you sure you want to delete this subject and all its content?')) {
       dispatch({ type: 'DELETE_SUBJECT', payload: subjectId });
     }
   };
+
+  const handleAddPaperClick = (subjectId: string) => {
+    setActiveSubjectId(subjectId);
+    setIsPaperDialogOpen(true);
+  };
+
+  const onPaperDialogChange = (open: boolean) => {
+    if (!open) {
+      setActiveSubjectId(null);
+    }
+    setIsPaperDialogOpen(open);
+  }
 
   if (subjects.length === 0) {
     return (
@@ -75,8 +91,12 @@ export function SubjectList() {
                 </div>
               </div>
               <AccordionContent className="p-6 pt-0">
-                 <div className="border-t pt-4">
+                 <div className="border-t pt-4 space-y-4">
                     <PaperList subjectId={subject.id} papers={subject.papers} />
+                    <Button variant="outline" size="sm" className="w-full" onClick={() => handleAddPaperClick(subject.id)}>
+                        <PlusCircle className="mr-2 h-4 w-4" />
+                        Add Paper
+                    </Button>
                  </div>
               </AccordionContent>
             </Card>
@@ -89,6 +109,13 @@ export function SubjectList() {
           open={!!editingSubject}
           onOpenChange={() => setEditingSubject(null)}
           subject={editingSubject}
+        />
+      )}
+      {activeSubjectId && (
+        <PaperDialog
+            open={isPaperDialogOpen}
+            onOpenChange={onPaperDialogChange}
+            subjectId={activeSubjectId}
         />
       )}
     </>
