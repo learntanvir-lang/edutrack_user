@@ -21,7 +21,7 @@ export default function NextExamCard({ exam, subjectName, chapterName }: NextExa
     const isPast = new Date(exam.date) < new Date();
   return (
     <>
-      <Card className="bg-primary text-primary-foreground border-0 shadow-xl rounded-2xl">
+      <Card className="bg-primary text-primary-foreground border-0 shadow-xl rounded-2xl [--card-foreground:theme(colors.primary.foreground)] [--muted-foreground:theme(colors.primary.foreground/0.8)]">
         <CardHeader>
             <div className="flex justify-between items-start">
               <div>
