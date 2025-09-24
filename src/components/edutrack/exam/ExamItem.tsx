@@ -61,7 +61,7 @@ export function ExamItem({ exam, subjectName, chapterName }: ExamItemProps) {
             </div>
           </div>
         </CardHeader>
-        <CardContent className="space-y-4 p-6">
+        <CardContent className="space-y-4 px-6 pb-4">
           <div className="space-y-2 text-sm text-muted-foreground">
             <p className="flex items-center gap-2">
               <BookOpen className="h-4 w-4" /> {subjectName} - {chapterName}
