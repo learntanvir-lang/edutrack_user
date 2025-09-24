@@ -27,9 +27,9 @@ const calculateTimeLeft = (targetDate: string): TimeLeft | null => {
 };
 
 const CountdownBox = ({ value, label }: { value: string; label: string }) => (
-    <div className="bg-primary-foreground/10 rounded-lg p-3 text-center w-full">
-        <div className="text-4xl font-bold text-primary-foreground">{value}</div>
-        <div className="text-xs text-primary-foreground/70 uppercase tracking-widest">{label}</div>
+    <div className="bg-background/50 rounded-lg p-3 text-center w-full">
+        <div className="text-2xl font-bold text-foreground">{value}</div>
+        <div className="text-xs text-muted-foreground uppercase tracking-widest">{label}</div>
     </div>
 );
 
@@ -61,11 +61,11 @@ export function Countdown({ targetDate }: CountdownProps) {
   }
 
   return (
-    <div className="grid grid-cols-4 gap-4" aria-label="Countdown timer">
-        <CountdownBox value={format(timeLeft.days)} label="Days" />
-        <CountdownBox value={format(timeLeft.hours)} label="Hours" />
-        <CountdownBox value={format(timeLeft.minutes)} label="Minutes" />
-        <CountdownBox value={format(timeLeft.seconds)} label="Seconds" />
+    <div className="grid grid-cols-4 gap-2 md:gap-4" aria-label="Countdown timer">
+        <CountdownBox value={format(timeLeft.days)} label="D" />
+        <CountdownBox value={format(timeLeft.hours)} label="H" />
+        <CountdownBox value={format(timeLeft.minutes)} label="M" />
+        <CountdownBox value={format(timeLeft.seconds)} label="S" />
     </div>
   );
 }

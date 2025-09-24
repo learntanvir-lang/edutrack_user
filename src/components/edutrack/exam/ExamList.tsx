@@ -9,8 +9,22 @@ import { ExamDialog } from "./ExamDialog";
 import { Separator } from "@/components/ui/separator";
 
 export function ExamList() {
-  const { exams } = useContext(AppDataContext);
+  const { exams, subjects } = useContext(AppDataContext);
   const [isExamDialogOpen, setIsExamDialogOpen] = useState(false);
+
+  const getSubjectName = (subjectId: string) => {
+    return subjects.find(s => s.id === subjectId)?.name || 'N/A';
+  };
+
+  const getChapterName = (subjectId: string, chapterId: string) => {
+    const subject = subjects.find(s => s.id === subjectId);
+    if (!subject) return 'N/A';
+    for (const paper of subject.papers) {
+      const chapter = paper.chapters.find(c => c.id === chapterId);
+      if (chapter) return chapter.name;
+    }
+    return 'N/A';
+  };
 
   const { upcomingExams, pastExams } = useMemo(() => {
     const now = new Date();
@@ -43,7 +57,14 @@ export function ExamList() {
             <div>
               <h2 className="text-2xl font-semibold mb-4">Upcoming</h2>
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {upcomingExams.map(exam => <ExamItem key={exam.id} exam={exam} />)}
+                {upcomingExams.map(exam => (
+                  <ExamItem 
+                    key={exam.id} 
+                    exam={exam} 
+                    subjectName={getSubjectName(exam.subjectId)}
+                    chapterName={getChapterName(exam.subjectId, exam.chapterId)}
+                  />
+                ))}
               </div>
             </div>
           )}
@@ -53,7 +74,14 @@ export function ExamList() {
               {upcomingExams.length > 0 && <Separator className="my-8" />}
               <h2 className="text-2xl font-semibold mb-4">Past</h2>
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {pastExams.map(exam => <ExamItem key={exam.id} exam={exam} />)}
+                {pastExams.map(exam => (
+                  <ExamItem 
+                    key={exam.id} 
+                    exam={exam} 
+                    subjectName={getSubjectName(exam.subjectId)}
+                    chapterName={getChapterName(exam.subjectId, exam.chapterId)}
+                  />
+                ))}
               </div>
             </div>
           )}
