@@ -81,7 +81,7 @@ export function ExamItem({ exam }: ExamItemProps) {
           <div className="space-y-2 text-sm text-muted-foreground">
             <div className="flex flex-wrap gap-1">
               {examDetails.map((detail, index) => detail && (
-                <Badge key={index} variant={exam.isCompleted ? 'default' : 'destructive'} className={cn(exam.isCompleted ? 'bg-green-100 text-green-800 transition-all hover:bg-green-200 hover:scale-105' : 'bg-red-100 text-red-800 transition-all hover:bg-red-200 hover:scale-105')}>
+                <Badge key={index} variant={exam.isCompleted ? 'default' : 'destructive'} className={cn(exam.isCompleted ? 'bg-green-100 text-green-800 transition-all hover:bg-green-200 hover:scale-105' : 'bg-red-100 text-red-800 transition-all hover:bg-red-200 hover:scale-105', 'px-3 py-1')}>
                   {detail.subjectName} - {detail.chapterName}
                 </Badge>
               ))}
