@@ -26,6 +26,7 @@ type Action =
   | { type: "ADD_ACTIVITY"; payload: { subjectId: string; paperId: string; chapterId: string; activity: Activity } }
   | { type: "UPDATE_ACTIVITY"; payload: { subjectId: string; paperId: string; chapterId: string; activity: Activity } }
   | { type: "DELETE_ACTIVITY"; payload: { subjectId: string; paperId: string; chapterId: string; activityId: string } }
+  | { type: "REORDER_ACTIVITIES", payload: { subjectId: string; paperId: string; chapterId: string; startIndex: number; endIndex: number } }
   | { type: "ADD_EXAM"; payload: Exam }
   | { type: "UPDATE_EXAM"; payload: Exam }
   | { type: "DELETE_EXAM"; payload: string };
@@ -98,6 +99,37 @@ const appReducer = (state: AppState, action: Action): AppState => {
         return {...state, subjects: state.subjects.map(s => s.id === action.payload.subjectId ? {...s, papers: s.papers.map(p => p.id === action.payload.paperId ? {...p, chapters: p.chapters.map(c => c.id === action.payload.chapterId ? {...c, activities: c.activities.map(a => a.id === action.payload.activity.id ? action.payload.activity : a) } : c)} : p)} : s)};
     case "DELETE_ACTIVITY":
         return {...state, subjects: state.subjects.map(s => s.id === action.payload.subjectId ? {...s, papers: s.papers.map(p => p.id === action.payload.paperId ? {...p, chapters: p.chapters.map(c => c.id === action.payload.chapterId ? {...c, activities: c.activities.filter(a => a.id !== action.payload.activityId) } : c)} : p)} : s)};
+    case "REORDER_ACTIVITIES": {
+      const { subjectId, paperId, chapterId, startIndex, endIndex } = action.payload;
+      return {
+        ...state,
+        subjects: state.subjects.map(s => {
+          if (s.id === subjectId) {
+            return {
+              ...s,
+              papers: s.papers.map(p => {
+                if (p.id === paperId) {
+                  return {
+                    ...p,
+                    chapters: p.chapters.map(c => {
+                      if (c.id === chapterId) {
+                        const newActivities = Array.from(c.activities);
+                        const [removed] = newActivities.splice(startIndex, 1);
+                        newActivities.splice(endIndex, 0, removed);
+                        return { ...c, activities: newActivities };
+                      }
+                      return c;
+                    }),
+                  };
+                }
+                return p;
+              }),
+            };
+          }
+          return s;
+        }),
+      };
+    }
     // Exam actions
     case "ADD_EXAM":
       return { ...state, exams: [...state.exams, action.payload] };
