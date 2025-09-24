@@ -97,37 +97,87 @@ const appReducer = (state: AppState, action: Action): AppState => {
         const { subjectId, paperId, chapterId, activity } = action.payload;
         return {
             ...state,
-            subjects: state.subjects.map(s => {
-                if (s.id === subjectId) {
-                    return {
-                        ...s,
-                        papers: s.papers.map(p => {
-                            if (p.id === paperId) {
-                                return {
-                                    ...p,
-                                    chapters: p.chapters.map(c => {
-                                        if (c.id === chapterId) {
-                                            return {
-                                                ...c,
-                                                activities: [...c.activities, activity],
-                                            };
-                                        }
-                                        return c;
-                                    }),
-                                };
-                            }
-                            return p;
-                        }),
-                    };
-                }
-                return s;
-            }),
+            subjects: state.subjects.map(subject => 
+                subject.id === subjectId 
+                ? {
+                    ...subject,
+                    papers: subject.papers.map(paper => 
+                        paper.id === paperId
+                        ? {
+                            ...paper,
+                            chapters: paper.chapters.map(chapter => 
+                                chapter.id === chapterId
+                                ? { ...chapter, activities: [...chapter.activities, activity] }
+                                : chapter
+                            )
+                          }
+                        : paper
+                    )
+                  }
+                : subject
+            ),
         };
     }
-    case "UPDATE_ACTIVITY":
-        return {...state, subjects: state.subjects.map(s => s.id === action.payload.subjectId ? {...s, papers: s.papers.map(p => p.id === action.payload.paperId ? {...p, chapters: p.chapters.map(c => c.id === action.payload.chapterId ? {...c, activities: c.activities.map(a => a.id === action.payload.activity.id ? action.payload.activity : a) } : c)} : p)} : s)};
-    case "DELETE_ACTIVITY":
-        return {...state, subjects: state.subjects.map(s => s.id === action.payload.subjectId ? {...s, papers: s.papers.map(p => p.id === action.payload.paperId ? {...p, chapters: p.chapters.map(c => c.id === action.payload.chapterId ? {...c, activities: c.activities.filter(a => a.id !== action.payload.activityId) } : c)} : p)} : s)};
+    case "UPDATE_ACTIVITY": {
+        const { subjectId, paperId, chapterId, activity } = action.payload;
+        return {
+            ...state,
+            subjects: state.subjects.map(subject =>
+                subject.id === subjectId
+                ? {
+                    ...subject,
+                    papers: subject.papers.map(paper =>
+                        paper.id === paperId
+                        ? {
+                            ...paper,
+                            chapters: paper.chapters.map(chapter =>
+                                chapter.id === chapterId
+                                ? {
+                                    ...chapter,
+                                    activities: chapter.activities.map(act =>
+                                        act.id === activity.id ? activity : act
+                                    ),
+                                  }
+                                : chapter
+                            ),
+                          }
+                        : paper
+                    ),
+                  }
+                : subject
+            ),
+        };
+    }
+    case "DELETE_ACTIVITY": {
+        const { subjectId, paperId, chapterId, activityId } = action.payload;
+        return {
+            ...state,
+            subjects: state.subjects.map(subject =>
+                subject.id === subjectId
+                ? {
+                    ...subject,
+                    papers: subject.papers.map(paper =>
+                        paper.id === paperId
+                        ? {
+                            ...paper,
+                            chapters: paper.chapters.map(chapter =>
+                                chapter.id === chapterId
+                                ? {
+                                    ...chapter,
+                                    activities: chapter.activities.filter(
+                                        act => act.id !== activityId
+                                    ),
+                                  }
+                                : chapter
+                            ),
+                          }
+                        : paper
+                    ),
+                  }
+                : subject
+            ),
+        };
+    }
     case "REORDER_ACTIVITIES": {
       const { subjectId, paperId, chapterId, startIndex, endIndex } = action.payload;
       return {
