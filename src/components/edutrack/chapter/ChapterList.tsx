@@ -5,7 +5,6 @@ import { useState, useContext, DragEvent } from "react";
 import { Chapter } from "@/lib/types";
 import { Accordion } from "@/components/ui/accordion";
 import { AppDataContext } from "@/context/AppDataContext";
-import { v4 as uuidv4 } from 'uuid';
 import { cn } from "@/lib/utils";
 import { ChapterAccordionItem } from "./ChapterAccordionItem";
 
@@ -65,7 +64,6 @@ export function ChapterList({ chapters, subjectId, paperId }: ChapterListProps) 
   }
 
   return (
-    <>
       <div className="w-full">
         <Accordion type="multiple" className="w-full space-y-2">
           {chapters.map((chapter) => (
@@ -91,6 +89,5 @@ export function ChapterList({ chapters, subjectId, paperId }: ChapterListProps) 
           ))}
         </Accordion>
       </div>
-    </>
   );
 }

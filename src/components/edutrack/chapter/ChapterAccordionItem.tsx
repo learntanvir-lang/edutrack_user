@@ -26,19 +26,19 @@ interface ChapterAccordionItemProps {
 
 export function ChapterAccordionItem({ chapter, subjectId, paperId }: ChapterAccordionItemProps) {
     const { dispatch } = useContext(AppDataContext);
-    const [editingChapter, setEditingChapter] = useState<Chapter | null>(null);
-    const [addingActivityToChapter, setAddingActivityToChapter] = useState<string | null>(null);
+    const [isEditingChapter, setIsEditingChapter] = useState(false);
+    const [isAddingActivity, setIsAddingActivity] = useState(false);
 
-    const handleDelete = (chapterId: string) => {
+    const handleDelete = () => {
         if (window.confirm("Are you sure you want to delete this chapter?")) {
             dispatch({
                 type: "DELETE_CHAPTER",
-                payload: { subjectId, paperId, chapterId },
+                payload: { subjectId, paperId, chapterId: chapter.id },
             });
         }
     };
 
-    const handleDuplicate = (chapter: Chapter) => {
+    const handleDuplicate = () => {
         dispatch({
             type: "DUPLICATE_CHAPTER",
             payload: { subjectId, paperId, chapter },
@@ -69,13 +69,13 @@ export function ChapterAccordionItem({ chapter, subjectId, paperId }: ChapterAcc
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent>
-                                    <DropdownMenuItem onClick={() => setEditingChapter(chapter)}>
+                                    <DropdownMenuItem onClick={() => setIsEditingChapter(true)}>
                                         <Pen className="mr-2 h-4 w-4" /> Edit
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => handleDuplicate(chapter)}>
+                                    <DropdownMenuItem onClick={handleDuplicate}>
                                         <Copy className="mr-2 h-4 w-4" /> Duplicate
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => handleDelete(chapter.id)} className="text-destructive">
+                                    <DropdownMenuItem onClick={handleDelete} className="text-destructive">
                                         <Trash2 className="mr-2 h-4 w-4" /> Delete
                                     </DropdownMenuItem>
                                 </DropdownMenuContent>
@@ -90,7 +90,7 @@ export function ChapterAccordionItem({ chapter, subjectId, paperId }: ChapterAcc
                                 paperId={paperId}
                                 chapterId={chapter.id}
                             />
-                            <Button variant="outline" size="sm" className="mt-4 w-full" onClick={() => setAddingActivityToChapter(chapter.id)}>
+                            <Button variant="outline" size="sm" className="mt-4 w-full" onClick={() => setIsAddingActivity(true)}>
                                 <PlusCircle className="mr-2 h-4 w-4" /> Add Activity
                             </Button>
                         </div>
@@ -98,25 +98,21 @@ export function ChapterAccordionItem({ chapter, subjectId, paperId }: ChapterAcc
                 </div>
             </AccordionItem>
 
-            {editingChapter && (
-                <ChapterDialog
-                    open={!!editingChapter}
-                    onOpenChange={() => setEditingChapter(null)}
-                    subjectId={subjectId}
-                    paperId={paperId}
-                    chapter={editingChapter}
-                />
-            )}
+            <ChapterDialog
+                open={isEditingChapter}
+                onOpenChange={setIsEditingChapter}
+                subjectId={subjectId}
+                paperId={paperId}
+                chapter={chapter}
+            />
 
-            {addingActivityToChapter && (
-                <ActivityDialog
-                    open={!!addingActivityToChapter}
-                    onOpenChange={() => setAddingActivityToChapter(null)}
-                    subjectId={subjectId}
-                    paperId={paperId}
-                    chapterId={addingActivityToChapter}
-                />
-            )}
+            <ActivityDialog
+                open={isAddingActivity}
+                onOpenChange={setIsAddingActivity}
+                subjectId={subjectId}
+                paperId={paperId}
+                chapterId={chapter.id}
+            />
         </>
     );
 }
