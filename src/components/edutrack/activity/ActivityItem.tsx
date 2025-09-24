@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useContext } from "react";
@@ -5,7 +6,7 @@ import { Activity } from "@/lib/types";
 import { AppDataContext } from "@/context/AppDataContext";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { GripVertical, Link as LinkIcon, Minus, MoreHorizontal, Pen, Plus, Trash2 } from "lucide-react";
+import { GripVertical, ExternalLink, Minus, MoreHorizontal, Pen, Plus, Trash2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -87,9 +88,9 @@ export function ActivityItem({ activity, subjectId, paperId, chapterId }: Activi
         );
       case "link":
         return (
-            <a href={activity.url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between group">
-                <span className="text-sm font-medium group-hover:text-primary transition-colors">{activity.title}</span>
-                <LinkIcon className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+            <a href={activity.url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between group bg-primary/10 hover:bg-primary/20 p-3 rounded-lg transition-colors">
+                <span className="text-sm font-medium text-primary group-hover:text-primary/90">{activity.title}</span>
+                <ExternalLink className="h-4 w-4 text-primary group-hover:text-primary/90" />
             </a>
         );
       default:
