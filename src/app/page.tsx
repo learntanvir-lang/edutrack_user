@@ -65,19 +65,19 @@ export default function Home() {
       <section>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 border-b pb-4">
             <div className="flex gap-2">
-                 <Button
-                    variant={activeView === 'exams' ? 'default' : 'outline'}
-                    onClick={() => setActiveView(activeView === 'exams' ? null : 'exams')}
-                    className="transition-all"
-                >
-                    All Exams
-                </Button>
                 <Button
                     variant={activeView === 'subjects' ? 'default' : 'outline'}
                     onClick={() => setActiveView(activeView === 'subjects' ? null : 'subjects')}
                     className="transition-all"
                 >
                     Subjects
+                </Button>
+                <Button
+                    variant={activeView === 'exams' ? 'default' : 'outline'}
+                    onClick={() => setActiveView(activeView === 'exams' ? null : 'exams')}
+                    className="transition-all"
+                >
+                    All Exams
                 </Button>
             </div>
             {activeView === 'subjects' && (
