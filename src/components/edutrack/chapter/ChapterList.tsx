@@ -96,7 +96,7 @@ export function ChapterList({ chapters, subjectId, paperId }: ChapterListProps) 
     <>
       <div className="w-full">
         <Accordion type="multiple" className="w-full space-y-2">
-          {chapters.map((chapter, index) => (
+          {chapters.map((chapter) => (
             <div
               key={chapter.id}
               draggable
@@ -116,7 +116,10 @@ export function ChapterList({ chapters, subjectId, paperId }: ChapterListProps) 
                       <AccordionTrigger className="p-0 hover:no-underline flex-1 group">
                       <div className="flex items-center gap-2">
                           <GripVertical className="h-5 w-5 text-muted-foreground cursor-grab" />
-                          <span className="font-medium text-base">Chapter-{String(index + 1).padStart(2, '0')}: {chapter.name}</span>
+                          <span className="font-medium text-base">
+                            {chapter.number && `Chapter ${chapter.number}: `}
+                            {chapter.name}
+                          </span>
                           <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
                       </div>
                       </AccordionTrigger>

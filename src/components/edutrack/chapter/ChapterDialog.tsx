@@ -28,6 +28,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 const chapterSchema = z.object({
   name: z.string().min(1, "Chapter name is required"),
+  number: z.string().optional(),
 });
 
 type ChapterFormValues = z.infer<typeof chapterSchema>;
@@ -48,6 +49,7 @@ export function ChapterDialog({ open, onOpenChange, subjectId, paperId, chapter 
     resolver: zodResolver(chapterSchema),
     defaultValues: {
       name: chapter?.name || "",
+      number: chapter?.number || "",
     },
   });
 
@@ -60,6 +62,7 @@ export function ChapterDialog({ open, onOpenChange, subjectId, paperId, chapter 
         chapter: {
           id: chapter?.id || uuidv4(),
           name: values.name,
+          number: values.number,
           activities: chapter?.activities || [],
           isCompleted: chapter?.isCompleted || false,
         },
@@ -75,11 +78,24 @@ export function ChapterDialog({ open, onOpenChange, subjectId, paperId, chapter 
         <DialogHeader>
           <DialogTitle>{isEditing ? "Edit Chapter" : "Add Chapter"}</DialogTitle>
           <DialogDescription>
-            {isEditing ? "Update the name of this chapter." : "Add a new chapter to this paper."}
+            {isEditing ? "Update the details of this chapter." : "Add a new chapter to this paper."}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="number"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Chapter Number</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g., 1 or 5.2" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <FormField
               control={form.control}
               name="name"

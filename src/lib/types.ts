@@ -13,6 +13,7 @@ export interface Activity {
 
 export interface Chapter {
   id: string;
+  number?: string;
   name: string;
   activities: Activity[];
   isCompleted: boolean;
