@@ -160,172 +160,174 @@ export function ChapterDialog({ open, onOpenChange, subjectId, paperId, chapter 
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-h-[90vh] flex flex-col">
+      <DialogContent className="max-h-[90vh]">
         <DialogHeader>
           <DialogTitle>{isEditing ? "Edit Chapter" : "Add New Chapter"}</DialogTitle>
           <DialogDescription>
             {isEditing ? "Update details, progress, and resources for this chapter." : "Add a new chapter with custom progress trackers."}
           </DialogDescription>
         </DialogHeader>
-        <ScrollArea className="flex-grow pr-6">
-        <Form {...form}>
-          <form className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="number"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Chapter Number</FormLabel>
-                    <FormControl>
-                      <Input placeholder="e.g., 1 or 5.2" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Chapter Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="e.g., Vector" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            
-            {/* Progress Items */}
-            <div className="space-y-4 rounded-md border p-4">
-                <h3 className="text-lg font-medium">Progress Trackers</h3>
-                <div className="space-y-2">
-                {progressFields.map((field, index) => (
-                    <div 
-                        key={field.id} 
-                        className={cn(
-                            "flex items-center gap-2 p-2 rounded-md border border-transparent",
-                            draggedItem?.type === 'progress' && draggedItem?.index === index && "opacity-50 border-dashed border-primary"
-                        )}
-                        draggable
-                        onDragStart={() => handleDragStart('progress', index)}
-                        onDragOver={(e) => e.preventDefault()}
-                        onDrop={(e) => handleDrop(e, 'progress', index)}
-                    >
-                        <GripVertical className="h-5 w-5 text-muted-foreground cursor-grab mt-2" />
-                        <div className="flex-grow grid grid-cols-2 md:grid-cols-4 gap-2">
-                           <FormField
-                                control={form.control}
-                                name={`progressItems.${index}.name`}
-                                render={({ field }) => (
-                                    <FormItem className="md:col-span-2">
-                                        <FormLabel className="sr-only">Tracker Name</FormLabel>
-                                        <FormControl>
-                                            <Input placeholder="Tracker Name" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name={`progressItems.${index}.completed`}
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel className="sr-only">Completed</FormLabel>
-                                        <FormControl>
-                                            <Input type="number" placeholder="Completed" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name={`progressItems.${index}.total`}
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel className="sr-only">Total</FormLabel>
-                                        <FormControl>
-                                            <Input type="number" placeholder="Total" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        </div>
-                        <Button type="button" variant="ghost" size="icon" onClick={() => removeProgress(index)} className="mt-2 text-destructive">
-                            <Trash2 className="h-4 w-4" />
-                        </Button>
-                    </div>
-                ))}
+        <ScrollArea className="pr-6 -mr-6">
+          <div className="max-h-[calc(80vh-200px)]">
+            <Form {...form}>
+              <form className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="number"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Chapter Number</FormLabel>
+                        <FormControl>
+                          <Input placeholder="e.g., 1 or 5.2" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Chapter Name</FormLabel>
+                        <FormControl>
+                          <Input placeholder="e.g., Vector" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
-                <Button type="button" variant="outline" size="sm" onClick={() => appendProgress({ id: uuidv4(), name: '', completed: 0, total: 0 })}>
-                    <PlusCircle className="mr-2 h-4 w-4" /> Add Tracker
-                </Button>
-            </div>
-            
-            {/* Resource Links */}
-            <div className="space-y-4 rounded-md border p-4">
-                <h3 className="text-lg font-medium">Resource Links</h3>
-                <div className="space-y-2">
-                {linkFields.map((field, index) => (
-                    <div 
-                        key={field.id} 
-                        className={cn(
-                            "flex items-start gap-2 p-2 rounded-md border border-transparent",
-                            draggedItem?.type === 'link' && draggedItem?.index === index && "opacity-50 border-dashed border-primary"
-                        )}
-                        draggable
-                        onDragStart={() => handleDragStart('link', index)}
-                        onDragOver={(e) => e.preventDefault()}
-                        onDrop={(e) => handleDrop(e, 'link', index)}
-                    >
-                        <GripVertical className="h-5 w-5 text-muted-foreground cursor-grab mt-2" />
-                        <div className="flex-grow space-y-2">
-                            <FormField
-                                control={form.control}
-                                name={`resourceLinks.${index}.description`}
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel className="sr-only">Description</FormLabel>
-                                        <FormControl>
-                                            <Input placeholder="Description" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                             <FormField
-                                control={form.control}
-                                name={`resourceLinks.${index}.url`}
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel className="sr-only">URL</FormLabel>
-                                        <FormControl>
-                                            <Input placeholder="https://example.com" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+                
+                {/* Progress Items */}
+                <div className="space-y-4 rounded-md border p-4">
+                    <h3 className="text-lg font-medium">Progress Trackers</h3>
+                    <div className="space-y-2">
+                    {progressFields.map((field, index) => (
+                        <div 
+                            key={field.id} 
+                            className={cn(
+                                "flex items-center gap-2 p-2 rounded-md border border-transparent",
+                                draggedItem?.type === 'progress' && draggedItem?.index === index && "opacity-50 border-dashed border-primary"
+                            )}
+                            draggable
+                            onDragStart={() => handleDragStart('progress', index)}
+                            onDragOver={(e) => e.preventDefault()}
+                            onDrop={(e) => handleDrop(e, 'progress', index)}
+                        >
+                            <GripVertical className="h-5 w-5 text-muted-foreground cursor-grab mt-2" />
+                            <div className="flex-grow grid grid-cols-2 md:grid-cols-4 gap-2">
+                               <FormField
+                                    control={form.control}
+                                    name={`progressItems.${index}.name`}
+                                    render={({ field }) => (
+                                        <FormItem className="md:col-span-2">
+                                            <FormLabel className="sr-only">Tracker Name</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="Tracker Name" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name={`progressItems.${index}.completed`}
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className="sr-only">Completed</FormLabel>
+                                            <FormControl>
+                                                <Input type="number" placeholder="Completed" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name={`progressItems.${index}.total`}
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className="sr-only">Total</FormLabel>
+                                            <FormControl>
+                                                <Input type="number" placeholder="Total" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+                            <Button type="button" variant="ghost" size="icon" onClick={() => removeProgress(index)} className="mt-2 text-destructive">
+                                <Trash2 className="h-4 w-4" />
+                            </Button>
                         </div>
-                        <Button type="button" variant="ghost" size="icon" onClick={() => removeLink(index)} className="mt-2 text-destructive">
-                            <Trash2 className="h-4 w-4" />
-                        </Button>
+                    ))}
                     </div>
-                ))}
+                    <Button type="button" variant="outline" size="sm" onClick={() => appendProgress({ id: uuidv4(), name: '', completed: 0, total: 0 })}>
+                        <PlusCircle className="mr-2 h-4 w-4" /> Add Tracker
+                    </Button>
                 </div>
-                <Button type="button" variant="outline" size="sm" onClick={() => appendLink({ id: uuidv4(), url: '', description: '' })}>
-                    <PlusCircle className="mr-2 h-4 w-4" /> Add Link
-                </Button>
-            </div>
+                
+                {/* Resource Links */}
+                <div className="space-y-4 rounded-md border p-4">
+                    <h3 className="text-lg font-medium">Resource Links</h3>
+                    <div className="space-y-2">
+                    {linkFields.map((field, index) => (
+                        <div 
+                            key={field.id} 
+                            className={cn(
+                                "flex items-start gap-2 p-2 rounded-md border border-transparent",
+                                draggedItem?.type === 'link' && draggedItem?.index === index && "opacity-50 border-dashed border-primary"
+                            )}
+                            draggable
+                            onDragStart={() => handleDragStart('link', index)}
+                            onDragOver={(e) => e.preventDefault()}
+                            onDrop={(e) => handleDrop(e, 'link', index)}
+                        >
+                            <GripVertical className="h-5 w-5 text-muted-foreground cursor-grab mt-2" />
+                            <div className="flex-grow space-y-2">
+                                <FormField
+                                    control={form.control}
+                                    name={`resourceLinks.${index}.description`}
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className="sr-only">Description</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="Description" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                 <FormField
+                                    control={form.control}
+                                    name={`resourceLinks.${index}.url`}
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className="sr-only">URL</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="https://example.com" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+                            <Button type="button" variant="ghost" size="icon" onClick={() => removeLink(index)} className="mt-2 text-destructive">
+                                <Trash2 className="h-4 w-4" />
+                            </Button>
+                        </div>
+                    ))}
+                    </div>
+                    <Button type="button" variant="outline" size="sm" onClick={() => appendLink({ id: uuidv4(), url: '', description: '' })}>
+                        <PlusCircle className="mr-2 h-4 w-4" /> Add Link
+                    </Button>
+                </div>
 
-          </form>
-        </Form>
+              </form>
+            </Form>
+          </div>
         </ScrollArea>
         <DialogFooter className="pt-4 border-t">
           <Button onClick={form.handleSubmit(onSubmit)}>{isEditing ? "Save Changes" : "Add Chapter"}</Button>
@@ -334,3 +336,5 @@ export function ChapterDialog({ open, onOpenChange, subjectId, paperId, chapter 
     </Dialog>
   );
 }
+
+    
