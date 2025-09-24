@@ -11,10 +11,10 @@ import { SubjectDialog } from '@/components/edutrack/subject/SubjectDialog';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 
-type View = 'subjects' | 'exams';
+type View = 'subjects' | 'exams' | null;
 
 export default function Home() {
-  const [activeView, setActiveView] = useState<View>('subjects');
+  const [activeView, setActiveView] = useState<View>(null);
   const [isSubjectDialogOpen, setIsSubjectDialogOpen] = useState(false);
   const { exams, subjects } = useContext(AppDataContext);
 
