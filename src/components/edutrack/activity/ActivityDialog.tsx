@@ -1,3 +1,4 @@
+
 "use client";
 
 import { z } from "zod";
@@ -60,7 +61,7 @@ export function ActivityDialog({ open, onOpenChange, subjectId, paperId, chapter
     defaultValues: {
       title: activity?.title || "",
       type: activity?.type || "checkbox",
-      target: activity?.target || undefined,
+      target: activity?.target ?? undefined,
       url: activity?.url || "",
     },
   });
@@ -139,7 +140,7 @@ export function ActivityDialog({ open, onOpenChange, subjectId, paperId, chapter
                   <FormItem>
                     <FormLabel>Target Count</FormLabel>
                     <FormControl>
-                      <Input type="number" placeholder="e.g., 10 problems" {...field} />
+                      <Input type="number" placeholder="e.g., 10 problems" {...field} value={field.value ?? ''} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -154,7 +155,7 @@ export function ActivityDialog({ open, onOpenChange, subjectId, paperId, chapter
                   <FormItem>
                     <FormLabel>URL</FormLabel>
                     <FormControl>
-                      <Input placeholder="https://example.com" {...field} />
+                      <Input placeholder="https://example.com" {...field} value={field.value ?? ''} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
