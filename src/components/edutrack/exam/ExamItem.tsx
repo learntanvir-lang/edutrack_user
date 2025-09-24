@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useContext } from "react";
@@ -69,7 +70,7 @@ export function ExamItem({ exam, subjectName, chapterName }: ExamItemProps) {
               <Calendar className="h-4 w-4" /> {format(new Date(exam.date), "P")}
             </p>
           </div>
-          {!isPast && !exam.isCompleted && <Countdown targetDate={exam.date} />}
+          <Countdown targetDate={exam.date} isPastOrCompleted={isPast || exam.isCompleted} />
         </CardContent>
         <CardFooter className="flex justify-between gap-2">
            <div className="flex w-full items-center space-x-2">

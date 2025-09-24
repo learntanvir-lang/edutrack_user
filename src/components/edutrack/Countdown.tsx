@@ -1,9 +1,11 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
 
 interface CountdownProps {
   targetDate: string;
+  isPastOrCompleted: boolean;
 }
 
 interface TimeLeft {
@@ -33,10 +35,14 @@ const CountdownBox = ({ value, label }: { value: string; label: string }) => (
     </div>
 );
 
-export function Countdown({ targetDate }: CountdownProps) {
+export function Countdown({ targetDate, isPastOrCompleted }: CountdownProps) {
   const [timeLeft, setTimeLeft] = useState<TimeLeft | null>(null);
 
   useEffect(() => {
+    if (isPastOrCompleted) {
+        setTimeLeft(null);
+        return;
+    }
     // This will only run on the client, after initial hydration
     setTimeLeft(calculateTimeLeft(targetDate));
 
@@ -45,17 +51,17 @@ export function Countdown({ targetDate }: CountdownProps) {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [targetDate]);
+  }, [targetDate, isPastOrCompleted]);
 
   const format = (num: number) => num.toString().padStart(2, '0');
   
-  if (!timeLeft) {
+  if (!timeLeft || isPastOrCompleted) {
     return (
         <div className="grid grid-cols-4 gap-4" aria-label="Countdown timer has finished">
-            <CountdownBox value="00" label="Days" />
-            <CountdownBox value="00" label="Hours" />
-            <CountdownBox value="00" label="Minutes" />
-            <CountdownBox value="00" label="Seconds" />
+            <CountdownBox value="00" label="D" />
+            <CountdownBox value="00" label="H" />
+            <CountdownBox value="00" label="M" />
+            <CountdownBox value="00" label="S" />
         </div>
     );
   }

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -17,6 +18,7 @@ interface NextExamCardProps {
 
 export default function NextExamCard({ exam, subjectName, chapterName }: NextExamCardProps) {
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+    const isPast = new Date(exam.date) < new Date();
   return (
     <>
       <Card className="bg-primary text-primary-foreground border-0 shadow-xl rounded-2xl">
@@ -48,7 +50,7 @@ export default function NextExamCard({ exam, subjectName, chapterName }: NextExa
                 <Clock className="h-4 w-4" />
                 <span>Time Remaining</span>
             </div>
-            <Countdown targetDate={exam.date} />
+            <Countdown targetDate={exam.date} isPastOrCompleted={isPast || exam.isCompleted} />
         </CardContent>
       </Card>
       <ExamDialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen} exam={exam} />
