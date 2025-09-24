@@ -39,7 +39,7 @@ export function ExamItem({ exam }: ExamItemProps) {
 
   const isPast = new Date(exam.date) < new Date();
 
-  const examDetails = exam.chapterIds.map(chapterId => {
+  const examDetails = (exam.chapterIds || []).map(chapterId => {
     for (const subject of subjects) {
       if (exam.subjectIds.includes(subject.id)) {
         for (const paper of subject.papers) {
