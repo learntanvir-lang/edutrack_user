@@ -93,8 +93,37 @@ const appReducer = (state: AppState, action: Action): AppState => {
       };
     }
     // Activity actions
-    case "ADD_ACTIVITY":
-        return {...state, subjects: state.subjects.map(s => s.id === action.payload.subjectId ? {...s, papers: s.papers.map(p => p.id === action.payload.paperId ? {...p, chapters: p.chapters.map(c => c.id === action.payload.chapterId ? {...c, activities: [...c.activities, action.payload.activity] } : c)} : p)} : s)};
+    case "ADD_ACTIVITY": {
+        const { subjectId, paperId, chapterId, activity } = action.payload;
+        return {
+            ...state,
+            subjects: state.subjects.map(s => {
+                if (s.id === subjectId) {
+                    return {
+                        ...s,
+                        papers: s.papers.map(p => {
+                            if (p.id === paperId) {
+                                return {
+                                    ...p,
+                                    chapters: p.chapters.map(c => {
+                                        if (c.id === chapterId) {
+                                            return {
+                                                ...c,
+                                                activities: [...c.activities, activity],
+                                            };
+                                        }
+                                        return c;
+                                    }),
+                                };
+                            }
+                            return p;
+                        }),
+                    };
+                }
+                return s;
+            }),
+        };
+    }
     case "UPDATE_ACTIVITY":
         return {...state, subjects: state.subjects.map(s => s.id === action.payload.subjectId ? {...s, papers: s.papers.map(p => p.id === action.payload.paperId ? {...p, chapters: p.chapters.map(c => c.id === action.payload.chapterId ? {...c, activities: c.activities.map(a => a.id === action.payload.activity.id ? action.payload.activity : a) } : c)} : p)} : s)};
     case "DELETE_ACTIVITY":
