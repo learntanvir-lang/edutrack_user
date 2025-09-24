@@ -26,11 +26,18 @@ const calculateTimeLeft = (targetDate: string): TimeLeft | null => {
   return null;
 };
 
+const CountdownBox = ({ value, label }: { value: string; label: string }) => (
+    <div className="bg-primary-foreground/10 rounded-lg p-3 text-center w-full">
+        <div className="text-4xl font-bold text-primary-foreground">{value}</div>
+        <div className="text-xs text-primary-foreground/70 uppercase tracking-widest">{label}</div>
+    </div>
+);
+
 export function Countdown({ targetDate }: CountdownProps) {
   const [timeLeft, setTimeLeft] = useState<TimeLeft | null>(null);
 
   useEffect(() => {
-    // Set initial value on client mount to avoid hydration mismatch
+    // This will only run on the client, after initial hydration
     setTimeLeft(calculateTimeLeft(targetDate));
 
     const timer = setInterval(() => {
@@ -40,49 +47,25 @@ export function Countdown({ targetDate }: CountdownProps) {
     return () => clearInterval(timer);
   }, [targetDate]);
 
+  const format = (num: number) => num.toString().padStart(2, '0');
+  
   if (!timeLeft) {
     return (
-        <div className="grid grid-cols-4 gap-2 text-center">
-            <div>
-                <div className="text-2xl font-bold">00</div>
-                <div className="text-xs text-muted-foreground">Days</div>
-            </div>
-            <div>
-                <div className="text-2xl font-bold">00</div>
-                <div className="text-xs text-muted-foreground">Hours</div>
-            </div>
-            <div>
-                <div className="text-2xl font-bold">00</div>
-                <div className="text-xs text-muted-foreground">Mins</div>
-            </div>
-            <div>
-                <div className="text-2xl font-bold">00</div>
-                <div className="text-xs text-muted-foreground">Secs</div>
-            </div>
+        <div className="grid grid-cols-4 gap-4" aria-label="Countdown timer has finished">
+            <CountdownBox value="00" label="Days" />
+            <CountdownBox value="00" label="Hours" />
+            <CountdownBox value="00" label="Minutes" />
+            <CountdownBox value="00" label="Seconds" />
         </div>
     );
   }
 
-  const format = (num: number) => num.toString().padStart(2, '0');
-
   return (
-    <div className="grid grid-cols-4 gap-2 text-center" aria-label="Countdown timer">
-      <div>
-        <div className="text-2xl font-bold" aria-label={`${timeLeft.days} days`}>{format(timeLeft.days)}</div>
-        <div className="text-xs text-muted-foreground">Days</div>
-      </div>
-      <div>
-        <div className="text-2xl font-bold" aria-label={`${timeLeft.hours} hours`}>{format(timeLeft.hours)}</div>
-        <div className="text-xs text-muted-foreground">Hours</div>
-      </div>
-      <div>
-        <div className="text-2xl font-bold" aria-label={`${timeLeft.minutes} minutes`}>{format(timeLeft.minutes)}</div>
-        <div className="text-xs text-muted-foreground">Mins</div>
-      </div>
-      <div>
-        <div className="text-2xl font-bold" aria-label={`${timeLeft.seconds} seconds`}>{format(timeLeft.seconds)}</div>
-        <div className="text-xs text-muted-foreground">Secs</div>
-      </div>
+    <div className="grid grid-cols-4 gap-4" aria-label="Countdown timer">
+        <CountdownBox value={format(timeLeft.days)} label="Days" />
+        <CountdownBox value={format(timeLeft.hours)} label="Hours" />
+        <CountdownBox value={format(timeLeft.minutes)} label="Minutes" />
+        <CountdownBox value={format(timeLeft.seconds)} label="Seconds" />
     </div>
   );
 }
