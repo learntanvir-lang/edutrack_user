@@ -8,7 +8,7 @@ import { Countdown } from "../Countdown";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { ExamDialog } from "./ExamDialog";
-import { Book, Calendar, Pen, Clock, Edit } from "lucide-react";
+import { Book, Calendar, Pen, Clock } from "lucide-react";
 
 interface NextExamCardProps {
   exam: Exam;
@@ -46,11 +46,13 @@ export default function NextExamCard({ exam, subjectName, chapterName }: NextExa
             </div>
         </CardHeader>
         <CardContent>
-            <div className="flex items-center gap-2 text-sm font-medium text-primary-foreground/80 mb-2">
-                <Clock className="h-4 w-4" />
-                <span>Time Remaining</span>
+            <div className="space-y-2">
+                <div className="flex items-center gap-2 text-sm font-medium text-primary-foreground/80">
+                    <Clock className="h-4 w-4" />
+                    <span>Time Remaining</span>
+                </div>
+                <Countdown targetDate={exam.date} isPastOrCompleted={isPast || exam.isCompleted} />
             </div>
-            <Countdown targetDate={exam.date} isPastOrCompleted={isPast || exam.isCompleted} />
         </CardContent>
       </Card>
       <ExamDialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen} exam={exam} />
