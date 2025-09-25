@@ -103,14 +103,12 @@ export function ChapterAccordionItem({ chapter, subjectId, paperId }: ChapterAcc
                                         </div>
                                     <div className="flex flex-col gap-2">
                                         {chapter.resourceLinks.map(link => (
-                                            <Link key={link.id} href={link.url} target="_blank" rel="noopener noreferrer" legacyBehavior>
-                                                <a className="w-full">
-                                                    <Button variant="outline" size="sm" className="w-full justify-between">
-                                                        <span className="truncate">{link.description || link.url}</span>
-                                                        <ExternalLink className="h-4 w-4 ml-2 flex-shrink-0" />
-                                                    </Button>
-                                                </a>
-                                            </Link>
+                                            <Button key={link.id} variant="outline" size="sm" className="w-full justify-between" asChild>
+                                                <Link href={link.url} target="_blank" rel="noopener noreferrer">
+                                                    <span className="truncate">{link.description || link.url}</span>
+                                                    <ExternalLink className="h-4 w-4 ml-2 flex-shrink-0" />
+                                                </Link>
+                                            </Button>
                                         ))}
                                     </div>
                                 </div>
