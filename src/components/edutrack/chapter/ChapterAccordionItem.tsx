@@ -6,7 +6,7 @@ import { useState, useContext } from "react";
 import { Chapter } from "@/lib/types";
 import { AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Pen, Trash2, ChevronDown, Copy, GripVertical, Link as LinkIcon, Edit } from "lucide-react";
+import { MoreHorizontal, Pen, Trash2, ChevronDown, Copy, GripVertical, Link as LinkIcon, Edit, ExternalLink } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import {
   DropdownMenu,
@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { AppDataContext } from "@/context/AppDataContext";
 import { ChapterDialog } from "./ChapterDialog";
+import Link from "next/link";
 
 interface ChapterAccordionItemProps {
     chapter: Chapter;
@@ -102,9 +103,14 @@ export function ChapterAccordionItem({ chapter, subjectId, paperId }: ChapterAcc
                                         </div>
                                     <div className="flex flex-col gap-2">
                                         {chapter.resourceLinks.map(link => (
-                                            <a key={link.id} href={link.url} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline truncate">
-                                                {link.description || link.url}
-                                            </a>
+                                            <Link key={link.id} href={link.url} target="_blank" rel="noopener noreferrer" legacyBehavior>
+                                                <a className="w-full">
+                                                    <Button variant="outline" size="sm" className="w-full justify-between">
+                                                        <span className="truncate">{link.description || link.url}</span>
+                                                        <ExternalLink className="h-4 w-4 ml-2 flex-shrink-0" />
+                                                    </Button>
+                                                </a>
+                                            </Link>
                                         ))}
                                     </div>
                                 </div>
