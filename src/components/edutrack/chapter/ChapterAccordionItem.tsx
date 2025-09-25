@@ -17,6 +17,7 @@ import {
 import { AppDataContext } from "@/context/AppDataContext";
 import { ChapterDialog } from "./ChapterDialog";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 interface ChapterAccordionItemProps {
     chapter: Chapter;
@@ -103,7 +104,7 @@ export function ChapterAccordionItem({ chapter, subjectId, paperId }: ChapterAcc
                                         </div>
                                     <div className="flex flex-col gap-2">
                                         {chapter.resourceLinks.map(link => (
-                                            <Button key={link.id} variant="outline" size="sm" className="w-full justify-between" asChild>
+                                             <Button key={link.id} variant="outline" size="sm" className="w-full justify-between bg-blue-50 text-blue-700 hover:bg-blue-100 hover:text-blue-800" asChild>
                                                 <Link href={link.url} target="_blank" rel="noopener noreferrer">
                                                     <span className="truncate">{link.description || link.url}</span>
                                                     <ExternalLink className="h-4 w-4 ml-2 flex-shrink-0" />
