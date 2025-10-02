@@ -6,7 +6,7 @@ import { useState, useContext } from "react";
 import { Chapter } from "@/lib/types";
 import { AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Pen, Trash2, ChevronDown, Copy, GripVertical, Link as LinkIcon, Edit, ExternalLink } from "lucide-react";
+import { MoreHorizontal, Pen, Trash2, ChevronDown, Copy, GripVertical, Link as LinkIcon, Edit, ExternalLink, Activity, Bookmark } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import {
   DropdownMenu,
@@ -82,26 +82,40 @@ export function ChapterAccordionItem({ chapter, subjectId, paperId }: ChapterAcc
                         </div>
                     </div>
                     <AccordionContent className="px-3 pb-3 pt-0">
-                        <div className="border-t pt-4 space-y-4">
-                            {chapter.progressItems.map(item => {
-                                const progress = item.total > 0 ? (item.completed / item.total) * 100 : 0;
-                                return (
-                                    <div key={item.id}>
-                                        <div className="flex justify-between items-center mb-1">
-                                            <span className="text-sm text-muted-foreground">{item.name}</span>
-                                            <span className="text-sm font-medium">{item.completed} / {item.total}</span>
-                                        </div>
-                                        <Progress value={progress} />
-                                    </div>
-                                );
-                            })}
+                        <div className="border-t pt-4 space-y-6">
                             
+                            {/* Progress Section */}
+                            <div className="space-y-3">
+                                <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                                    <Activity className="w-4 h-4" />
+                                    <span>Progress Trackers</span>
+                                </div>
+                                <div className="space-y-4 rounded-md bg-muted/50 p-4">
+                                    {chapter.progressItems.map(item => {
+                                        const progress = item.total > 0 ? (item.completed / item.total) * 100 : 0;
+                                        return (
+                                            <div key={item.id}>
+                                                <div className="flex justify-between items-center mb-1">
+                                                    <span className="text-sm text-foreground font-medium">{item.name}</span>
+                                                    <span className="text-sm font-medium text-muted-foreground">{item.completed} / {item.total}</span>
+                                                </div>
+                                                <Progress value={progress} />
+                                            </div>
+                                        );
+                                    })}
+                                    {chapter.progressItems.length === 0 && (
+                                        <p className="text-sm text-center text-muted-foreground py-2">No progress trackers added.</p>
+                                    )}
+                                </div>
+                            </div>
+                            
+                            {/* Resources Section */}
                             {chapter.resourceLinks && chapter.resourceLinks.length > 0 && (
-                                <div className="space-y-2 pt-4">
-                                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                            <LinkIcon className="w-4 h-4" />
-                                            <span>Resources</span>
-                                        </div>
+                                <div className="space-y-3">
+                                     <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                                        <LinkIcon className="w-4 h-4" />
+                                        <span>Resources</span>
+                                    </div>
                                     <div className="flex flex-col gap-2">
                                         {chapter.resourceLinks.map(link => (
                                              <Button key={link.id} variant="outline" size="sm" className="w-full justify-between bg-blue-50 text-blue-700 hover:bg-blue-100 hover:text-blue-800" asChild>
@@ -114,9 +128,10 @@ export function ChapterAccordionItem({ chapter, subjectId, paperId }: ChapterAcc
                                     </div>
                                 </div>
                             )}
+
                              <Button variant="outline" size="sm" className="w-full mt-4" onClick={() => setIsEditingChapter(true)}>
                                 <Edit className="mr-2 h-4 w-4" />
-                                Edit Chapter
+                                Edit Chapter Details
                             </Button>
                         </div>
                     </AccordionContent>
