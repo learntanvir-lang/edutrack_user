@@ -6,7 +6,7 @@ import { useState, useContext } from "react";
 import { Chapter } from "@/lib/types";
 import { AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Pen, Trash2, ChevronDown, Copy, GripVertical, Link as LinkIcon, Edit, ExternalLink } from "lucide-react";
+import { MoreHorizontal, Pen, Trash2, ChevronDown, Copy, GripVertical, Link as LinkIcon, Edit, ExternalLink, Bookmark } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import {
   DropdownMenu,
@@ -51,9 +51,10 @@ export function ChapterAccordionItem({ chapter, subjectId, paperId }: ChapterAcc
                 <div className="bg-card rounded-lg shadow-sm">
                     <div className="flex items-center justify-between w-full p-3">
                         <AccordionTrigger className="p-0 hover:no-underline flex-1 group">
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-3">
                                 <GripVertical className="h-5 w-5 text-muted-foreground cursor-grab" />
-                                <span className="font-medium text-base">
+                                <Bookmark className="h-6 w-6 text-primary/70" />
+                                <span className="font-bold text-lg text-primary">
                                     {chapter.number && `Chapter ${chapter.number}: `}
                                     {chapter.name}
                                 </span>
