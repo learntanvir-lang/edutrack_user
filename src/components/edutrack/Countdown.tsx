@@ -58,20 +58,20 @@ export function Countdown({ targetDate, isPastOrCompleted }: CountdownProps) {
   if (!timeLeft || isPastOrCompleted) {
     return (
         <div className="grid grid-cols-4 gap-4" aria-label="Countdown timer has finished">
-            <CountdownBox value="00" label="D" />
-            <CountdownBox value="00" label="H" />
-            <CountdownBox value="00" label="M" />
-            <CountdownBox value="00" label="S" />
+            <CountdownBox value="00" label="Days" />
+            <CountdownBox value="00" label="Hours" />
+            <CountdownBox value="00" label="Minutes" />
+            <CountdownBox value="00" label="Seconds" />
         </div>
     );
   }
 
   return (
     <div className="grid grid-cols-4 gap-2 md:gap-4" aria-label="Countdown timer">
-        <CountdownBox value={format(timeLeft.days)} label="D" />
-        <CountdownBox value={format(timeLeft.hours)} label="H" />
-        <CountdownBox value={format(timeLeft.minutes)} label="M" />
-        <CountdownBox value={format(timeLeft.seconds)} label="S" />
+        <CountdownBox value={format(timeLeft.days)} label="Days" />
+        <CountdownBox value={format(timeLeft.hours)} label="Hours" />
+        <CountdownBox value={format(timeLeft.minutes)} label="Minutes" />
+        <CountdownBox value={format(timeLeft.seconds)} label="Seconds" />
     </div>
   );
 }
