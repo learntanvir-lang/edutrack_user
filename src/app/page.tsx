@@ -1,17 +1,18 @@
 
 "use client";
 
-import { useState, useMemo, useContext } from 'react';
+import { useState, useMemo, useContext, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { AppDataContext } from '@/context/AppDataContext';
 import NextExamCard from '@/components/edutrack/exam/NextExamCard';
 import { ExamList } from '@/components/edutrack/exam/ExamList';
 import { SubjectList } from '@/components/edutrack/subject/SubjectList';
-import { PlusCircle, BookOpen, Target } from 'lucide-react';
+import { PlusCircle, BookOpen, Target, Loader2 } from 'lucide-react';
 import { SubjectDialog } from '@/components/edutrack/subject/SubjectDialog';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { Paper, Subject } from '@/lib/types';
+import { useUser } from '@/firebase';
+import { useRouter } from 'next/navigation';
 
 type View = 'subjects' | 'exams' | null;
 
@@ -19,8 +20,21 @@ export default function Home() {
   const [activeView, setActiveView] = useState<View>(null);
   const [isSubjectDialogOpen, setIsSubjectDialogOpen] = useState(false);
   const { exams, subjects } = useContext(AppDataContext);
+  const { user, isUserLoading } = useUser();
+  const router = useRouter();
 
+  useEffect(() => {
+    if (!isUserLoading) {
+      if (!user) {
+        router.push('/login');
+      } else if (!user.emailVerified) {
+        router.push('/verify-email');
+      }
+    }
+  }, [user, isUserLoading, router]);
+  
   const nextExam = useMemo(() => {
+    if (!exams) return null;
     const upcoming = exams
       .filter(exam => new Date(exam.date) >= new Date() && !exam.isCompleted)
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
@@ -47,6 +61,14 @@ export default function Home() {
       default:
         return null;
     }
+  }
+
+  if (isUserLoading || !user || !user.emailVerified) {
+    return (
+      <div className="flex min-h-[calc(100vh-theme(spacing.14))] items-center justify-center">
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
+      </div>
+    );
   }
 
   return (
@@ -99,7 +121,7 @@ export default function Home() {
         </div>
 
         <div className="mt-8">
-          {renderActiveView()}
+          {activeView && renderActiveView()}
         </div>
       
       <SubjectDialog open={isSubjectDialogOpen} onOpenChange={setIsSubjectDialogOpen} />

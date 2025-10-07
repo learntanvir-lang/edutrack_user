@@ -27,6 +27,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/firebase';
 import {
   createUserWithEmailAndPassword,
+  sendEmailVerification,
   signInWithEmailAndPassword,
   updateProfile,
 } from 'firebase/auth';
@@ -136,7 +137,14 @@ export default function LoginPage() {
         });
       }
 
-      router.push('/');
+      await sendEmailVerification(user);
+
+      toast({
+        title: 'Account Created!',
+        description: 'A verification email has been sent to your email address. Please verify to continue.',
+      });
+
+      router.push('/verify-email');
     } catch (error) {
       handleAuthError(error as FirebaseError);
     }
