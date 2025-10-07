@@ -15,9 +15,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { signOut } from 'firebase/auth';
-import { LogOut, User as UserIcon } from 'lucide-react';
+import { LogOut } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { cn } from '@/lib/utils';
 
 export function AppHeader() {
   const { user, isUserLoading } = useUser();
@@ -46,7 +45,7 @@ export function AppHeader() {
             <EduTrackLogo className="h-6 w-6" />
             <span className="font-bold text-lg">EduTrack</span>
           </Link>
-          {user && (
+          {user && !isUserLoading && (
             <span className="hidden md:block text-sm font-medium text-muted-foreground animate-fade-in-down">
               Welcome, {user.displayName || 'User'}
             </span>
