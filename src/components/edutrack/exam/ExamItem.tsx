@@ -61,7 +61,7 @@ export function ExamItem({ exam }: ExamItemProps) {
       <Card className={cn(
           "transition-all duration-300",
           isPast ? 
-            (exam.isCompleted ? "bg-green-50 border-green-200" : "bg-red-50 border-red-200") :
+            (exam.isCompleted ? "bg-green-50 border-green-200 shadow-lg shadow-green-500/20 hover:shadow-xl hover:shadow-green-500/40 hover:-translate-y-1" : "bg-red-50 border-red-200 shadow-lg shadow-red-500/20 hover:shadow-xl hover:shadow-red-500/40 hover:-translate-y-1") :
             "bg-card border-2 border-primary shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/40 hover:-translate-y-1"
       )}>
         <CardHeader className="pb-4">
