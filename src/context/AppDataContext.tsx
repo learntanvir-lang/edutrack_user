@@ -154,76 +154,15 @@ export const AppDataContext = createContext<{
 
 const LOCAL_STORAGE_KEY = "eduTrackData";
 
-// Wrapper for dispatch to also handle Firestore persistence
-const createSyncedDispatch = (dispatch: React.Dispatch<Action>, firestore: any, user: any) => {
-  return (action: Action) => {
-    // First, update local state
-    dispatch(action);
-
-    // Then, persist to Firestore if user is logged in
-    if (firestore && user) {
-      const userId = user.uid;
-      switch (action.type) {
-        // Subjects
-        case "ADD_SUBJECT":
-        case "UPDATE_SUBJECT":
-          setDoc(doc(firestore, `users/${userId}/subjects`, action.payload.id), action.payload);
-          break;
-        case "DELETE_SUBJECT":
-          deleteDoc(doc(firestore, `users/${userId}/subjects`, action.payload));
-          break;
-        
-        // We need to update the whole subject doc for nested changes
-        case "ADD_PAPER":
-        case "UPDATE_PAPER":
-        case "DELETE_PAPER":
-        case "DUPLICATE_PAPER":
-        case "ADD_CHAPTER":
-        case "UPDATE_CHAPTER":
-        case "DELETE_CHAPTER":
-        case "DUPLICATE_CHAPTER":
-        case "REORDER_CHAPTERS": {
-            const tempState = appReducer(initialState, action)
-            const subjectToUpdate = tempState.subjects.find(s => s.id === (action.payload as any).subjectId);
-            if(subjectToUpdate){
-                setDoc(doc(firestore, `users/${userId}/subjects`, subjectToUpdate.id), subjectToUpdate, { merge: true });
-            }
-          break;
-        }
-
-        // Exams
-        case "ADD_EXAM":
-        case "UPDATE_EXAM":
-          setDoc(doc(firestore, `users/${userId}/exams`, action.payload.id), action.payload);
-          break;
-        case "DELETE_EXAM":
-          deleteDoc(doc(firestore, `users/${userId}/exams`, action.payload));
-          break;
-        
-        // This is a special case for duplication, we need to get the final subject from the state
-        case "DUPLICATE_SUBJECT":
-            const newSubjectState = appReducer(initialState, action);
-            const newSubject = newSubjectState.subjects.find(s => s.name === `${action.payload.name} (Copy)`);
-            if(newSubject){
-                setDoc(doc(firestore, `users/${userId}/subjects`, newSubject.id), newSubject);
-            }
-            break;
-      }
-    }
-  };
-};
-
 export const AppDataProvider = ({ children }: { children: ReactNode }) => {
   const [state, dispatch] = useReducer(appReducer, initialState);
   const { firestore, user, isUserLoading } = useFirebase();
 
-  // Effect for loading data
   useEffect(() => {
-    if (isUserLoading) return; // Wait until we know if user is logged in or not
+    if (isUserLoading) return; 
 
     const loadData = async () => {
       if (user && firestore) {
-        // User is logged in, fetch from Firestore
         try {
           const subjectsCol = collection(firestore, `users/${user.uid}/subjects`);
           const examsCol = collection(firestore, `users/${user.uid}/exams`);
@@ -239,10 +178,9 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
           dispatch({ type: "SET_STATE", payload: { subjects, exams } });
         } catch (error) {
           console.error("Error fetching from Firestore, falling back to local:", error);
-          loadFromLocalStorage(); // Fallback to local storage on error
+          loadFromLocalStorage(); 
         }
       } else {
-        // User is not logged in, use local storage
         loadFromLocalStorage();
       }
     };
@@ -270,9 +208,7 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
 
   }, [user, firestore, isUserLoading]);
 
-  // Effect for saving data
   useEffect(() => {
-    // Only save to local storage if the user is NOT logged in.
     if (!user && !isUserLoading) {
       try {
           if(state.subjects.length > 0 || state.exams.length > 0) {
@@ -284,26 +220,27 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [state, user, isUserLoading]);
 
-
-  // Create a dispatch function that is aware of the user and firestore instance
   const syncedDispatch = (action: Action) => {
-    // Optimistically update the local state
     const newState = appReducer(state, action);
     dispatch({ type: 'SET_STATE', payload: newState });
 
-    // Persist to Firestore if logged in
     if (user && firestore) {
       const userId = user.uid;
-      const findSubject = (subjectId: string) => newState.subjects.find(s => s.id === subjectId);
+      
+      const getSubjectToUpdate = (subjectId: string) => newState.subjects.find(s => s.id === subjectId);
 
       switch (action.type) {
         case "ADD_SUBJECT":
         case "UPDATE_SUBJECT":
           setDoc(doc(firestore, `users/${userId}/subjects`, action.payload.id), action.payload);
           break;
-        case "DUPLICATE_SUBJECT":
-          setDoc(doc(firestore, `users/${userId}/subjects`, newState.subjects[newState.subjects.length - 1].id), newState.subjects[newState.subjects.length - 1]);
+        case "DUPLICATE_SUBJECT": {
+          const newSubject = newState.subjects[newState.subjects.length - 1];
+          if(newSubject) {
+            setDoc(doc(firestore, `users/${userId}/subjects`, newSubject.id), newSubject);
+          }
           break;
+        }
         case "DELETE_SUBJECT":
           deleteDoc(doc(firestore, `users/${userId}/subjects`, action.payload));
           break;
@@ -317,7 +254,7 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
         case "DELETE_CHAPTER":
         case "DUPLICATE_CHAPTER":
         case "REORDER_CHAPTERS": {
-          const subject = findSubject(action.payload.subjectId);
+          const subject = getSubjectToUpdate(action.payload.subjectId);
           if (subject) {
             setDoc(doc(firestore, `users/${userId}/subjects`, subject.id), subject);
           }
@@ -336,7 +273,6 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
       }
     }
   };
-
 
   return (
     <AppDataContext.Provider value={{ ...state, dispatch: syncedDispatch }}>

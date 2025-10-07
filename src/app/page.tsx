@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useMemo, useContext } from 'react';
@@ -25,6 +26,28 @@ export default function Home() {
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
     return upcoming[0];
   }, [exams]);
+
+  const renderActiveView = () => {
+    switch (activeView) {
+      case 'subjects':
+        return (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-bold">Subjects</h2>
+                <Button variant="outline" size="sm" onClick={() => setIsSubjectDialogOpen(true)}>
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Add Subject
+                </Button>
+            </div>
+            <SubjectList />
+          </div>
+        );
+      case 'exams':
+        return <ExamList />;
+      default:
+        return null;
+    }
+  }
 
   return (
     <div className="container mx-auto p-4 md:p-8">
@@ -76,19 +99,7 @@ export default function Home() {
         </div>
 
         <div className="mt-8">
-          {activeView === 'subjects' && (
-             <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                    <h2 className="text-2xl font-bold">Subjects</h2>
-                    <Button variant="outline" size="sm" onClick={() => setIsSubjectDialogOpen(true)}>
-                        <PlusCircle className="mr-2 h-4 w-4" />
-                        Add Subject
-                    </Button>
-                </div>
-                <SubjectList />
-             </div>
-          )}
-          {activeView === 'exams' && <ExamList />}
+          {renderActiveView()}
         </div>
       
       <SubjectDialog open={isSubjectDialogOpen} onOpenChange={setIsSubjectDialogOpen} />

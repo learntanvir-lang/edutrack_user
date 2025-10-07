@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import { cn } from '@/lib/utils';
 
 interface CountdownProps {
@@ -51,16 +51,16 @@ const CountdownBox = ({ value, label, variant, className }: { value: string; lab
     </div>
 );
 
+const MemoizedCountdownBox = memo(CountdownBox);
+
 export function Countdown({ targetDate, isPastOrCompleted, variant = 'default', boxClassName }: CountdownProps) {
-  const [timeLeft, setTimeLeft] = useState<TimeLeft | null>(null);
+  const [timeLeft, setTimeLeft] = useState<TimeLeft | null>(calculateTimeLeft(targetDate));
 
   useEffect(() => {
     if (isPastOrCompleted) {
         setTimeLeft(null);
         return;
     }
-    // This will only run on the client, after initial hydration
-    setTimeLeft(calculateTimeLeft(targetDate));
 
     const timer = setInterval(() => {
       setTimeLeft(calculateTimeLeft(targetDate));
@@ -81,20 +81,20 @@ export function Countdown({ targetDate, isPastOrCompleted, variant = 'default', 
   if (!timeLeft || isPastOrCompleted) {
     return (
         <div className="grid grid-cols-4 gap-2 md:gap-4" aria-label="Countdown timer has finished">
-            <CountdownBox value="00" label={labels.days} variant={variant} className={boxClassName} />
-            <CountdownBox value="00" label={labels.hours} variant={variant} className={boxClassName} />
-            <CountdownBox value="00" label={labels.minutes} variant={variant} className={boxClassName} />
-            <CountdownBox value="00" label={labels.seconds} variant={variant} className={boxClassName} />
+            <MemoizedCountdownBox value="00" label={labels.days} variant={variant} className={boxClassName} />
+            <MemoizedCountdownBox value="00" label={labels.hours} variant={variant} className={boxClassName} />
+            <MemoizedCountdownBox value="00" label={labels.minutes} variant={variant} className={boxClassName} />
+            <MemoizedCountdownBox value="00" label={labels.seconds} variant={variant} className={boxClassName} />
         </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-4 gap-2 md:gap-4" aria-label="Countdown timer">
-        <CountdownBox value={format(timeLeft.days)} label={labels.days} variant={variant} className={boxClassName} />
-        <CountdownBox value={format(timeLeft.hours)} label={labels.hours} variant={variant} className={boxClassName} />
-        <CountdownBox value={format(timeLeft.minutes)} label={labels.minutes} variant={variant} className={boxClassName} />
-        <CountdownBox value={format(timeLeft.seconds)} label={labels.seconds} variant={variant} className={boxClassName} />
+    <div className="grid grid-cols-4 gap-2 md:gap.4" aria-label="Countdown timer">
+        <MemoizedCountdownBox value={format(timeLeft.days)} label={labels.days} variant={variant} className={boxClassName} />
+        <MemoizedCountdownBox value={format(timeLeft.hours)} label={labels.hours} variant={variant} className={boxClassName} />
+        <MemoizedCountdownBox value={format(timeLeft.minutes)} label={labels.minutes} variant={variant} className={boxClassName} />
+        <MemoizedCountdownBox value={format(timeLeft.seconds)} label={labels.seconds} variant={variant} className={boxClassName} />
     </div>
   );
 }
