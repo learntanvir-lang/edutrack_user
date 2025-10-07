@@ -11,6 +11,7 @@ import { ExamDialog } from "./ExamDialog";
 import { Book, Calendar, Pen, Clock, Info } from "lucide-react";
 import { AppDataContext } from "@/context/AppDataContext";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 interface NextExamCardProps {
   exam: Exam;
@@ -41,7 +42,11 @@ export default function NextExamCard({ exam }: NextExamCardProps) {
 
   return (
     <>
-      <Card className="bg-primary text-primary-foreground border-0 shadow-xl rounded-2xl [--card-foreground:theme(colors.primary.foreground)] [--muted-foreground:theme(colors.primary.foreground/0.8)]">
+      <Card className={cn(
+        "bg-primary text-primary-foreground border-0 shadow-xl rounded-2xl",
+        "[--card-foreground:theme(colors.primary.foreground)] [--muted-foreground:theme(colors.primary.foreground/0.8)]",
+        "transition-all duration-300 ease-in-out hover:shadow-2xl hover:-translate-y-1"
+      )}>
         <CardHeader className="pb-4">
             <div className="flex justify-between items-start">
               <div>
