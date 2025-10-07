@@ -5,7 +5,7 @@ import { useState, useContext } from 'react';
 import { Subject } from '@/lib/types';
 import { AppDataContext } from '@/context/AppDataContext';
 import { Button } from '@/components/ui/button';
-import { MoreHorizontal, Pen, Trash2, ChevronDown, PlusCircle } from 'lucide-react';
+import { MoreHorizontal, Pen, Trash2, ChevronDown, PlusCircle, Copy } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -33,6 +33,10 @@ export function SubjectList() {
     if (window.confirm("Are you sure you want to delete this subject? This will also delete all papers, chapters, and activities within it.")) {
       dispatch({ type: 'DELETE_SUBJECT', payload: subjectId });
     }
+  };
+
+  const handleDuplicate = (subject: Subject) => {
+    dispatch({ type: 'DUPLICATE_SUBJECT', payload: subject });
   };
 
   const handleAddPaperClick = (subjectId: string) => {
@@ -81,6 +85,9 @@ export function SubjectList() {
                     <DropdownMenuContent>
                       <DropdownMenuItem onClick={() => setEditingSubject(subject)}>
                         <Pen className="mr-2 h-4 w-4" /> Edit
+                      </DropdownMenuItem>
+                       <DropdownMenuItem onClick={() => handleDuplicate(subject)}>
+                        <Copy className="mr-2 h-4 w-4" /> Duplicate
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         onClick={() => handleDelete(subject.id)}

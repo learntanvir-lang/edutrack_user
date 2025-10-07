@@ -16,9 +16,11 @@ type Action =
   | { type: "ADD_SUBJECT"; payload: Subject }
   | { type: "UPDATE_SUBJECT"; payload: Subject }
   | { type: "DELETE_SUBJECT"; payload: string }
+  | { type: "DUPLICATE_SUBJECT"; payload: Subject }
   | { type: "ADD_PAPER"; payload: { subjectId: string; paper: Paper } }
   | { type: "UPDATE_PAPER"; payload: { subjectId: string; paper: Paper } }
   | { type: "DELETE_PAPER"; payload: { subjectId: string; paperId: string } }
+  | { type: "DUPLICATE_PAPER"; payload: { subjectId: string; paper: Paper } }
   | { type: "ADD_CHAPTER"; payload: { subjectId: string; paperId: string; chapter: Chapter } }
   | { type: "UPDATE_CHAPTER"; payload: { subjectId: string; paperId: string; chapter: Chapter } }
   | { type: "DELETE_CHAPTER"; payload: { subjectId: string; paperId: string; chapterId: string } }
@@ -39,6 +41,25 @@ const appReducer = (state: AppState, action: Action): AppState => {
       return { ...state, subjects: state.subjects.map(s => s.id === action.payload.id ? action.payload : s) };
     case "DELETE_SUBJECT":
       return { ...state, subjects: state.subjects.filter(s => s.id !== action.payload) };
+    case "DUPLICATE_SUBJECT": {
+      const subject = action.payload;
+      const newSubject: Subject = {
+        ...subject,
+        id: uuidv4(),
+        name: `${subject.name} (Copy)`,
+        papers: subject.papers.map(paper => ({
+          ...paper,
+          id: uuidv4(),
+          chapters: paper.chapters.map(chapter => ({
+            ...chapter,
+            id: uuidv4(),
+            progressItems: chapter.progressItems.map(item => ({...item, id: uuidv4()})),
+            resourceLinks: chapter.resourceLinks.map(link => ({...link, id: uuidv4()})),
+          }))
+        }))
+      };
+      return { ...state, subjects: [...state.subjects, newSubject] };
+    }
     // Paper actions
     case "ADD_PAPER":
       return { ...state, subjects: state.subjects.map(s => s.id === action.payload.subjectId ? { ...s, papers: [...s.papers, action.payload.paper] } : s) };
@@ -46,6 +67,21 @@ const appReducer = (state: AppState, action: Action): AppState => {
       return { ...state, subjects: state.subjects.map(s => s.id === action.payload.subjectId ? { ...s, papers: s.papers.map(p => p.id === action.payload.paper.id ? action.payload.paper : p) } : s) };
     case "DELETE_PAPER":
       return { ...state, subjects: state.subjects.map(s => s.id === action.payload.subjectId ? { ...s, papers: s.papers.filter(p => p.id !== action.payload.paperId) } : s) };
+    case "DUPLICATE_PAPER": {
+      const { subjectId, paper } = action.payload;
+      const newPaper: Paper = {
+        ...paper,
+        id: uuidv4(),
+        name: `${paper.name} (Copy)`,
+        chapters: paper.chapters.map(chapter => ({
+            ...chapter,
+            id: uuidv4(),
+            progressItems: chapter.progressItems.map(item => ({...item, id: uuidv4()})),
+            resourceLinks: chapter.resourceLinks.map(link => ({...link, id: uuidv4()})),
+        }))
+      };
+      return {...state, subjects: state.subjects.map(s => s.id === subjectId ? { ...s, papers: [...s.papers, newPaper] } : s)};
+    }
     // Chapter actions
     case "ADD_CHAPTER":
         return {...state, subjects: state.subjects.map(s => s.id === action.payload.subjectId ? {...s, papers: s.papers.map(p => p.id === action.payload.paperId ? {...p, chapters: [...p.chapters, action.payload.chapter]} : p)}: s)};
