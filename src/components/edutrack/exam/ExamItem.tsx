@@ -53,7 +53,7 @@ export function ExamItem({ exam }: ExamItemProps) {
       return null;
     }).filter(Boolean);
 
-    if (chapterNames.length === 0) return null;
+    if (exam.chapterIds?.length > 0 && chapterNames.length === 0) return null;
 
     return {
       subjectName: subject.name,
@@ -65,7 +65,7 @@ export function ExamItem({ exam }: ExamItemProps) {
   return (
     <>
       <Card className={cn(
-          "transition-all duration-300",
+          "transition-all duration-300 inline-block w-full mb-4",
           isPast ? 
             (exam.isCompleted ? "bg-green-50 border-green-200 shadow-lg shadow-green-500/20 hover:shadow-xl hover:shadow-green-500/40 hover:-translate-y-1" : "bg-red-50 border-red-200 shadow-lg shadow-red-500/20 hover:shadow-xl hover:shadow-red-500/40 hover:-translate-y-1") :
             "bg-card border-2 border-primary shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/40 hover:-translate-y-1"
@@ -92,7 +92,7 @@ export function ExamItem({ exam }: ExamItemProps) {
                 <Badge key={index} variant={isPast ? (exam.isCompleted ? 'default' : 'destructive') : 'secondary'} className={cn('px-3 py-1 text-sm', 
                     isPast ? (exam.isCompleted ? 'bg-green-100 text-green-800 transition-all hover:bg-green-200 hover:scale-105' : 'bg-red-100 text-red-800 transition-all hover:bg-red-200 hover:scale-105') : ''
                 )}>
-                  {detail.subjectName} - {detail.chapters}
+                  {detail.subjectName}{detail.chapters && ` - ${detail.chapters}`}
                 </Badge>
               ))}
             </div>
