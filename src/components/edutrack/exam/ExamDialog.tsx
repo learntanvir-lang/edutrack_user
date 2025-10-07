@@ -274,7 +274,7 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
                         <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
                             <Command>
                                 <CommandInput placeholder="Search chapters..." />
-                                <CommandList>
+                                <CommandList className="max-h-[200px]">
                                 <CommandEmpty>No chapters found.</CommandEmpty>
                                 {chaptersBySubject.map(subject => (
                                   <CommandGroup key={subject.subjectId} heading={subject.subjectName}>
