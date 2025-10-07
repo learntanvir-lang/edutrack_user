@@ -28,10 +28,13 @@ import { useAuth } from '@/firebase';
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  updateProfile,
 } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { FirebaseError } from 'firebase/app';
+import { doc, setDoc } from 'firebase/firestore';
+import { useFirebase } from '@/firebase';
 
 const loginSchema = z.object({
   email: z.string().email({ message: 'Invalid email address.' }),
@@ -39,6 +42,7 @@ const loginSchema = z.object({
 });
 
 const signupSchema = z.object({
+  username: z.string().min(1, { message: 'Username is required.'}),
   email: z.string().email({ message: 'Invalid email address.' }),
   password: z.string().min(6, { message: 'Password must be at least 6 characters.' }),
   confirmPassword: z.string(),
@@ -52,7 +56,7 @@ type SignupFormValues = z.infer<typeof signupSchema>;
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
-  const auth = useAuth();
+  const { auth, firestore } = useFirebase();
   const router = useRouter();
   const { toast } = useToast();
 
@@ -63,7 +67,7 @@ export default function LoginPage() {
 
   const signupForm = useForm<SignupFormValues>({
     resolver: zodResolver(signupSchema),
-    defaultValues: { email: '', password: '', confirmPassword: '' },
+    defaultValues: { username: '', email: '', password: '', confirmPassword: '' },
   });
 
   const handleAuthError = (error: FirebaseError) => {
@@ -116,7 +120,22 @@ export default function LoginPage() {
   const onSignupSubmit = async (values: SignupFormValues) => {
     setLoading(true);
     try {
-      await createUserWithEmailAndPassword(auth, values.email, values.password);
+      const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
+      const user = userCredential.user;
+
+      // Update user profile with username
+      await updateProfile(user, { displayName: values.username });
+      
+      // Also save user to firestore collection
+      if (firestore) {
+        await setDoc(doc(firestore, "users", user.uid), {
+          id: user.uid,
+          username: values.username,
+          displayName: values.username,
+          email: user.email,
+        });
+      }
+
       router.push('/');
     } catch (error) {
       handleAuthError(error as FirebaseError);
@@ -188,6 +207,19 @@ export default function LoginPage() {
             <Form {...signupForm}>
               <form onSubmit={signupForm.handleSubmit(onSignupSubmit)}>
                 <CardContent className="space-y-4">
+                   <FormField
+                    control={signupForm.control}
+                    name="username"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Username</FormLabel>
+                        <FormControl>
+                          <Input placeholder="e.g. janesmith" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                   <FormField
                     control={signupForm.control}
                     name="email"
