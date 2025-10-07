@@ -53,8 +53,6 @@ interface ExamDialogProps {
 export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
   const { subjects, dispatch } = useContext(AppDataContext);
   const isEditing = !!exam;
-  const [isSubjectSelectOpen, setSubjectSelectOpen] = useState(false);
-  const [isChapterSelectOpen, setChapterSelectOpen] = useState(false);
 
   const form = useForm<ExamFormValues>({
     resolver: zodResolver(examSchema),
@@ -176,7 +174,7 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
               render={({ field }) => (
                 <FormItem className="flex flex-col">
                   <FormLabel>Subject(s)</FormLabel>
-                  <Popover open={isSubjectSelectOpen} onOpenChange={setSubjectSelectOpen}>
+                   <Popover>
                       <PopoverTrigger asChild>
                           <FormControl>
                               <Button
@@ -250,7 +248,7 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
                     <FormLabel>Chapter(s)</FormLabel>
-                    <Popover open={isChapterSelectOpen} onOpenChange={setChapterSelectOpen}>
+                    <Popover>
                         <PopoverTrigger asChild>
                             <FormControl>
                                 <Button
@@ -276,7 +274,7 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
                             <Command>
                                 <CommandInput placeholder="Search chapters..." />
                                 <CommandList className="max-h-[200px]">
-                                <CommandEmpty>No chapters found for the selected subject(s).</CommandEmpty>
+                                <CommandEmpty>No chapters found. Select a subject first.</CommandEmpty>
                                 {chaptersBySubject.map(subject => (
                                   <CommandGroup key={subject.subjectId} heading={subject.subjectName}>
                                     {subject.chapters.map((chapter) => (
@@ -375,3 +373,5 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
     </Dialog>
   );
 }
+
+    
