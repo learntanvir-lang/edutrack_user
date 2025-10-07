@@ -1,0 +1,189 @@
+{
+  "entities": {
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user in the EduTrack application.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the User entity."
+        },
+        "username": {
+          "type": "string",
+          "description": "The user's username."
+        },
+        "email": {
+          "type": "string",
+          "description": "The user's email address.",
+          "format": "email"
+        },
+        "firstName": {
+          "type": "string",
+          "description": "The user's first name."
+        },
+        "lastName": {
+          "type": "string",
+          "description": "The user's last name."
+        }
+      },
+      "required": [
+        "id",
+        "username",
+        "email"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores user profile information. Only the authenticated user can read/write their own document.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user, matching the Firebase Authentication UID."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/exams/{examId}",
+        "definition": {
+          "entityName": "exam",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores exam data for a specific user. Includes denormalized 'userId' for authorization independence.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "examId",
+              "description": "The unique identifier of the exam."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/subjects/{subjectId}",
+        "definition": {
+          "entityName": "subject",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores subject data for a specific user. Includes denormalized 'userId' for authorization independence.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "subjectId",
+              "description": "The unique identifier of the subject."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/subjects/{subjectId}/papers/{paperId}",
+        "definition": {
+          "entityName": "paper",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores paper data for a specific subject of a user. Includes denormalized 'userId' for authorization independence.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "subjectId",
+              "description": "The unique identifier of the subject."
+            },
+            {
+              "name": "paperId",
+              "description": "The unique identifier of the paper."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/subjects/{subjectId}/papers/{paperId}/chapters/{chapterId}",
+        "definition": {
+          "entityName": "chapter",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores chapter data for a specific paper of a subject for a user. Includes denormalized 'userId' for authorization independence.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "subjectId",
+              "description": "The unique identifier of the subject."
+            },
+            {
+              "name": "paperId",
+              "description": "The unique identifier of the paper."
+            },
+            {
+              "name": "chapterId",
+              "description": "The unique identifier of the chapter."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/subjects/{subjectId}/papers/{paperId}/chapters/{chapterId}/activities/{activityId}",
+        "definition": {
+          "entityName": "activity",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores activity data for a specific chapter of a paper within a subject for a user. Includes denormalized 'userId' for authorization independence.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "subjectId",
+              "description": "The unique identifier of the subject."
+            },
+            {
+              "name": "paperId",
+              "description": "The unique identifier of the paper."
+            },
+            {
+              "name": "chapterId",
+              "description": "The unique identifier of the chapter."
+            },
+            {
+              "name": "activityId",
+              "description": "The unique identifier of the activity."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "This Firestore structure prioritizes authorization independence and data clarity for the EduTrack app. User data is stored in a private collection, ensuring only the authenticated user can access their information.  All data related to exams, subjects, papers, chapters, and activities are stored under the user's document, enforcing a clear ownership model. This design eliminates the need for `get()` calls in security rules, enabling atomic operations and improving debuggability. Each document includes denormalized data (like the user ID) to enforce authorization independence.\n\nThe structure supports the required QAPs by:\n\n1.  **Private Data:** Using path-based ownership (`/users/{userId}/exams/{examId}`) to secure user-specific data.\n2.  **Hierarchical Paths:**  Maintaining a hierarchical structure (`/users/{userId}/subjects/{subjectId}/papers/{paperId}/chapters/{chapterId}/activities/{activityId}`) to represent the relationships between entities, ensuring data integrity and simplified security rules.\n3.  **Structural Segregation:** Each entity type (exams, subjects, papers, etc.) resides in its own subcollection, ensuring a homogeneous security posture for all documents within that subcollection."
+  }
+}

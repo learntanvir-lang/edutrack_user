@@ -1,0 +1,157 @@
+/**
+ * @fileOverview
+ * This ruleset enforces a strict user-ownership model for all data within the EduTrack application.
+ * All data is nested under /users/{userId}, ensuring that only the authenticated user can access their own data.
+ *
+ * Data Structure:
+ * - /users/{userId}: Stores user profile information.
+ * - /users/{userId}/exams/{examId}: Stores exam data for a specific user.
+ * - /users/{userId}/subjects/{subjectId}: Stores subject data for a specific user.
+ * - /users/{userId}/subjects/{subjectId}/papers/{paperId}: Stores paper data for a specific subject of a user.
+ * - /users/{userId}/subjects/{subjectId}/papers/{paperId}/chapters/{chapterId}: Stores chapter data.
+ * - /users/{userId}/subjects/{subjectId}/papers/{paperId}/chapters/{chapterId}/activities/{activityId}: Stores activity data.
+ *
+ * Key Security Decisions:
+ * - User listing is disallowed.
+ * - All subcollections inherit the ownership of the parent /users/{userId} document.
+ * - Data validation is limited to authorization-critical fields (e.g., userId).
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * @description Protects the /users/{userId} collection, ensuring only the authenticated user can manage their own profile.
+     * @path /users/{userId}
+     * @allow (create) - User with UID 'user_abc' can create their profile at /users/user_abc.
+     * @allow (get, update, delete) - User with UID 'user_abc' can read/update/delete their profile at /users/user_abc.
+     * @deny (create) - User with UID 'user_xyz' cannot create a profile at /users/user_abc.
+     * @deny (get, update, delete) - User with UID 'user_xyz' cannot read/update/delete the profile at /users/user_abc.
+     * @principle Enforces document ownership for all operations.
+     */
+    match /users/{userId} {
+      function isOwner(userId) {
+        return request.auth != null && request.auth.uid == userId;
+      }
+      function isExistingOwner(userId) {
+        return isOwner(userId) && resource != null;
+      }
+
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if isOwner(userId) && request.resource.data.id == userId;
+      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Protects the /users/{userId}/exams/{examId} subcollection, ensuring only the authenticated user can manage their own exams.
+     * @path /users/{userId}/exams/{examId}
+     * @allow (create, get, list, update, delete) - User with UID 'user_abc' can manage their exams under /users/user_abc/exams.
+     * @deny (create, get, list, update, delete) - User with UID 'user_xyz' cannot manage exams under /users/user_abc/exams.
+     * @principle Enforces document ownership for all operations within the subcollection.
+     */
+    match /users/{userId}/exams/{examId} {
+        function isOwner(userId) {
+            return request.auth != null && request.auth.uid == userId;
+        }
+        function isExistingOwner(userId) {
+            return isOwner(userId) && resource != null;
+        }
+
+        allow get: if isOwner(userId);
+        allow list: if isOwner(userId);
+        allow create: if isOwner(userId);
+        allow update: if isExistingOwner(userId);
+        allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Protects the /users/{userId}/subjects/{subjectId} subcollection, ensuring only the authenticated user can manage their own subjects.
+     * @path /users/{userId}/subjects/{subjectId}
+     * @allow (create, get, list, update, delete) - User with UID 'user_abc' can manage their subjects under /users/user_abc/subjects.
+     * @deny (create, get, list, update, delete) - User with UID 'user_xyz' cannot manage subjects under /users/user_abc/subjects.
+     * @principle Enforces document ownership for all operations within the subcollection.
+     */
+    match /users/{userId}/subjects/{subjectId} {
+        function isOwner(userId) {
+            return request.auth != null && request.auth.uid == userId;
+        }
+        function isExistingOwner(userId) {
+            return isOwner(userId) && resource != null;
+        }
+
+        allow get: if isOwner(userId);
+        allow list: if isOwner(userId);
+        allow create: if isOwner(userId);
+        allow update: if isExistingOwner(userId);
+        allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Protects the /users/{userId}/subjects/{subjectId}/papers/{paperId} subcollection, ensuring only the authenticated user can manage their own papers.
+     * @path /users/{userId}/subjects/{subjectId}/papers/{paperId}
+     * @allow (create, get, list, update, delete) - User with UID 'user_abc' can manage their papers under /users/user_abc/subjects/{subjectId}/papers.
+     * @deny (create, get, list, update, delete) - User with UID 'user_xyz' cannot manage papers under /users/user_abc/subjects/{subjectId}/papers.
+     * @principle Enforces document ownership for all operations within the subcollection.
+     */
+    match /users/{userId}/subjects/{subjectId}/papers/{paperId} {
+        function isOwner(userId) {
+            return request.auth != null && request.auth.uid == userId;
+        }
+        function isExistingOwner(userId) {
+            return isOwner(userId) && resource != null;
+        }
+
+        allow get: if isOwner(userId);
+        allow list: if isOwner(userId);
+        allow create: if isOwner(userId);
+        allow update: if isExistingOwner(userId);
+        allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Protects the /users/{userId}/subjects/{subjectId}/papers/{paperId}/chapters/{chapterId} subcollection, ensuring only the authenticated user can manage their own chapters.
+     * @path /users/{userId}/subjects/{subjectId}/papers/{paperId}/chapters/{chapterId}
+     * @allow (create, get, list, update, delete) - User with UID 'user_abc' can manage their chapters under /users/user_abc/subjects/{subjectId}/papers/{paperId}/chapters.
+     * @deny (create, get, list, update, delete) - User with UID 'user_xyz' cannot manage chapters under /users/user_abc/subjects/{subjectId}/papers/{paperId}/chapters.
+     * @principle Enforces document ownership for all operations within the subcollection.
+     */
+    match /users/{userId}/subjects/{subjectId}/papers/{paperId}/chapters/{chapterId} {
+        function isOwner(userId) {
+            return request.auth != null && request.auth.uid == userId;
+        }
+        function isExistingOwner(userId) {
+            return isOwner(userId) && resource != null;
+        }
+
+        allow get: if isOwner(userId);
+        allow list: if isOwner(userId);
+        allow create: if isOwner(userId);
+        allow update: if isExistingOwner(userId);
+        allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Protects the /users/{userId}/subjects/{subjectId}/papers/{paperId}/chapters/{chapterId}/activities/{activityId} subcollection, ensuring only the authenticated user can manage their own activities.
+     * @path /users/{userId}/subjects/{subjectId}/papers/{paperId}/chapters/{chapterId}/activities/{activityId}
+     * @allow (create, get, list, update, delete) - User with UID 'user_abc' can manage their activities under /users/user_abc/subjects/{subjectId}/papers/{paperId}/chapters/{chapterId}/activities.
+     * @deny (create, get, list, update, delete) - User with UID 'user_xyz' cannot manage activities under /users/user_abc/subjects/{subjectId}/papers/{paperId}/chapters/{chapterId}/activities.
+     * @principle Enforces document ownership for all operations within the subcollection.
+     */
+    match /users/{userId}/subjects/{subjectId}/papers/{paperId}/chapters/{chapterId}/activities/{activityId} {
+        function isOwner(userId) {
+            return request.auth != null && request.auth.uid == userId;
+        }
+        function isExistingOwner(userId) {
+            return isOwner(userId) && resource != null;
+        }
+
+        allow get: if isOwner(userId);
+        allow list: if isOwner(userId);
+        allow create: if isOwner(userId);
+        allow update: if isExistingOwner(userId);
+        allow delete: if isExistingOwner(userId);
+    }
+  }
+}
