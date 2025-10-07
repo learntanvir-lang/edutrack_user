@@ -17,6 +17,7 @@ import {
 import { signOut } from 'firebase/auth';
 import { LogOut, User as UserIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { cn } from '@/lib/utils';
 
 export function AppHeader() {
   const { user, isUserLoading } = useUser();
@@ -40,10 +41,17 @@ export function AppHeader() {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-14 items-center">
-        <Link href="/" className="flex items-center space-x-2 mr-auto">
-          <EduTrackLogo className="h-6 w-6" />
-          <span className="font-bold text-lg">EduTrack</span>
-        </Link>
+        <div className="flex items-center space-x-4 mr-auto">
+          <Link href="/" className="flex items-center space-x-2">
+            <EduTrackLogo className="h-6 w-6" />
+            <span className="font-bold text-lg">EduTrack</span>
+          </Link>
+          {user && (
+            <span className="hidden md:block text-sm font-medium text-muted-foreground animate-fade-in-down">
+              Welcome, {user.displayName || 'User'}
+            </span>
+          )}
+        </div>
         <div className="flex items-center space-x-4">
           {isUserLoading ? (
             <div className="h-8 w-20 animate-pulse rounded-md bg-muted" />
