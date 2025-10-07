@@ -209,7 +209,8 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
                                         key={subject.id}
                                         onSelect={() => {
                                             const currentIds = field.value || [];
-                                            const newIds = currentIds.includes(subject.id)
+                                            const isSelected = currentIds.includes(subject.id);
+                                            const newIds = isSelected
                                                 ? currentIds.filter((id) => id !== subject.id)
                                                 : [...currentIds, subject.id];
                                             form.setValue("subjectIds", newIds, { shouldValidate: true });
@@ -221,14 +222,14 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
                                               .flatMap(p => p.chapters)
                                               .map(c => c.id);
                                             
-                                            const newChapterIds = selectedChapterIds.filter(id => availableChapterIds.includes(id));
+                                            const newChapterIds = (form.getValues("chapterIds") || []).filter(id => availableChapterIds.includes(id));
                                             form.setValue("chapterIds", newChapterIds, { shouldValidate: true });
                                         }}
                                     >
                                         <Check
                                         className={cn(
                                             "mr-2 h-4 w-4",
-                                            selectedSubjectIds.includes(subject.id) ? "opacity-100" : "opacity-0"
+                                            (field.value || []).includes(subject.id) ? "opacity-100" : "opacity-0"
                                         )}
                                         />
                                         {subject.name}
@@ -275,7 +276,7 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
                             <Command>
                                 <CommandInput placeholder="Search chapters..." />
                                 <CommandList className="max-h-[200px]">
-                                <CommandEmpty>No chapters found.</CommandEmpty>
+                                <CommandEmpty>No chapters found for the selected subject(s).</CommandEmpty>
                                 {chaptersBySubject.map(subject => (
                                   <CommandGroup key={subject.subjectId} heading={subject.subjectName}>
                                     {subject.chapters.map((chapter) => (
@@ -293,7 +294,7 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
                                         <Check
                                         className={cn(
                                             "mr-2 h-4 w-4",
-                                            selectedChapterIds.includes(chapter.id) ? "opacity-100" : "opacity-0"
+                                            (field.value || []).includes(chapter.id) ? "opacity-100" : "opacity-0"
                                         )}
                                         />
                                         <div>
