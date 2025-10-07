@@ -49,7 +49,7 @@ export function AppHeader() {
             <span className="font-bold text-lg">EduTrack</span>
           </Link>
           {user && !isUserLoading && (
-             <div className="hidden md:flex items-center gap-2 rounded-lg bg-primary/10 px-3 py-1 animate-sparkle-in">
+             <div className="hidden md:flex items-center gap-2 rounded-lg bg-primary/10 px-3 py-1 animate-subtle-pulse">
                 <Sparkles className="h-4 w-4 text-primary/80" />
                 <span className="text-base font-semibold text-primary">
                     Welcome, {user.displayName || 'User'}
