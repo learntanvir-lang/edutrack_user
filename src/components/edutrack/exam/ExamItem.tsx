@@ -53,7 +53,7 @@ export function ExamItem({ exam }: ExamItemProps) {
       return null;
     }).filter(Boolean);
 
-    if (exam.chapterIds?.length > 0 && chapterNames.length === 0) return null;
+    if (exam.chapterIds?.length > 0 && chapterNames.length === 0 && (subject.papers.flatMap(p => p.chapters).length > 0)) return null;
 
     return {
       subjectName: subject.name,
@@ -68,11 +68,11 @@ export function ExamItem({ exam }: ExamItemProps) {
           "transition-all duration-300 w-full",
           isPast ? 
             (exam.isCompleted ? "bg-green-50 border-green-200 shadow-lg shadow-green-500/20 hover:shadow-xl hover:shadow-green-500/40 hover:-translate-y-1" : "bg-red-50 border-red-200 shadow-lg shadow-red-500/20 hover:shadow-xl hover:shadow-red-500/40 hover:-translate-y-1") :
-            "bg-card border-2 border-primary shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/40 hover:-translate-y-1"
+            "bg-blue-50 border-blue-200 shadow-lg shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/40 hover:-translate-y-1"
       )}>
         <CardHeader className="pb-4">
           <div className="flex justify-between items-start">
-            <CardTitle className="font-bold text-xl">
+            <CardTitle className="font-bold text-xl text-foreground">
               {exam.name}
             </CardTitle>
             <div className="flex gap-1">
@@ -88,9 +88,11 @@ export function ExamItem({ exam }: ExamItemProps) {
         <CardContent className="space-y-4 px-6 pb-4">
           <div className="space-y-2 text-sm text-muted-foreground">
             <div className="flex flex-wrap gap-1">
-              {examDetailsBySubject.map((detail, index) => detail && (
+              {(examDetailsBySubject.length > 0 ? examDetailsBySubject : (exam.subjectIds || []).map(sId => ({subjectName: subjects.find(s => s.id === sId)?.name, chapters: ''}))).map((detail, index) => detail && detail.subjectName && (
                 <Badge key={index} variant={isPast ? (exam.isCompleted ? 'default' : 'destructive') : 'secondary'} className={cn('px-3 py-1 text-sm', 
-                    isPast ? (exam.isCompleted ? 'bg-green-100 text-green-800 transition-all hover:bg-green-200 hover:scale-105' : 'bg-red-100 text-red-800 transition-all hover:bg-red-200 hover:scale-105') : ''
+                    isPast ? 
+                        (exam.isCompleted ? 'bg-green-100 text-green-800 transition-all hover:bg-green-200 hover:scale-105' : 'bg-red-100 text-red-800 transition-all hover:bg-red-200 hover:scale-105') : 
+                        'bg-blue-100 text-blue-800 transition-all hover:bg-blue-200 hover:scale-105'
                 )}>
                   {detail.subjectName}{detail.chapters && ` - ${detail.chapters}`}
                 </Badge>

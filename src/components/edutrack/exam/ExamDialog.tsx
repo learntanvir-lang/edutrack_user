@@ -33,6 +33,7 @@ import { AppDataContext } from "@/context/AppDataContext";
 import { v4 as uuidv4 } from 'uuid';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const examSchema = z.object({
   name: z.string().min(1, "Exam name is required"),
@@ -146,7 +147,7 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
   
   return (
     <Dialog open={open} onOpenChange={handleDialogChange}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>{isEditing ? "Edit Exam" : "Add Exam"}</DialogTitle>
           <DialogDescription>
@@ -196,7 +197,8 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
                           </FormControl>
                       </PopoverTrigger>
                       <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-                          <Command>
+                        <ScrollArea>
+                          <Command className="max-h-60">
                               <CommandInput placeholder="Search subjects..." />
                               <CommandList>
                                 <CommandEmpty>No subjects found.</CommandEmpty>
@@ -236,6 +238,7 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
                                 </CommandGroup>
                               </CommandList>
                           </Command>
+                        </ScrollArea>
                       </PopoverContent>
                   </Popover>
                   <FormMessage />
@@ -271,9 +274,10 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
                             </FormControl>
                         </PopoverTrigger>
                         <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-                            <Command>
+                          <ScrollArea>
+                            <Command className="max-h-60">
                                 <CommandInput placeholder="Search chapters..." />
-                                <CommandList className="max-h-[200px]">
+                                <CommandList>
                                 <CommandEmpty>No chapters found. Select a subject first.</CommandEmpty>
                                 {chaptersBySubject.map(subject => (
                                   <CommandGroup key={subject.subjectId} heading={subject.subjectName}>
@@ -305,6 +309,7 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
                                 ))}
                                 </CommandList>
                             </Command>
+                          </ScrollArea>
                         </PopoverContent>
                     </Popover>
                     <FormMessage />
