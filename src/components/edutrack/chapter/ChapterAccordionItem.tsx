@@ -6,7 +6,7 @@ import { useState, useContext } from "react";
 import { Chapter } from "@/lib/types";
 import { AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Pen, Trash2, ChevronDown, Copy, GripVertical, Link as LinkIcon, Edit, ExternalLink, Activity, Bookmark } from "lucide-react";
+import { MoreHorizontal, Pen, Trash2, ChevronDown, Copy, GripVertical, Link as LinkIcon, Edit, ExternalLink, Activity } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import {
   DropdownMenu,
@@ -18,6 +18,7 @@ import { AppDataContext } from "@/context/AppDataContext";
 import { ChapterDialog } from "./ChapterDialog";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 
 interface ChapterAccordionItemProps {
     chapter: Chapter;
@@ -44,6 +45,17 @@ export function ChapterAccordionItem({ chapter, subjectId, paperId }: ChapterAcc
             payload: { subjectId, paperId, chapter },
         });
     };
+
+    const chapterProgress = chapter.progressItems.reduce(
+        (acc, item) => {
+          acc.completed += item.completed;
+          acc.total += item.total;
+          return acc;
+        },
+        { completed: 0, total: 0 }
+    );
+    
+    const percentage = chapterProgress.total > 0 ? Math.round((chapterProgress.completed / chapterProgress.total) * 100) : 0;
     
     return (
         <>
@@ -57,6 +69,7 @@ export function ChapterAccordionItem({ chapter, subjectId, paperId }: ChapterAcc
                                     {chapter.number && `Chapter ${chapter.number}: `}
                                     {chapter.name}
                                 </span>
+                                <Badge variant={percentage === 100 ? "default" : "secondary"} className={cn(percentage === 100 && 'bg-green-600')}>{percentage}%</Badge>
                                 <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
                             </div>
                         </AccordionTrigger>

@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useContext } from "react";
@@ -17,6 +18,8 @@ import { PaperDialog } from "./PaperDialog";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { ChapterList } from "../chapter/ChapterList";
 import { ChapterDialog } from "../chapter/ChapterDialog";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 interface PaperListProps {
   papers: Paper[];
@@ -64,13 +67,25 @@ export function PaperList({ papers, subjectId }: PaperListProps) {
   return (
     <>
       <Accordion type="multiple" className="w-full space-y-3">
-        {papers.map((paper) => (
+        {papers.map((paper) => {
+            const paperProgress = paper.chapters.flatMap(c => c.progressItems).reduce(
+                (acc, item) => {
+                  acc.completed += item.completed;
+                  acc.total += item.total;
+                  return acc;
+                },
+                { completed: 0, total: 0 }
+            );
+            const percentage = paperProgress.total > 0 ? Math.round((paperProgress.completed / paperProgress.total) * 100) : 0;
+            
+            return (
           <AccordionItem key={paper.id} value={paper.id} className="border-none">
             <Card className="shadow-sm bg-muted/30">
               <div className="flex items-center justify-between p-4">
                 <AccordionTrigger className="p-0 hover:no-underline flex-1 group">
                    <div className="flex items-center gap-4">
                      <CardTitle className="text-lg">{paper.name}</CardTitle>
+                     <Badge variant={percentage === 100 ? "default" : "secondary"} className={cn(percentage === 100 && 'bg-green-600')}>{percentage}%</Badge>
                      <ChevronDown className="h-5 w-5 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
                    </div>
                 </AccordionTrigger>
@@ -106,7 +121,7 @@ export function PaperList({ papers, subjectId }: PaperListProps) {
               </AccordionContent>
             </Card>
           </AccordionItem>
-        ))}
+        )})}
       </Accordion>
       {editingPaper && (
         <PaperDialog

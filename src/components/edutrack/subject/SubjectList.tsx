@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useContext } from 'react';
@@ -22,6 +23,8 @@ import {
 import { PaperList } from '../paper/PaperList';
 import { Card, CardTitle } from '@/components/ui/card';
 import { PaperDialog } from '../paper/PaperDialog';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 export function SubjectList() {
   const { subjects, dispatch } = useContext(AppDataContext);
@@ -63,7 +66,18 @@ export function SubjectList() {
   return (
     <>
       <Accordion type="multiple" className="w-full space-y-4">
-        {subjects.map(subject => (
+        {subjects.map(subject => {
+            const subjectProgress = subject.papers.flatMap(p => p.chapters).flatMap(c => c.progressItems).reduce(
+                (acc, item) => {
+                  acc.completed += item.completed;
+                  acc.total += item.total;
+                  return acc;
+                },
+                { completed: 0, total: 0 }
+            );
+            const percentage = subjectProgress.total > 0 ? Math.round((subjectProgress.completed / subjectProgress.total) * 100) : 0;
+
+            return (
           <AccordionItem key={subject.id} value={subject.id} className="border-none">
             <Card className="shadow-sm">
               <div className="flex items-center justify-between p-4">
@@ -72,6 +86,7 @@ export function SubjectList() {
                      <CardTitle>
                        {subject.name}
                       </CardTitle>
+                      <Badge variant={percentage === 100 ? "default" : "secondary"} className={cn(percentage === 100 && 'bg-green-600')}>{percentage}%</Badge>
                      <ChevronDown className="h-5 w-5 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
                    </div>
                 </AccordionTrigger>
@@ -110,7 +125,7 @@ export function SubjectList() {
               </AccordionContent>
             </Card>
           </AccordionItem>
-        ))}
+        )})}
       </Accordion>
 
       {editingSubject && (
