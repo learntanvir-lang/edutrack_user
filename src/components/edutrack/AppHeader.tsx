@@ -15,7 +15,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { signOut } from 'firebase/auth';
-import { LogOut, Star } from 'lucide-react';
+import { LogOut, Sparkles } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Skeleton } from '../ui/skeleton';
 
@@ -50,11 +50,11 @@ export function AppHeader() {
           </Link>
           {user && !isUserLoading && (
              <div className="hidden md:flex items-center gap-2 rounded-lg bg-primary/10 px-3 py-1 animate-sparkle-in">
-                <Star className="h-4 w-4 text-primary/80" />
+                <Sparkles className="h-4 w-4 text-primary/80" />
                 <span className="text-base font-semibold text-primary">
                     Welcome, {user.displayName || 'User'}
                 </span>
-                <Star className="h-4 w-4 text-primary/80" />
+                <Sparkles className="h-4 w-4 text-primary/80" />
             </div>
           )}
         </div>
