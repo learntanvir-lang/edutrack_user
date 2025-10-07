@@ -56,9 +56,8 @@ export default function NextExamCard({ exam }: NextExamCardProps) {
                       <Calendar className="h-4 w-4" /> {format(new Date(exam.date), "PPPPp")}
                   </CardDescription>
               </div>
-              <Button variant="secondary" size="sm" onClick={() => setIsEditDialogOpen(true)}>
-                  <Pen className="mr-2 h-4 w-4" />
-                  Edit
+              <Button variant="ghost" size="icon" className="rounded-full border border-primary-foreground/50 text-primary-foreground hover:bg-primary-foreground/20 hover:text-primary-foreground" onClick={() => setIsEditDialogOpen(true)}>
+                  <Pen className="h-4 w-4" />
               </Button>
             </div>
         </CardHeader>
@@ -70,7 +69,7 @@ export default function NextExamCard({ exam }: NextExamCardProps) {
               </div>
               <div className="flex flex-wrap gap-2">
                 {examDetails.map((detail, index) => detail && (
-                  <Badge key={index} variant="secondary" className="px-3 py-1 text-base bg-primary-foreground/20 text-primary-foreground transition-all hover:bg-primary-foreground/30 hover:scale-105">
+                  <Badge key={index} variant="secondary" className="px-3 py-1 text-sm bg-primary-foreground/20 text-primary-foreground transition-all hover:bg-primary-foreground/30 hover:scale-105">
                     {detail.subjectName} - {detail.chapterName}
                   </Badge>
                 ))}
