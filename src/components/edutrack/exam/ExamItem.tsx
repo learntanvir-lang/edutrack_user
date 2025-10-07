@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useContext } from "react";
+import { useState, useContext, memo } from "react";
 import { Exam } from "@/lib/types";
 import { AppDataContext } from "@/context/AppDataContext";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -17,7 +17,7 @@ interface ExamItemProps {
   exam: Exam;
 }
 
-export function ExamItem({ exam }: ExamItemProps) {
+function ExamItem({ exam }: ExamItemProps) {
   const { subjects, dispatch } = useContext(AppDataContext);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
@@ -126,3 +126,4 @@ export function ExamItem({ exam }: ExamItemProps) {
     </>
   );
 }
+export default memo(ExamItem);

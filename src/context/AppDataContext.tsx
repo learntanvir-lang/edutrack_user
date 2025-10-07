@@ -25,15 +25,19 @@ type Action =
   | { type: "ADD_SUBJECT"; payload: Subject }
   | { type: "UPDATE_SUBJECT"; payload: Subject }
   | { type: "DUPLICATE_SUBJECT"; payload: Subject }
+  | { type: "DELETE_SUBJECT"; payload: { id: string } }
   | { type: "ADD_PAPER"; payload: { subjectId: string; paper: Paper } }
   | { type: "UPDATE_PAPER"; payload: { subjectId: string; paper: Paper } }
   | { type: "DUPLICATE_PAPER"; payload: { subjectId: string; paper: Paper } }
+  | { type: "DELETE_PAPER"; payload: { subjectId: string; paperId: string } }
   | { type: "ADD_CHAPTER"; payload: { subjectId: string; paperId: string; chapter: Chapter } }
   | { type: "UPDATE_CHAPTER"; payload: { subjectId: string; paperId: string; chapter: Chapter } }
   | { type: "DUPLICATE_CHAPTER", payload: { subjectId: string, paperId: string, chapter: Chapter } }
+  | { type: "DELETE_CHAPTER"; payload: { subjectId: string; paperId: string; chapterId: string } }
   | { type: "REORDER_CHAPTERS", payload: { subjectId: string, paperId: string, startIndex: number, endIndex: number } }
   | { type: "ADD_EXAM"; payload: Exam }
-  | { type: "UPDATE_EXAM"; payload: Exam };
+  | { type: "UPDATE_EXAM"; payload: Exam }
+  | { type: "DELETE_EXAM"; payload: { id: string } };
 
 const appReducer = (state: AppState, action: Action): AppState => {
   switch (action.type) {
@@ -43,6 +47,8 @@ const appReducer = (state: AppState, action: Action): AppState => {
       return { ...state, subjects: [...state.subjects, action.payload] };
     case "UPDATE_SUBJECT":
       return { ...state, subjects: state.subjects.map(s => s.id === action.payload.id ? action.payload : s) };
+    case "DELETE_SUBJECT":
+      return { ...state, subjects: state.subjects.filter(s => s.id !== action.payload.id) };
     case "DUPLICATE_SUBJECT": {
       const subject = action.payload;
       const newSubject: Subject = {
@@ -66,6 +72,8 @@ const appReducer = (state: AppState, action: Action): AppState => {
       return { ...state, subjects: state.subjects.map(s => s.id === action.payload.subjectId ? { ...s, papers: [...s.papers, action.payload.paper] } : s) };
     case "UPDATE_PAPER":
       return { ...state, subjects: state.subjects.map(s => s.id === action.payload.subjectId ? { ...s, papers: s.papers.map(p => p.id === action.payload.paper.id ? action.payload.paper : p) } : s) };
+    case "DELETE_PAPER":
+      return { ...state, subjects: state.subjects.map(s => s.id === action.payload.subjectId ? { ...s, papers: s.papers.filter(p => p.id !== action.payload.paperId) } : s) };
     case "DUPLICATE_PAPER": {
       const { subjectId, paper } = action.payload;
       const newPaper: Paper = {
@@ -85,6 +93,8 @@ const appReducer = (state: AppState, action: Action): AppState => {
         return {...state, subjects: state.subjects.map(s => s.id === action.payload.subjectId ? {...s, papers: s.papers.map(p => p.id === action.payload.paperId ? {...p, chapters: [...p.chapters, action.payload.chapter]} : p)}: s)};
     case "UPDATE_CHAPTER":
         return {...state, subjects: state.subjects.map(s => s.id === action.payload.subjectId ? {...s, papers: s.papers.map(p => p.id === action.payload.paperId ? {...p, chapters: p.chapters.map(c => c.id === action.payload.chapter.id ? action.payload.chapter : c)} : p)} : s)};
+    case "DELETE_CHAPTER":
+      return { ...state, subjects: state.subjects.map(s => s.id === action.payload.subjectId ? { ...s, papers: s.papers.map(p => p.id === action.payload.paperId ? { ...p, chapters: p.chapters.filter(c => c.id !== action.payload.chapterId) } : p) } : s) };
     case "DUPLICATE_CHAPTER": {
       const { subjectId, paperId, chapter } = action.payload;
       const newChapter: Chapter = {
@@ -123,6 +133,8 @@ const appReducer = (state: AppState, action: Action): AppState => {
       return { ...state, exams: [...state.exams, action.payload] };
     case "UPDATE_EXAM":
       return { ...state, exams: state.exams.map(e => e.id === action.payload.id ? action.payload : e) };
+    case "DELETE_EXAM":
+      return { ...state, exams: state.exams.filter(e => e.id !== action.payload.id) };
     default:
       return state;
   }
@@ -141,8 +153,6 @@ export const AppDataContext = createContext<{
   ...initialState,
   dispatch: () => null,
 });
-
-const LOCAL_STORAGE_KEY = "eduTrackData";
 
 export const AppDataProvider = ({ children }: { children: ReactNode }) => {
   const [state, dispatch] = useReducer(appReducer, initialState);
@@ -167,55 +177,63 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
 
           dispatch({ type: "SET_STATE", payload: { subjects, exams } });
         } catch (error) {
-          console.error("Error fetching from Firestore, falling back to local:", error);
-          loadFromLocalStorage(); 
+          console.error("Error fetching from Firestore:", error);
+          dispatch({ type: "SET_STATE", payload: initialData });
         }
       } else {
-        loadFromLocalStorage();
+        dispatch({ type: "SET_STATE", payload: initialData });
       }
     };
     
-    const loadFromLocalStorage = () => {
-        try {
-            const storedData = localStorage.getItem(LOCAL_STORAGE_KEY);
-            if (storedData) {
-              const parsedData = JSON.parse(storedData);
-              if (parsedData.subjects && parsedData.subjects.some((s: any) => s.papers.some((p: any) => p.chapters.some((c: any) => !c.progressItems)))) {
-                  dispatch({ type: "SET_STATE", payload: initialData });
-              } else {
-                  dispatch({ type: "SET_STATE", payload: parsedData });
-              }
-            } else {
-              dispatch({ type: "SET_STATE", payload: initialData });
-            }
-        } catch (error) {
-            console.error("Failed to load data from localStorage", error);
-            dispatch({ type: "SET_STATE", payload: initialData });
-        }
-    };
-
     loadData();
 
   }, [user, firestore, isUserLoading]);
 
-  useEffect(() => {
-    if (!user && !isUserLoading) {
-      try {
-          if(state.subjects.length > 0 || state.exams.length > 0) {
-              localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(state));
-          }
-      } catch (error) {
-        console.error("Failed to save data to localStorage", error);
-      }
-    }
-  }, [state, user, isUserLoading]);
-
   const syncedDispatch = async (action: Action) => {
-    dispatch(action);
-    const newState = appReducer(state, action);
-
+    
     if (user && firestore) {
         const userId = user.uid;
+        try {
+             switch (action.type) {
+                case 'DELETE_SUBJECT':
+                    await deleteDoc(doc(firestore, `users/${userId}/subjects`, action.payload.id));
+                    break;
+                case 'DELETE_PAPER': {
+                    const subject = state.subjects.find(s => s.id === action.payload.subjectId);
+                    if (subject) {
+                        const updatedPapers = subject.papers.filter(p => p.id !== action.payload.paperId);
+                        await setDoc(doc(firestore, `users/${userId}/subjects`, subject.id), {...subject, papers: updatedPapers});
+                    }
+                    break;
+                }
+                case 'DELETE_CHAPTER': {
+                     const subject = state.subjects.find(s => s.id === action.payload.subjectId);
+                    if (subject) {
+                        const updatedPapers = subject.papers.map(p => {
+                            if (p.id === action.payload.paperId) {
+                                return {...p, chapters: p.chapters.filter(c => c.id !== action.payload.chapterId)};
+                            }
+                            return p;
+                        });
+                        await setDoc(doc(firestore, `users/${userId}/subjects`, subject.id), {...subject, papers: updatedPapers});
+                    }
+                    break;
+                }
+                case 'DELETE_EXAM':
+                    await deleteDoc(doc(firestore, `users/${userId}/exams`, action.payload.id));
+                    break;
+            }
+        } catch (error) {
+            console.error(`Firestore delete operation for ${action.type} failed:`, error);
+        }
+    }
+    
+    // Update local state AFTER Firestore operation
+    dispatch(action);
+    
+    if (user && firestore) {
+        const userId = user.uid;
+        const newState = appReducer(state, action);
         try {
             switch (action.type) {
                 case "ADD_SUBJECT":
@@ -223,7 +241,7 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
                     await setDoc(doc(firestore, `users/${userId}/subjects`, action.payload.id), action.payload);
                     break;
                 case "DUPLICATE_SUBJECT": {
-                    const newSubject = newState.subjects.find(s => s.name === `${action.payload.name} (Copy)`);
+                    const newSubject = newState.subjects.find(s => s.id !== action.payload.id && s.name === `${action.payload.name} (Copy)`);
                     if (newSubject) {
                         await setDoc(doc(firestore, `users/${userId}/subjects`, newSubject.id), newSubject);
                     }
@@ -248,7 +266,7 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
                     break;
             }
         } catch (error) {
-            console.error(`Firestore operation for ${action.type} failed:`, error);
+            console.error(`Firestore write operation for ${action.type} failed:`, error);
         }
     }
 };

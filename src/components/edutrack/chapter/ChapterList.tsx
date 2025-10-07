@@ -6,7 +6,7 @@ import { Chapter } from "@/lib/types";
 import { Accordion } from "@/components/ui/accordion";
 import { AppDataContext } from "@/context/AppDataContext";
 import { cn } from "@/lib/utils";
-import { ChapterAccordionItem } from "./ChapterAccordionItem";
+import ChapterAccordionItem from "./ChapterAccordionItem";
 
 interface ChapterListProps {
   chapters: Chapter[];

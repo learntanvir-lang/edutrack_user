@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useContext } from "react";
+import { useState, useContext, memo } from "react";
 import { Exam } from "@/lib/types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Countdown } from "../Countdown";
@@ -17,7 +17,7 @@ interface NextExamCardProps {
   exam: Exam;
 }
 
-export default function NextExamCard({ exam }: NextExamCardProps) {
+function NextExamCard({ exam }: NextExamCardProps) {
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const { subjects } = useContext(AppDataContext);
     const isPast = new Date(exam.date) < new Date();
@@ -99,3 +99,5 @@ export default function NextExamCard({ exam }: NextExamCardProps) {
     </>
   );
 }
+
+export default memo(NextExamCard);

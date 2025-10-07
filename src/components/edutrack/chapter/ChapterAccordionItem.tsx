@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useState, useContext } from "react";
+import { useState, useContext, memo } from "react";
 import { Chapter } from "@/lib/types";
 import { AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
@@ -26,7 +26,7 @@ interface ChapterAccordionItemProps {
     paperId: string;
 }
 
-export function ChapterAccordionItem({ chapter, subjectId, paperId }: ChapterAccordionItemProps) {
+function ChapterAccordionItem({ chapter, subjectId, paperId }: ChapterAccordionItemProps) {
     const { dispatch } = useContext(AppDataContext);
     const [isEditingChapter, setIsEditingChapter] = useState(false);
 
@@ -149,3 +149,4 @@ export function ChapterAccordionItem({ chapter, subjectId, paperId }: ChapterAcc
         </>
     );
 }
+export default memo(ChapterAccordionItem);

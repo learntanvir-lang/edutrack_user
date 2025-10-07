@@ -3,7 +3,7 @@
 
 import { useContext, useState, useMemo } from "react";
 import { AppDataContext } from "@/context/AppDataContext";
-import { ExamItem } from "./ExamItem";
+import ExamItem from "./ExamItem";
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
 import { ExamDialog } from "./ExamDialog";
