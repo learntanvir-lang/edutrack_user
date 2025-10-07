@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -90,5 +91,24 @@
 
   .animate-fade-in-down {
     animation: fade-in-down 0.5s ease-out forwards;
+  }
+
+  @keyframes sparkle-in {
+    0% {
+        opacity: 0;
+        transform: scale(0.8) translateY(-10px);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.05);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+  }
+
+  .animate-sparkle-in {
+    animation: sparkle-in 0.6s ease-out forwards;
   }
 }

@@ -15,8 +15,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { signOut } from 'firebase/auth';
-import { LogOut } from 'lucide-react';
+import { LogOut, Star } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { Skeleton } from '../ui/skeleton';
 
 export function AppHeader() {
   const { user, isUserLoading } = useUser();
@@ -25,8 +26,10 @@ export function AppHeader() {
 
   const handleSignOut = async () => {
     try {
-      await signOut(auth);
-      router.push('/login');
+      if (auth) {
+        await signOut(auth);
+        router.push('/login');
+      }
     } catch (error) {
       console.error('Error signing out:', error);
     }
@@ -46,14 +49,18 @@ export function AppHeader() {
             <span className="font-bold text-lg">EduTrack</span>
           </Link>
           {user && !isUserLoading && (
-            <span className="hidden md:block text-sm font-medium text-muted-foreground animate-fade-in-down">
-              Welcome, {user.displayName || 'User'}
-            </span>
+             <div className="hidden md:flex items-center gap-2 rounded-lg bg-primary/10 px-3 py-1 animate-sparkle-in">
+                <Star className="h-4 w-4 text-primary/80" />
+                <span className="text-base font-semibold text-primary">
+                    Welcome, {user.displayName || 'User'}
+                </span>
+                <Star className="h-4 w-4 text-primary/80" />
+            </div>
           )}
         </div>
         <div className="flex items-center space-x-4">
           {isUserLoading ? (
-            <div className="h-8 w-20 animate-pulse rounded-md bg-muted" />
+            <Skeleton className="h-8 w-20 rounded-md" />
           ) : user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
