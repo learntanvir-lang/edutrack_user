@@ -47,7 +47,7 @@ export default function NextExamCard({ exam }: NextExamCardProps) {
         "[--card-foreground:theme(colors.primary.foreground)] [--muted-foreground:theme(colors.primary.foreground/0.8)]",
         "transition-all duration-300 ease-in-out hover:shadow-2xl hover:-translate-y-1"
       )}>
-        <CardHeader className="pb-4">
+        <CardHeader className="p-8 pb-6">
             <div className="flex justify-between items-start">
               <div>
                   <div className="flex items-center gap-2 text-sm font-medium text-primary-foreground/80 mb-2">
@@ -67,7 +67,7 @@ export default function NextExamCard({ exam }: NextExamCardProps) {
               </Button>
             </div>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-6 px-8 pb-8">
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-sm font-medium text-primary-foreground/80">
                   <Info className="h-4 w-4" />
