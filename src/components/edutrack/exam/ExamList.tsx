@@ -43,7 +43,7 @@ export function ExamList() {
           {upcomingExams.length > 0 && (
             <div>
               <h2 className="text-2xl font-semibold mb-4">Upcoming</h2>
-              <div className="columns-1 md:columns-2 lg:columns-3 gap-4 space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {upcomingExams.map(exam => (
                   <ExamItem 
                     key={exam.id} 
@@ -58,7 +58,7 @@ export function ExamList() {
             <div>
               {upcomingExams.length > 0 && <Separator className="my-8" />}
               <h2 className="text-2xl font-semibold mb-4">Past</h2>
-              <div className="columns-1 md:columns-2 lg:columns-3 gap-4 space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {pastExams.map(exam => (
                   <ExamItem 
                     key={exam.id} 
