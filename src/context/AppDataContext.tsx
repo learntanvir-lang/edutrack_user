@@ -220,62 +220,71 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [state, user, isUserLoading]);
 
-  const syncedDispatch = (action: Action) => {
-    const newState = appReducer(state, action);
-    dispatch({ type: 'SET_STATE', payload: newState });
+  const syncedDispatch = async (action: Action) => {
+    // Optimistically update local state
+    dispatch(action);
 
+    // Persist changes to Firestore if user is logged in
     if (user && firestore) {
       const userId = user.uid;
-      
-      const getSubjectToUpdate = (subjectId: string) => newState.subjects.find(s => s.id === subjectId);
+      const newState = appReducer(state, action); // a bit redundant but ensures we have the latest state view
 
-      switch (action.type) {
-        case "ADD_SUBJECT":
-        case "UPDATE_SUBJECT":
-          setDoc(doc(firestore, `users/${userId}/subjects`, action.payload.id), action.payload);
-          break;
-        case "DUPLICATE_SUBJECT": {
-          const newSubject = newState.subjects[newState.subjects.length - 1];
-          if(newSubject) {
-            setDoc(doc(firestore, `users/${userId}/subjects`, newSubject.id), newSubject);
+      try {
+        switch (action.type) {
+          case "ADD_SUBJECT":
+          case "UPDATE_SUBJECT":
+            await setDoc(doc(firestore, `users/${userId}/subjects`, action.payload.id), action.payload);
+            break;
+          case "DUPLICATE_SUBJECT": {
+            const newSubject = newState.subjects[newState.subjects.length - 1];
+            if (newSubject) {
+              await setDoc(doc(firestore, `users/${userId}/subjects`, newSubject.id), newSubject);
+            }
+            break;
           }
-          break;
-        }
-        case "DELETE_SUBJECT":
-          deleteDoc(doc(firestore, `users/${userId}/subjects`, action.payload));
-          break;
+          case "DELETE_SUBJECT":
+            await deleteDoc(doc(firestore, `users/${userId}/subjects`, action.payload));
+            break;
 
-        case "ADD_PAPER":
-        case "UPDATE_PAPER":
-        case "DELETE_PAPER":
-        case "DUPLICATE_PAPER":
-        case "ADD_CHAPTER":
-        case "UPDATE_CHAPTER":
-        case "DELETE_CHAPTER":
-        case "DUPLICATE_CHAPTER":
-        case "REORDER_CHAPTERS": {
-          const subject = getSubjectToUpdate(action.payload.subjectId);
-          if (subject) {
-            setDoc(doc(firestore, `users/${userId}/subjects`, subject.id), subject);
+          // Cases that modify a subject document
+          case "ADD_PAPER":
+          case "UPDATE_PAPER":
+          case "DELETE_PAPER":
+          case "DUPLICATE_PAPER":
+          case "ADD_CHAPTER":
+          case "UPDATE_CHAPTER":
+          case "DELETE_CHAPTER":
+          case "DUPLICATE_CHAPTER":
+          case "REORDER_CHAPTERS": {
+            const subjectToUpdate = newState.subjects.find(s => s.id === action.payload.subjectId);
+            if (subjectToUpdate) {
+              await setDoc(doc(firestore, `users/${userId}/subjects`, subjectToUpdate.id), subjectToUpdate);
+            }
+            break;
           }
-          break;
-        }
 
-        case "ADD_EXAM":
-        case "UPDATE_EXAM":
-          setDoc(doc(firestore, `users/${userId}/exams`, action.payload.id), action.payload);
-          break;
-        case "DELETE_EXAM":
-          deleteDoc(doc(firestore, `users/${userId}/exams`, action.payload));
-          break;
-        default:
-          break;
+          case "ADD_EXAM":
+          case "UPDATE_EXAM":
+            await setDoc(doc(firestore, `users/${userId}/exams`, action.payload.id), action.payload);
+            break;
+          case "DELETE_EXAM":
+            await deleteDoc(doc(firestore, `users/${userId}/exams`, action.payload));
+            break;
+
+          default:
+            break;
+        }
+      } catch (error) {
+        console.error(`Firestore operation for ${action.type} failed:`, error);
+        // Here you could implement a rollback logic by dispatching the old state
+        // For simplicity, we are just logging the error.
       }
     }
   };
 
+
   return (
-    <AppDataContext.Provider value={{ ...state, dispatch: syncedDispatch }}>
+    <AppDataContext.Provider value={{ ...appReducer(state, {type: 'SET_STATE', payload: state}), dispatch: syncedDispatch }}>
       {children}
     </AppDataContext.Provider>
   );
