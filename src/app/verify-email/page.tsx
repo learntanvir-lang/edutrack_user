@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth, useUser } from '@/firebase';
-import { sendEmailVerification, signOut } from 'firebase/auth';
+import { sendEmailVerification, signOut, ActionCodeSettings } from 'firebase/auth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
@@ -44,7 +44,11 @@ export default function VerifyEmailPage() {
     if (!user) return;
     setIsSending(true);
     try {
-      await sendEmailVerification(user);
+      const actionCodeSettings: ActionCodeSettings = {
+        url: `${window.location.origin}/`,
+        handleCodeInApp: true,
+      };
+      await sendEmailVerification(user, actionCodeSettings);
       toast({
         title: 'Verification Email Sent',
         description: 'A new verification link has been sent to your email address.',

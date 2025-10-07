@@ -30,6 +30,7 @@ import {
   sendEmailVerification,
   signInWithEmailAndPassword,
   updateProfile,
+  ActionCodeSettings,
 } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
@@ -137,7 +138,11 @@ export default function LoginPage() {
         });
       }
 
-      await sendEmailVerification(user);
+      const actionCodeSettings: ActionCodeSettings = {
+        url: `${window.location.origin}/`,
+        handleCodeInApp: true,
+      };
+      await sendEmailVerification(user, actionCodeSettings);
 
       toast({
         title: 'Account Created!',
