@@ -24,6 +24,12 @@ export function ExamList() {
     return { upcomingExams: upcoming, pastExams: past };
   }, [exams]);
 
+  const MasonryGrid = ({ children }: { children: React.ReactNode }) => (
+    <div className="md:columns-2 lg:columns-3 gap-4 space-y-4">
+      {children}
+    </div>
+  )
+
   return (
     <div className="space-y-8">
        <div className="flex justify-end">
@@ -43,14 +49,15 @@ export function ExamList() {
           {upcomingExams.length > 0 && (
             <div>
               <h2 className="text-2xl font-semibold mb-4">Upcoming</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <MasonryGrid>
                 {upcomingExams.map(exam => (
-                  <ExamItem 
-                    key={exam.id} 
-                    exam={exam} 
-                  />
+                  <div key={exam.id} className="break-inside-avoid">
+                    <ExamItem 
+                      exam={exam} 
+                    />
+                  </div>
                 ))}
-              </div>
+              </MasonryGrid>
             </div>
           )}
 
@@ -58,14 +65,15 @@ export function ExamList() {
             <div>
               {upcomingExams.length > 0 && <Separator className="my-8" />}
               <h2 className="text-2xl font-semibold mb-4">Past</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <MasonryGrid>
                 {pastExams.map(exam => (
-                  <ExamItem 
-                    key={exam.id} 
-                    exam={exam} 
-                  />
+                   <div key={exam.id} className="break-inside-avoid">
+                    <ExamItem 
+                      exam={exam} 
+                    />
+                  </div>
                 ))}
-              </div>
+              </MasonryGrid>
             </div>
           )}
         </>
