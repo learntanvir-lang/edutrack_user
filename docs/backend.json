@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "User": {
@@ -33,157 +34,109 @@
         "username",
         "email"
       ]
+    },
+    "Exam": {
+      "title": "Exam",
+      "type": "object",
+      "description": "Represents an exam.",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "subjectIds": { "type": "array", "items": { "type": "string" } },
+        "chapterIds": { "type": "array", "items": { "type": "string" } },
+        "date": { "type": "string", "format": "date-time" },
+        "isCompleted": { "type": "boolean" }
+      },
+      "required": ["id", "name", "date", "isCompleted"]
+    },
+    "Subject": {
+      "title": "Subject",
+      "type": "object",
+      "description": "Represents a subject.",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "code": { "type": "string" },
+        "papers": {
+          "type": "array",
+          "items": { "$ref": "#/entities/Paper" }
+        }
+      },
+      "required": ["id", "name", "papers"]
+    },
+    "Paper": {
+      "title": "Paper",
+      "type": "object",
+      "description": "Represents a paper within a subject.",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "chapters": {
+          "type": "array",
+          "items": { "$ref": "#/entities/Chapter" }
+        }
+      },
+      "required": ["id", "name", "chapters"]
+    },
+    "Chapter": {
+      "title": "Chapter",
+      "type": "object",
+      "description": "Represents a chapter within a paper.",
+      "properties": {
+        "id": { "type": "string" },
+        "number": { "type": "string" },
+        "name": { "type": "string" },
+        "isCompleted": { "type": "boolean" },
+        "progressItems": {
+          "type": "array",
+          "items": { "$ref": "#/entities/ProgressItem" }
+        },
+        "resourceLinks": {
+          "type": "array",
+          "items": { "$ref": "#/entities/ResourceLink" }
+        }
+      },
+      "required": ["id", "name", "isCompleted", "progressItems", "resourceLinks"]
+    },
+    "ProgressItem": {
+      "title": "Progress Item",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "completed": { "type": "number" },
+        "total": { "type": "number" }
+      },
+      "required": ["id", "name", "completed", "total"]
+    },
+    "ResourceLink": {
+      "title": "Resource Link",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "url": { "type": "string", "format": "uri" },
+        "description": { "type": "string" }
+      },
+      "required": ["id", "url", "description"]
     }
   },
   "auth": {
     "providers": [
-      "password",
-      "anonymous"
+      "password"
     ]
   },
   "firestore": {
-    "structure": [
-      {
-        "path": "/users/{userId}",
-        "definition": {
-          "entityName": "User",
-          "schema": {
-            "$ref": "#/backend/entities/User"
-          },
-          "description": "Stores user profile information. Only the authenticated user can read/write their own document.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier of the user, matching the Firebase Authentication UID."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/users/{userId}/exams/{examId}",
-        "definition": {
-          "entityName": "exam",
-          "schema": {
-            "$ref": "#/backend/entities/User"
-          },
-          "description": "Stores exam data for a specific user. Includes denormalized 'userId' for authorization independence.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier of the user."
-            },
-            {
-              "name": "examId",
-              "description": "The unique identifier of the exam."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/users/{userId}/subjects/{subjectId}",
-        "definition": {
-          "entityName": "subject",
-          "schema": {
-            "$ref": "#/backend/entities/User"
-          },
-          "description": "Stores subject data for a specific user. Includes denormalized 'userId' for authorization independence.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier of the user."
-            },
-            {
-              "name": "subjectId",
-              "description": "The unique identifier of the subject."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/users/{userId}/subjects/{subjectId}/papers/{paperId}",
-        "definition": {
-          "entityName": "paper",
-          "schema": {
-            "$ref": "#/backend/entities/User"
-          },
-          "description": "Stores paper data for a specific subject of a user. Includes denormalized 'userId' for authorization independence.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier of the user."
-            },
-            {
-              "name": "subjectId",
-              "description": "The unique identifier of the subject."
-            },
-            {
-              "name": "paperId",
-              "description": "The unique identifier of the paper."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/users/{userId}/subjects/{subjectId}/papers/{paperId}/chapters/{chapterId}",
-        "definition": {
-          "entityName": "chapter",
-          "schema": {
-            "$ref": "#/backend/entities/User"
-          },
-          "description": "Stores chapter data for a specific paper of a subject for a user. Includes denormalized 'userId' for authorization independence.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier of the user."
-            },
-            {
-              "name": "subjectId",
-              "description": "The unique identifier of the subject."
-            },
-            {
-              "name": "paperId",
-              "description": "The unique identifier of the paper."
-            },
-            {
-              "name": "chapterId",
-              "description": "The unique identifier of the chapter."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/users/{userId}/subjects/{subjectId}/papers/{paperId}/chapters/{chapterId}/activities/{activityId}",
-        "definition": {
-          "entityName": "activity",
-          "schema": {
-            "$ref": "#/backend/entities/User"
-          },
-          "description": "Stores activity data for a specific chapter of a paper within a subject for a user. Includes denormalized 'userId' for authorization independence.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier of the user."
-            },
-            {
-              "name": "subjectId",
-              "description": "The unique identifier of the subject."
-            },
-            {
-              "name": "paperId",
-              "description": "The unique identifier of the paper."
-            },
-            {
-              "name": "chapterId",
-              "description": "The unique identifier of the chapter."
-            },
-            {
-              "name": "activityId",
-              "description": "The unique identifier of the activity."
-            }
-          ]
-        }
-      }
-    ],
-    "reasoning": "This Firestore structure prioritizes authorization independence and data clarity for the EduTrack app. User data is stored in a private collection, ensuring only the authenticated user can access their information.  All data related to exams, subjects, papers, chapters, and activities are stored under the user's document, enforcing a clear ownership model. This design eliminates the need for `get()` calls in security rules, enabling atomic operations and improving debuggability. Each document includes denormalized data (like the user ID) to enforce authorization independence.\n\nThe structure supports the required QAPs by:\n\n1.  **Private Data:** Using path-based ownership (`/users/{userId}/exams/{examId}`) to secure user-specific data.\n2.  **Hierarchical Paths:**  Maintaining a hierarchical structure (`/users/{userId}/subjects/{subjectId}/papers/{paperId}/chapters/{chapterId}/activities/{activityId}`) to represent the relationships between entities, ensuring data integrity and simplified security rules.\n3.  **Structural Segregation:** Each entity type (exams, subjects, papers, etc.) resides in its own subcollection, ensuring a homogeneous security posture for all documents within that subcollection."
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "Stores user profile information."
+    },
+    "/users/{userId}/subjects": {
+        "schema": {"$ref": "#/entities/Subject"},
+        "description": "Sub-collection for subjects belonging to a user."
+    },
+    "/users/{userId}/exams": {
+        "schema": {"$ref": "#/entities/Exam"},
+        "description": "Sub-collection for exams belonging to a user."
+    }
   }
 }
