@@ -94,7 +94,12 @@ export function ExamItem({ exam }: ExamItemProps) {
               <Calendar className="h-4 w-4" /> {format(new Date(exam.date), "d MMMM, yyyy, p")}
             </p>
           </div>
-          <Countdown targetDate={exam.date} isPastOrCompleted={isPast || exam.isCompleted} variant="bordered" />
+          <Countdown 
+            targetDate={exam.date} 
+            isPastOrCompleted={isPast || exam.isCompleted} 
+            variant="bordered"
+            boxClassName={!isPast ? "bg-primary/10" : ""}
+          />
         </CardContent>
         {isPast && (
           <CardFooter className="flex justify-between gap-2">
