@@ -36,7 +36,7 @@ const CountdownBox = ({ value, label, variant }: { value: string; label: string;
         variant === 'bordered' ? "bg-background/50 border" : "bg-background/20 dark:bg-background/50"
     )}>
         <div className="text-2xl font-bold text-card-foreground">{value}</div>
-        <div className="text-xs text-muted-foreground uppercase tracking-widest">{label}</div>
+        <div className="text-xs text-muted-foreground uppercase tracking-wide">{label}</div>
     </div>
 );
 
