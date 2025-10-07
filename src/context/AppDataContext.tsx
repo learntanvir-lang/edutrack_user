@@ -101,6 +101,8 @@ const appReducer = (state: AppState, action: Action): AppState => {
         ...chapter,
         id: uuidv4(),
         name: `${chapter.name} (Copy)`,
+        progressItems: chapter.progressItems.map(item => ({...item, id: uuidv4()})),
+        resourceLinks: chapter.resourceLinks.map(link => ({...link, id: uuidv4()})),
       };
       return {...state, subjects: state.subjects.map(s => s.id === subjectId ? {...s, papers: s.papers.map(p => p.id === paperId ? {...p, chapters: [...p.chapters, newChapter]} : p)}: s)};
     }
@@ -221,6 +223,7 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
   }, [state, user, isUserLoading]);
 
   const syncedDispatch = async (action: Action) => {
+    
     if (user && firestore) {
       const userId = user.uid;
       try {
@@ -257,16 +260,17 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
             break;
         }
       } catch (error) {
-        console.error(`Firestore operation for ${action.type} failed:`, error);
+        console.error(`Firestore delete operation for ${action.type} failed:`, error);
       }
     }
 
-    // Optimistically update local state for all actions
+    // Now, update the local state
     dispatch(action);
 
-    // Persist changes to Firestore if user is logged in
+    // Persist ADD/UPDATE changes to Firestore if user is logged in
     if (user && firestore) {
       const userId = user.uid;
+      // Get the next state to persist it
       const newState = appReducer(state, action); 
 
       try {
@@ -276,7 +280,7 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
             await setDoc(doc(firestore, `users/${userId}/subjects`, action.payload.id), action.payload);
             break;
           case "DUPLICATE_SUBJECT": {
-            const newSubject = newState.subjects[newState.subjects.length - 1];
+             const newSubject = newState.subjects.find(s => s.name === `${action.payload.name} (Copy)`);
             if (newSubject) {
               await setDoc(doc(firestore, `users/${userId}/subjects`, newSubject.id), newSubject);
             }
@@ -304,14 +308,14 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
             break;
         }
       } catch (error) {
-        console.error(`Firestore operation for ${action.type} failed:`, error);
+        console.error(`Firestore add/update operation for ${action.type} failed:`, error);
       }
     }
   };
 
 
   return (
-    <AppDataContext.Provider value={{ ...appReducer(state, {type: 'SET_STATE', payload: state}), dispatch: syncedDispatch }}>
+    <AppDataContext.Provider value={{ ...state, dispatch: syncedDispatch }}>
       {children}
     </AppDataContext.Provider>
   );
