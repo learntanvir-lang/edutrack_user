@@ -59,10 +59,10 @@ export function ExamItem({ exam }: ExamItemProps) {
   return (
     <>
       <Card className={cn(
-          "shadow-sm hover:shadow-md transition-shadow",
+          "transition-all duration-300",
           isPast ? 
             (exam.isCompleted ? "bg-green-50 border-green-200" : "bg-red-50 border-red-200") :
-            "bg-card border-primary"
+            "bg-card border-2 border-primary shadow-lg hover:shadow-xl hover:-translate-y-1"
       )}>
         <CardHeader className="pb-4">
           <div className="flex justify-between items-start">
