@@ -221,13 +221,53 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
   }, [state, user, isUserLoading]);
 
   const syncedDispatch = async (action: Action) => {
-    // Optimistically update local state
+    if (user && firestore) {
+      const userId = user.uid;
+      try {
+        switch (action.type) {
+          case "DELETE_SUBJECT":
+            await deleteDoc(doc(firestore, `users/${userId}/subjects`, action.payload));
+            break;
+          case "DELETE_PAPER": {
+            const subjectToUpdate = state.subjects.find(s => s.id === action.payload.subjectId);
+            if (subjectToUpdate) {
+                const updatedPapers = subjectToUpdate.papers.filter(p => p.id !== action.payload.paperId);
+                const updatedSubject = { ...subjectToUpdate, papers: updatedPapers };
+                await setDoc(doc(firestore, `users/${userId}/subjects`, updatedSubject.id), updatedSubject);
+            }
+            break;
+          }
+          case "DELETE_CHAPTER": {
+            const subjectToUpdate = state.subjects.find(s => s.id === action.payload.subjectId);
+             if (subjectToUpdate) {
+                const updatedPapers = subjectToUpdate.papers.map(p => {
+                    if (p.id === action.payload.paperId) {
+                        const updatedChapters = p.chapters.filter(c => c.id !== action.payload.chapterId);
+                        return { ...p, chapters: updatedChapters };
+                    }
+                    return p;
+                });
+                const updatedSubject = { ...subjectToUpdate, papers: updatedPapers };
+                await setDoc(doc(firestore, `users/${userId}/subjects`, updatedSubject.id), updatedSubject);
+            }
+            break;
+          }
+          case "DELETE_EXAM":
+            await deleteDoc(doc(firestore, `users/${userId}/exams`, action.payload));
+            break;
+        }
+      } catch (error) {
+        console.error(`Firestore operation for ${action.type} failed:`, error);
+      }
+    }
+
+    // Optimistically update local state for all actions
     dispatch(action);
 
     // Persist changes to Firestore if user is logged in
     if (user && firestore) {
       const userId = user.uid;
-      const newState = appReducer(state, action); // a bit redundant but ensures we have the latest state view
+      const newState = appReducer(state, action); 
 
       try {
         switch (action.type) {
@@ -242,18 +282,13 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
             }
             break;
           }
-          case "DELETE_SUBJECT":
-            await deleteDoc(doc(firestore, `users/${userId}/subjects`, action.payload));
-            break;
 
           // Cases that modify a subject document
           case "ADD_PAPER":
           case "UPDATE_PAPER":
-          case "DELETE_PAPER":
           case "DUPLICATE_PAPER":
           case "ADD_CHAPTER":
           case "UPDATE_CHAPTER":
-          case "DELETE_CHAPTER":
           case "DUPLICATE_CHAPTER":
           case "REORDER_CHAPTERS": {
             const subjectToUpdate = newState.subjects.find(s => s.id === action.payload.subjectId);
@@ -267,17 +302,9 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
           case "UPDATE_EXAM":
             await setDoc(doc(firestore, `users/${userId}/exams`, action.payload.id), action.payload);
             break;
-          case "DELETE_EXAM":
-            await deleteDoc(doc(firestore, `users/${userId}/exams`, action.payload));
-            break;
-
-          default:
-            break;
         }
       } catch (error) {
         console.error(`Firestore operation for ${action.type} failed:`, error);
-        // Here you could implement a rollback logic by dispatching the old state
-        // For simplicity, we are just logging the error.
       }
     }
   };
@@ -289,3 +316,5 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
     </AppDataContext.Provider>
   );
 };
+
+    
