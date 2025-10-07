@@ -22,23 +22,28 @@ export default function NextExamCard({ exam }: NextExamCardProps) {
     const { subjects } = useContext(AppDataContext);
     const isPast = new Date(exam.date) < new Date();
 
-    const examDetails = (exam.chapterIds || []).map(chapterId => {
-      for (const subject of subjects) {
-        if (exam.subjectIds.includes(subject.id)) {
-          for (const paper of subject.papers) {
-            const chapter = paper.chapters.find(c => c.id === chapterId);
-            if (chapter) {
-              return {
-                subjectName: subject.name,
-                chapterName: chapter.name,
-                paperName: paper.name
-              };
-            }
+    const examDetailsBySubject = (exam.subjectIds || []).map(subjectId => {
+      const subject = subjects.find(s => s.id === subjectId);
+      if (!subject) return null;
+
+      const chapterNames = (exam.chapterIds || []).map(chapterId => {
+        for (const paper of subject.papers) {
+          const chapter = paper.chapters.find(c => c.id === chapterId);
+          if (chapter) {
+            return chapter.name;
           }
         }
-      }
-      return null;
+        return null;
+      }).filter(Boolean);
+
+      if (chapterNames.length === 0) return null;
+
+      return {
+        subjectName: subject.name,
+        chapters: chapterNames.join(', ')
+      };
     }).filter(Boolean);
+
 
   return (
     <>
@@ -67,16 +72,16 @@ export default function NextExamCard({ exam }: NextExamCardProps) {
               </Button>
             </div>
         </CardHeader>
-        <CardContent className="space-y-6 px-8 pb-8">
+        <CardContent className="space-y-6 p-8 pt-0">
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-sm font-medium text-primary-foreground/80">
                   <Info className="h-4 w-4" />
                   <span>Syllabus</span>
               </div>
               <div className="flex flex-wrap gap-2">
-                {examDetails.map((detail, index) => detail && (
+                {examDetailsBySubject.map((detail, index) => detail && (
                   <Badge key={index} variant="secondary" className="px-3 py-1 text-base bg-primary-foreground/20 text-primary-foreground transition-all hover:bg-primary-foreground/30 hover:scale-105">
-                    {detail.subjectName} - {detail.chapterName}
+                    {detail.subjectName} - {detail.chapters}
                   </Badge>
                 ))}
               </div>
