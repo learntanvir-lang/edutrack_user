@@ -36,8 +36,8 @@ import { Badge } from "@/components/ui/badge";
 
 const examSchema = z.object({
   name: z.string().min(1, "Exam name is required"),
-  subjectIds: z.array(z.string()).min(1, "At least one subject is required"),
-  chapterIds: z.array(z.string()).min(1, "At least one chapter is required"),
+  subjectIds: z.array(z.string()).optional(),
+  chapterIds: z.array(z.string()).optional(),
   date: z.date({ required_error: "Exam date is required" }),
   time: z.string().optional(),
 });
@@ -114,8 +114,8 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
         payload: {
           ...exam,
           name: values.name,
-          subjectIds: values.subjectIds,
-          chapterIds: values.chapterIds,
+          subjectIds: values.subjectIds || [],
+          chapterIds: values.chapterIds || [],
           date: combinedDate.toISOString(),
         },
       });
@@ -125,8 +125,8 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
         payload: {
           id: uuidv4(),
           name: values.name,
-          subjectIds: values.subjectIds,
-          chapterIds: values.chapterIds,
+          subjectIds: values.subjectIds || [],
+          chapterIds: values.chapterIds || [],
           date: combinedDate.toISOString(),
           isCompleted: false,
         },
