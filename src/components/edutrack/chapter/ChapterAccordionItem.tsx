@@ -6,7 +6,7 @@ import { useState, useContext } from "react";
 import { Chapter } from "@/lib/types";
 import { AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Pen, Trash2, ChevronDown, Copy, GripVertical, Link as LinkIcon, Edit, ExternalLink, Activity } from "lucide-react";
+import { MoreHorizontal, Pen, Copy, GripVertical, Link as LinkIcon, Edit, ExternalLink, Activity } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import {
   DropdownMenu,
@@ -29,15 +29,6 @@ interface ChapterAccordionItemProps {
 export function ChapterAccordionItem({ chapter, subjectId, paperId }: ChapterAccordionItemProps) {
     const { dispatch } = useContext(AppDataContext);
     const [isEditingChapter, setIsEditingChapter] = useState(false);
-
-    const handleDelete = () => {
-        if (window.confirm("Are you sure you want to delete this chapter?")) {
-            dispatch({
-                type: "DELETE_CHAPTER",
-                payload: { subjectId, paperId, chapterId: chapter.id },
-            });
-        }
-    };
 
     const handleDuplicate = () => {
         dispatch({
@@ -70,7 +61,6 @@ export function ChapterAccordionItem({ chapter, subjectId, paperId }: ChapterAcc
                                     {chapter.name}
                                 </span>
                                 <Badge variant={percentage === 100 ? "default" : "secondary"} className={cn(percentage === 100 && 'bg-green-600')}>{percentage}%</Badge>
-                                <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
                             </div>
                         </AccordionTrigger>
                         <div className="flex items-center gap-1 ml-4">
@@ -86,9 +76,6 @@ export function ChapterAccordionItem({ chapter, subjectId, paperId }: ChapterAcc
                                     </DropdownMenuItem>
                                     <DropdownMenuItem onClick={handleDuplicate}>
                                         <Copy className="mr-2 h-4 w-4" /> Duplicate
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={handleDelete} className="text-destructive">
-                                        <Trash2 className="mr-2 h-4 w-4" /> Delete
                                     </DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>

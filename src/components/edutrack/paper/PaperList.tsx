@@ -7,7 +7,7 @@ import { Paper } from "@/lib/types";
 import { AppDataContext } from "@/context/AppDataContext";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Pen, Trash2, ChevronDown, PlusCircle, Copy } from "lucide-react";
+import { MoreHorizontal, Pen, ChevronDown, PlusCircle, Copy } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,12 +32,6 @@ export function PaperList({ papers, subjectId }: PaperListProps) {
   const [isChapterDialogOpen, setIsChapterDialogOpen] = useState(false);
   const [activePaperId, setActivePaperId] = useState<string | null>(null);
 
-
-  const handleDelete = (paperId: string) => {
-    if (window.confirm("Are you sure you want to delete this paper? This will also delete all chapters and activities within it.")) {
-      dispatch({ type: "DELETE_PAPER", payload: { subjectId, paperId } });
-    }
-  };
 
   const handleDuplicate = (paper: Paper) => {
     dispatch({ type: "DUPLICATE_PAPER", payload: { subjectId, paper } });
@@ -102,9 +96,6 @@ export function PaperList({ papers, subjectId }: PaperListProps) {
                       </DropdownMenuItem>
                        <DropdownMenuItem onClick={() => handleDuplicate(paper)}>
                         <Copy className="mr-2 h-4 w-4" /> Duplicate
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleDelete(paper.id)} className="text-destructive">
-                        <Trash2 className="mr-2 h-4 w-4" /> Delete
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>

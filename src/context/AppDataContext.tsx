@@ -1,11 +1,11 @@
 
 "use client";
 
-import { createContext, useReducer, useEffect, ReactNode, useContext } from "react";
+import { createContext, useReducer, useEffect, ReactNode, useContext, useMemo } from "react";
 import { Subject, Exam, Paper, Chapter } from "@/lib/types";
 import { initialData } from "@/lib/data";
 import { v4 as uuidv4 } from 'uuid';
-import { useFirebase } from "@/firebase";
+import { useFirebase, useUser } from "@/firebase";
 import {
   collection,
   doc,
@@ -24,20 +24,16 @@ type Action =
   | { type: "SET_STATE"; payload: AppState }
   | { type: "ADD_SUBJECT"; payload: Subject }
   | { type: "UPDATE_SUBJECT"; payload: Subject }
-  | { type: "DELETE_SUBJECT"; payload: string }
   | { type: "DUPLICATE_SUBJECT"; payload: Subject }
   | { type: "ADD_PAPER"; payload: { subjectId: string; paper: Paper } }
   | { type: "UPDATE_PAPER"; payload: { subjectId: string; paper: Paper } }
-  | { type: "DELETE_PAPER"; payload: { subjectId: string; paperId: string } }
   | { type: "DUPLICATE_PAPER"; payload: { subjectId: string; paper: Paper } }
   | { type: "ADD_CHAPTER"; payload: { subjectId: string; paperId: string; chapter: Chapter } }
   | { type: "UPDATE_CHAPTER"; payload: { subjectId: string; paperId: string; chapter: Chapter } }
-  | { type: "DELETE_CHAPTER"; payload: { subjectId: string; paperId: string; chapterId: string } }
   | { type: "DUPLICATE_CHAPTER", payload: { subjectId: string, paperId: string, chapter: Chapter } }
   | { type: "REORDER_CHAPTERS", payload: { subjectId: string, paperId: string, startIndex: number, endIndex: number } }
   | { type: "ADD_EXAM"; payload: Exam }
-  | { type: "UPDATE_EXAM"; payload: Exam }
-  | { type: "DELETE_EXAM"; payload: string };
+  | { type: "UPDATE_EXAM"; payload: Exam };
 
 const appReducer = (state: AppState, action: Action): AppState => {
   switch (action.type) {
@@ -47,8 +43,6 @@ const appReducer = (state: AppState, action: Action): AppState => {
       return { ...state, subjects: [...state.subjects, action.payload] };
     case "UPDATE_SUBJECT":
       return { ...state, subjects: state.subjects.map(s => s.id === action.payload.id ? action.payload : s) };
-    case "DELETE_SUBJECT":
-      return { ...state, subjects: state.subjects.filter(s => s.id !== action.payload) };
     case "DUPLICATE_SUBJECT": {
       const subject = action.payload;
       const newSubject: Subject = {
@@ -72,8 +66,6 @@ const appReducer = (state: AppState, action: Action): AppState => {
       return { ...state, subjects: state.subjects.map(s => s.id === action.payload.subjectId ? { ...s, papers: [...s.papers, action.payload.paper] } : s) };
     case "UPDATE_PAPER":
       return { ...state, subjects: state.subjects.map(s => s.id === action.payload.subjectId ? { ...s, papers: s.papers.map(p => p.id === action.payload.paper.id ? action.payload.paper : p) } : s) };
-    case "DELETE_PAPER":
-      return { ...state, subjects: state.subjects.map(s => s.id === action.payload.subjectId ? { ...s, papers: s.papers.filter(p => p.id !== action.payload.paperId) } : s) };
     case "DUPLICATE_PAPER": {
       const { subjectId, paper } = action.payload;
       const newPaper: Paper = {
@@ -93,8 +85,6 @@ const appReducer = (state: AppState, action: Action): AppState => {
         return {...state, subjects: state.subjects.map(s => s.id === action.payload.subjectId ? {...s, papers: s.papers.map(p => p.id === action.payload.paperId ? {...p, chapters: [...p.chapters, action.payload.chapter]} : p)}: s)};
     case "UPDATE_CHAPTER":
         return {...state, subjects: state.subjects.map(s => s.id === action.payload.subjectId ? {...s, papers: s.papers.map(p => p.id === action.payload.paperId ? {...p, chapters: p.chapters.map(c => c.id === action.payload.chapter.id ? action.payload.chapter : c)} : p)} : s)};
-    case "DELETE_CHAPTER":
-        return {...state, subjects: state.subjects.map(s => s.id === action.payload.subjectId ? {...s, papers: s.papers.map(p => p.id === action.payload.paperId ? {...p, chapters: p.chapters.filter(c => c.id !== action.payload.chapterId)} : p)} : s)};
     case "DUPLICATE_CHAPTER": {
       const { subjectId, paperId, chapter } = action.payload;
       const newChapter: Chapter = {
@@ -133,8 +123,6 @@ const appReducer = (state: AppState, action: Action): AppState => {
       return { ...state, exams: [...state.exams, action.payload] };
     case "UPDATE_EXAM":
       return { ...state, exams: state.exams.map(e => e.id === action.payload.id ? action.payload : e) };
-    case "DELETE_EXAM":
-      return { ...state, exams: state.exams.filter(e => e.id !== action.payload) };
     default:
       return state;
   }
@@ -223,96 +211,47 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
   }, [state, user, isUserLoading]);
 
   const syncedDispatch = async (action: Action) => {
-    
-    if (user && firestore) {
-      const userId = user.uid;
-      try {
-        switch (action.type) {
-          case "DELETE_SUBJECT":
-            await deleteDoc(doc(firestore, `users/${userId}/subjects`, action.payload));
-            break;
-          case "DELETE_PAPER": {
-            const subjectToUpdate = state.subjects.find(s => s.id === action.payload.subjectId);
-            if (subjectToUpdate) {
-                const updatedPapers = subjectToUpdate.papers.filter(p => p.id !== action.payload.paperId);
-                const updatedSubject = { ...subjectToUpdate, papers: updatedPapers };
-                await setDoc(doc(firestore, `users/${userId}/subjects`, updatedSubject.id), updatedSubject);
-            }
-            break;
-          }
-          case "DELETE_CHAPTER": {
-            const subjectToUpdate = state.subjects.find(s => s.id === action.payload.subjectId);
-             if (subjectToUpdate) {
-                const updatedPapers = subjectToUpdate.papers.map(p => {
-                    if (p.id === action.payload.paperId) {
-                        const updatedChapters = p.chapters.filter(c => c.id !== action.payload.chapterId);
-                        return { ...p, chapters: updatedChapters };
-                    }
-                    return p;
-                });
-                const updatedSubject = { ...subjectToUpdate, papers: updatedPapers };
-                await setDoc(doc(firestore, `users/${userId}/subjects`, updatedSubject.id), updatedSubject);
-            }
-            break;
-          }
-          case "DELETE_EXAM":
-            await deleteDoc(doc(firestore, `users/${userId}/exams`, action.payload));
-            break;
-        }
-      } catch (error) {
-        console.error(`Firestore delete operation for ${action.type} failed:`, error);
-      }
-    }
-
-    // Now, update the local state
     dispatch(action);
+    const newState = appReducer(state, action);
 
-    // Persist ADD/UPDATE changes to Firestore if user is logged in
     if (user && firestore) {
-      const userId = user.uid;
-      // Get the next state to persist it
-      const newState = appReducer(state, action); 
-
-      try {
-        switch (action.type) {
-          case "ADD_SUBJECT":
-          case "UPDATE_SUBJECT":
-            await setDoc(doc(firestore, `users/${userId}/subjects`, action.payload.id), action.payload);
-            break;
-          case "DUPLICATE_SUBJECT": {
-             const newSubject = newState.subjects.find(s => s.name === `${action.payload.name} (Copy)`);
-            if (newSubject) {
-              await setDoc(doc(firestore, `users/${userId}/subjects`, newSubject.id), newSubject);
+        const userId = user.uid;
+        try {
+            switch (action.type) {
+                case "ADD_SUBJECT":
+                case "UPDATE_SUBJECT":
+                    await setDoc(doc(firestore, `users/${userId}/subjects`, action.payload.id), action.payload);
+                    break;
+                case "DUPLICATE_SUBJECT": {
+                    const newSubject = newState.subjects.find(s => s.name === `${action.payload.name} (Copy)`);
+                    if (newSubject) {
+                        await setDoc(doc(firestore, `users/${userId}/subjects`, newSubject.id), newSubject);
+                    }
+                    break;
+                }
+                case "ADD_PAPER":
+                case "UPDATE_PAPER":
+                case "DUPLICATE_PAPER":
+                case "ADD_CHAPTER":
+                case "UPDATE_CHAPTER":
+                case "DUPLICATE_CHAPTER":
+                case "REORDER_CHAPTERS": {
+                    const subjectToUpdate = newState.subjects.find(s => s.id === action.payload.subjectId);
+                    if (subjectToUpdate) {
+                        await setDoc(doc(firestore, `users/${userId}/subjects`, subjectToUpdate.id), subjectToUpdate);
+                    }
+                    break;
+                }
+                case "ADD_EXAM":
+                case "UPDATE_EXAM":
+                    await setDoc(doc(firestore, `users/${userId}/exams`, action.payload.id), action.payload);
+                    break;
             }
-            break;
-          }
-
-          // Cases that modify a subject document
-          case "ADD_PAPER":
-          case "UPDATE_PAPER":
-          case "DUPLICATE_PAPER":
-          case "ADD_CHAPTER":
-          case "UPDATE_CHAPTER":
-          case "DUPLICATE_CHAPTER":
-          case "REORDER_CHAPTERS": {
-            const subjectToUpdate = newState.subjects.find(s => s.id === action.payload.subjectId);
-            if (subjectToUpdate) {
-              await setDoc(doc(firestore, `users/${userId}/subjects`, subjectToUpdate.id), subjectToUpdate);
-            }
-            break;
-          }
-
-          case "ADD_EXAM":
-          case "UPDATE_EXAM":
-            await setDoc(doc(firestore, `users/${userId}/exams`, action.payload.id), action.payload);
-            break;
+        } catch (error) {
+            console.error(`Firestore operation for ${action.type} failed:`, error);
         }
-      } catch (error) {
-        console.error(`Firestore add/update operation for ${action.type} failed:`, error);
-      }
     }
-  };
-
+};
 
   return (
     <AppDataContext.Provider value={{ ...state, dispatch: syncedDispatch }}>
@@ -320,5 +259,3 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
     </AppDataContext.Provider>
   );
 };
-
-    

@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/componen
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { ExamDialog } from "./ExamDialog";
-import { Pen, Trash2, Calendar, BookOpen, Check, X } from "lucide-react";
+import { Pen, Calendar, BookOpen, Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Countdown } from "../Countdown";
 import { Badge } from "@/components/ui/badge";
@@ -27,15 +27,6 @@ export function ExamItem({ exam }: ExamItemProps) {
       payload: { ...exam, isCompleted },
     });
   };
-  
-  const handleDelete = () => {
-    if (confirm("Are you sure you want to delete this exam?")) {
-      dispatch({
-        type: "DELETE_EXAM",
-        payload: exam.id,
-      });
-    }
-  }
 
   const isPast = new Date(exam.date) < new Date();
 
@@ -78,9 +69,6 @@ export function ExamItem({ exam }: ExamItemProps) {
             <div className="flex gap-1">
                 <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setIsEditDialogOpen(true)}>
                     <Pen className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={handleDelete}>
-                    <Trash2 className="h-4 w-4" />
                 </Button>
             </div>
           </div>
