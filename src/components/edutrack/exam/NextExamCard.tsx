@@ -52,8 +52,8 @@ export default function NextExamCard({ exam }: NextExamCardProps) {
                   <CardTitle className="text-4xl font-bold">
                     {exam.name}
                   </CardTitle>
-                  <CardDescription className="flex items-center gap-2 mt-2 text-primary-foreground/90">
-                      <Calendar className="h-4 w-4" /> {format(new Date(exam.date), "PPPPp")}
+                  <CardDescription className="flex items-center gap-2 mt-2 text-lg font-semibold text-primary-foreground/90">
+                      <Calendar className="h-5 w-5" /> {format(new Date(exam.date), "PPPPp")}
                   </CardDescription>
               </div>
               <Button variant="ghost" size="icon" className="rounded-full border border-primary-foreground/50 text-primary-foreground hover:bg-primary-foreground/20 hover:text-primary-foreground" onClick={() => setIsEditDialogOpen(true)}>
