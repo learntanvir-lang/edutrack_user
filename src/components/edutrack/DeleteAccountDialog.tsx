@@ -86,8 +86,9 @@ export function DeleteAccountDialog({ open, onOpenChange }: DeleteAccountDialogP
         await batch.commit();
     } catch (error) {
         console.error("Failed to delete user data from Firestore:", error);
-        // We will still proceed to delete the auth user, but we'll log this error.
-        // In a production app, you might want to flag this for manual cleanup.
+        // This is a critical failure. We should not proceed to delete the auth user
+        // as it would leave orphaned data without an owner.
+        throw new Error("Could not delete user data. Aborting account deletion.");
     }
   };
 
@@ -109,13 +110,12 @@ export function DeleteAccountDialog({ open, onOpenChange }: DeleteAccountDialogP
       await reauthenticateWithCredential(user, credential);
 
       const userId = user.uid;
-
-      // 2. Delete the user's authentication account
-      await deleteUser(user);
-
-      // 3. Attempt to delete all associated Firestore data
-      // This is done after auth deletion. If this fails, the user is still deleted.
+      
+      // 2. Attempt to delete all associated Firestore data FIRST.
       await deleteAllUserData(userId);
+
+      // 3. If data deletion is successful, delete the user's authentication account.
+      await deleteUser(user);
 
       toast({
         title: 'Account Deleted',
@@ -128,14 +128,17 @@ export function DeleteAccountDialog({ open, onOpenChange }: DeleteAccountDialogP
 
     } catch (error) {
       setLoading(false);
-      const firebaseError = error as FirebaseError;
+      
       let description = 'An unexpected error occurred. Please try again.';
-
-      if (firebaseError.code === 'auth/wrong-password') {
-        description = 'The password you entered is incorrect.';
-        form.setError('password', { type: 'manual', message: description });
-      } else if (firebaseError.code === 'auth/requires-recent-login') {
-        description = 'This operation is sensitive and requires a recent login. Please sign out and sign back in to continue.';
+      if (error instanceof FirebaseError) {
+        if (error.code === 'auth/wrong-password') {
+          description = 'The password you entered is incorrect.';
+          form.setError('password', { type: 'manual', message: description });
+        } else if (error.code === 'auth/requires-recent-login') {
+          description = 'This operation is sensitive and requires a recent login. Please sign out and sign back in to continue.';
+        }
+      } else if (error instanceof Error) {
+        description = error.message;
       }
       
       toast({
