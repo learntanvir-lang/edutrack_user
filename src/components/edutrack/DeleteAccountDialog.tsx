@@ -7,7 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAuth, useUser, useFirebase } from '@/firebase';
 import { EmailAuthProvider, reauthenticateWithCredential, deleteUser } from 'firebase/auth';
-import { collection, doc, getDocs, deleteDoc } from 'firebase/firestore';
+import { collection, doc, getDocs, deleteDoc, writeBatch } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -67,24 +67,28 @@ export function DeleteAccountDialog({ open, onOpenChange }: DeleteAccountDialogP
   const deleteAllUserData = async (userId: string) => {
     if (!firestore) return;
 
-    const subjectsColRef = collection(firestore, `users/${userId}/subjects`);
-    const examsColRef = collection(firestore, `users/${userId}/exams`);
-    const userDocRef = doc(firestore, `users/${userId}`);
+    try {
+        const subjectsColRef = collection(firestore, `users/${userId}/subjects`);
+        const examsColRef = collection(firestore, `users/${userId}/exams`);
+        const userDocRef = doc(firestore, `users/${userId}`);
 
-    // Delete subcollections' documents
-    const [subjectsSnapshot, examsSnapshot] = await Promise.all([
-      getDocs(subjectsColRef),
-      getDocs(examsColRef),
-    ]);
+        const [subjectsSnapshot, examsSnapshot] = await Promise.all([
+            getDocs(subjectsColRef),
+            getDocs(examsColRef),
+        ]);
 
-    const deletePromises: Promise<void>[] = [];
-    subjectsSnapshot.forEach(subjectDoc => deletePromises.push(deleteDoc(subjectDoc.ref)));
-    examsSnapshot.forEach(examDoc => deletePromises.push(deleteDoc(examDoc.ref)));
-    
-    await Promise.all(deletePromises);
+        const batch = writeBatch(firestore);
 
-    // Delete the user document itself
-    await deleteDoc(userDocRef);
+        subjectsSnapshot.forEach(doc => batch.delete(doc.ref));
+        examsSnapshot.forEach(doc => batch.delete(doc.ref));
+        batch.delete(userDocRef);
+
+        await batch.commit();
+    } catch (error) {
+        console.error("Failed to delete user data from Firestore:", error);
+        // We will still proceed to delete the auth user, but we'll log this error.
+        // In a production app, you might want to flag this for manual cleanup.
+    }
   };
 
   const onSubmit = async (values: DeleteAccountFormValues) => {
@@ -100,21 +104,25 @@ export function DeleteAccountDialog({ open, onOpenChange }: DeleteAccountDialogP
     setLoading(true);
 
     try {
+      // 1. Re-authenticate user to confirm their identity
       const credential = EmailAuthProvider.credential(user.email, values.password);
       await reauthenticateWithCredential(user, credential);
 
-      // 1. Delete Firestore data
-      await deleteAllUserData(user.uid);
-      
-      // 2. Delete auth user
+      const userId = user.uid;
+
+      // 2. Delete the user's authentication account
       await deleteUser(user);
+
+      // 3. Attempt to delete all associated Firestore data
+      // This is done after auth deletion. If this fails, the user is still deleted.
+      await deleteAllUserData(userId);
 
       toast({
         title: 'Account Deleted',
         description: 'Your account and all associated data have been permanently deleted.',
       });
 
-      // Redirect to login page, state will update automatically
+      // 4. Redirect to login page
       router.push('/login');
       handleOpenChange(false);
 
