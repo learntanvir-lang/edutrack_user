@@ -29,11 +29,12 @@ import {
   sendEmailVerification,
   updateProfile,
   ActionCodeSettings,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
 } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { FirebaseError } from 'firebase/app';
-import { setDocumentNonBlocking, initiateEmailSignIn, initiateEmailSignUp } from '@/firebase';
 import { doc, setDoc } from 'firebase/firestore';
 
 
@@ -110,47 +111,76 @@ export default function LoginPage() {
 
   const onLoginSubmit = (values: LoginFormValues) => {
     setLoading(true);
-    // Non-blocking call
-    initiateEmailSignIn(auth, values.email, values.password);
-    router.push('/');
+    signInWithEmailAndPassword(auth, values.email, values.password)
+        .then(() => {
+            router.push('/');
+        })
+        .catch(handleAuthError)
+        .finally(() => setLoading(false));
   };
 
-  const onSignupSubmit = async (values: SignupFormValues) => {
+  const onSignupSubmit = (values: SignupFormValues) => {
     setLoading(true);
-    try {
-        initiateEmailSignUp(auth, values.email, values.password, async (user) => {
-            // This callback runs after user is created
-            await updateProfile(user, { displayName: values.username });
-            
+
+    createUserWithEmailAndPassword(auth, values.email, values.password)
+      .then(userCredential => {
+        const user = userCredential.user;
+        
+        // --- Chain background tasks ---
+
+        // 1. Update profile
+        updateProfile(user, { displayName: values.username })
+          .then(() => {
+            // 2. Create user document in Firestore
             if (firestore) {
               const userDocRef = doc(firestore, "users", user.uid);
-              setDocumentNonBlocking(userDocRef, {
+              // This is a non-blocking write
+              setDoc(userDocRef, {
                 id: user.uid,
                 username: values.username,
                 displayName: values.username,
                 email: user.email,
-              }, { merge: true });
+              }, { merge: true }).catch(dbError => {
+                  console.error("Failed to create user document:", dbError);
+                  // Optional: Implement retry logic or notify user of data sync issue
+              });
             }
+          })
+          .catch(profileError => {
+              console.error("Failed to update user profile:", profileError);
+          });
 
-            const actionCodeSettings: ActionCodeSettings = {
-                url: `${window.location.origin}/`,
-                handleCodeInApp: true,
-            };
-            await sendEmailVerification(user, actionCodeSettings);
-
+        // 3. Send verification email
+        const actionCodeSettings: ActionCodeSettings = {
+          url: `${window.location.origin}/`,
+          handleCodeInApp: true,
+        };
+        sendEmailVerification(user, actionCodeSettings)
+          .then(() => {
             toast({
-                title: 'Account Created!',
-                description: 'A verification email has been sent. Please verify to continue.',
+              title: 'Account Created!',
+              description: 'A verification email has been sent. Please verify to continue.',
             });
-            router.push('/verify-email');
-        }, (error) => {
-            handleAuthError(error);
-        });
+          })
+          .catch(emailError => {
+            console.error("Failed to send verification email:", emailError);
+            toast({
+                variant: 'destructive',
+                title: 'Could Not Send Verification',
+                description: 'Your account was created, but we failed to send a verification email. Please try resending it from the next page.',
+            });
+          });
 
-    } catch (error) {
-      handleAuthError(error as FirebaseError);
-    }
+        // --- Navigate immediately ---
+        router.push('/verify-email');
+        
+      })
+      .catch(handleAuthError)
+      .finally(() => {
+          // We don't set loading to false here because we've already navigated away
+      });
   };
+
 
   return (
     <div className="flex min-h-[calc(100vh-theme(spacing.14))] items-center justify-center bg-background p-4">
@@ -199,7 +229,7 @@ export default function LoginPage() {
                 </CardContent>
                 <CardFooter>
                   <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? 'Redirecting...' : 'Login'}
+                    {loading ? 'Logging in...' : 'Login'}
                   </Button>
                 </CardFooter>
               </form>
@@ -283,5 +313,3 @@ export default function LoginPage() {
     </div>
   );
 }
-
-    
