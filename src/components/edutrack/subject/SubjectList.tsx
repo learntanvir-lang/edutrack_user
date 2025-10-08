@@ -36,7 +36,7 @@ export function SubjectList() {
   const [activeSubjectId, setActiveSubjectId] = useState<string | null>(null);
 
   const sortedSubjects = useMemo(() => {
-    return [...subjects].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+    return [...subjects].sort((a, b) => a.name.localeCompare(b.name));
   }, [subjects]);
 
   const handleDuplicate = (subject: Subject) => {
