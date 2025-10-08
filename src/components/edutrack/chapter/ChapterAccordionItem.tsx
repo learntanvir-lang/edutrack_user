@@ -1,17 +1,17 @@
 
-
 "use client";
 
 import { useState, useContext, memo } from "react";
 import { Chapter } from "@/lib/types";
 import { AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Pen, Copy, GripVertical, Link as LinkIcon, Edit, ExternalLink, Activity, ChevronDown } from "lucide-react";
+import { MoreHorizontal, Pen, Copy, GripVertical, Link as LinkIcon, Edit, ExternalLink, Activity, ChevronDown, Trash2 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { AppDataContext } from "@/context/AppDataContext";
@@ -19,6 +19,7 @@ import { ChapterDialog } from "./ChapterDialog";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { DeleteConfirmationDialog } from "../DeleteConfirmationDialog";
 
 interface ChapterAccordionItemProps {
     chapter: Chapter;
@@ -29,12 +30,21 @@ interface ChapterAccordionItemProps {
 function ChapterAccordionItem({ chapter, subjectId, paperId }: ChapterAccordionItemProps) {
     const { dispatch } = useContext(AppDataContext);
     const [isEditingChapter, setIsEditingChapter] = useState(false);
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
     const handleDuplicate = () => {
         dispatch({
             type: "DUPLICATE_CHAPTER",
             payload: { subjectId, paperId, chapter },
         });
+    };
+
+    const handleDelete = () => {
+        dispatch({
+            type: "DELETE_CHAPTER",
+            payload: { subjectId, paperId, chapterId: chapter.id },
+        });
+        setIsDeleteDialogOpen(false);
     };
 
     const chapterProgress = chapter.progressItems.reduce(
@@ -75,10 +85,17 @@ function ChapterAccordionItem({ chapter, subjectId, paperId }: ChapterAccordionI
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent>
                                     <DropdownMenuItem onClick={() => setIsEditingChapter(true)}>
-                                        <Pen className="mr-2 h-4 w-4" /> Edit Chapter
+                                        <Pen className="mr-2 h-4 w-4" /> Edit
                                     </DropdownMenuItem>
                                     <DropdownMenuItem onClick={handleDuplicate}>
                                         <Copy className="mr-2 h-4 w-4" /> Duplicate
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem 
+                                        className="text-destructive focus:bg-destructive/10 focus:text-destructive"
+                                        onClick={() => setIsDeleteDialogOpen(true)}
+                                    >
+                                        <Trash2 className="mr-2 h-4 w-4" /> Delete
                                     </DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
@@ -141,13 +158,19 @@ function ChapterAccordionItem({ chapter, subjectId, paperId }: ChapterAccordionI
                 </div>
             </AccordionItem>
 
-            {/* This dialog now handles everything */}
             <ChapterDialog
                 open={isEditingChapter}
                 onOpenChange={setIsEditingChapter}
                 subjectId={subjectId}
                 paperId={paperId}
                 chapter={chapter}
+            />
+            <DeleteConfirmationDialog
+                open={isDeleteDialogOpen}
+                onOpenChange={setIsDeleteDialogOpen}
+                onConfirm={handleDelete}
+                itemName={chapter.name}
+                itemType="chapter"
             />
         </>
     );

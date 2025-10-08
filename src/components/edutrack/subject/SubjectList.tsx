@@ -6,11 +6,12 @@ import { useState, useContext } from 'react';
 import { Subject } from '@/lib/types';
 import { AppDataContext } from '@/context/AppDataContext';
 import { Button } from '@/components/ui/button';
-import { MoreHorizontal, Pen, ChevronDown, PlusCircle, Copy } from 'lucide-react';
+import { MoreHorizontal, Pen, ChevronDown, PlusCircle, Copy, Trash2 } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { SubjectDialog } from './SubjectDialog';
@@ -25,15 +26,24 @@ import { Card, CardTitle } from '@/components/ui/card';
 import { PaperDialog } from '../paper/PaperDialog';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { DeleteConfirmationDialog } from '../DeleteConfirmationDialog';
 
 export function SubjectList() {
   const { subjects, dispatch } = useContext(AppDataContext);
   const [editingSubject, setEditingSubject] = useState<Subject | null>(null);
+  const [deletingSubject, setDeletingSubject] = useState<Subject | null>(null);
   const [isPaperDialogOpen, setIsPaperDialogOpen] = useState(false);
   const [activeSubjectId, setActiveSubjectId] = useState<string | null>(null);
 
   const handleDuplicate = (subject: Subject) => {
     dispatch({ type: 'DUPLICATE_SUBJECT', payload: subject });
+  };
+  
+  const handleDelete = () => {
+    if (deletingSubject) {
+        dispatch({ type: "DELETE_SUBJECT", payload: { id: deletingSubject.id } });
+        setDeletingSubject(null);
+    }
   };
 
   const handleAddPaperClick = (subjectId: string) => {
@@ -98,6 +108,13 @@ export function SubjectList() {
                        <DropdownMenuItem onClick={() => handleDuplicate(subject)}>
                         <Copy className="mr-2 h-4 w-4" /> Duplicate
                       </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem 
+                        className="text-destructive focus:bg-destructive/10 focus:text-destructive"
+                        onClick={() => setDeletingSubject(subject)}
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" /> Delete
+                      </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
@@ -123,6 +140,17 @@ export function SubjectList() {
           subject={editingSubject}
         />
       )}
+
+      {deletingSubject && (
+        <DeleteConfirmationDialog
+            open={!!deletingSubject}
+            onOpenChange={() => setDeletingSubject(null)}
+            onConfirm={handleDelete}
+            itemName={deletingSubject.name}
+            itemType="subject"
+        />
+      )}
+
       {activeSubjectId && (
         <PaperDialog
             open={isPaperDialogOpen}

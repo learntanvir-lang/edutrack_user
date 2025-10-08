@@ -7,11 +7,12 @@ import { Paper } from "@/lib/types";
 import { AppDataContext } from "@/context/AppDataContext";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Pen, ChevronDown, PlusCircle, Copy } from "lucide-react";
+import { MoreHorizontal, Pen, ChevronDown, PlusCircle, Copy, Trash2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { PaperDialog } from "./PaperDialog";
@@ -20,6 +21,7 @@ import { ChapterList } from "../chapter/ChapterList";
 import { ChapterDialog } from "../chapter/ChapterDialog";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { DeleteConfirmationDialog } from "../DeleteConfirmationDialog";
 
 interface PaperListProps {
   papers: Paper[];
@@ -29,12 +31,19 @@ interface PaperListProps {
 export function PaperList({ papers, subjectId }: PaperListProps) {
   const { dispatch } = useContext(AppDataContext);
   const [editingPaper, setEditingPaper] = useState<Paper | null>(null);
+  const [deletingPaper, setDeletingPaper] = useState<Paper | null>(null);
   const [isChapterDialogOpen, setIsChapterDialogOpen] = useState(false);
   const [activePaperId, setActivePaperId] = useState<string | null>(null);
 
-
   const handleDuplicate = (paper: Paper) => {
     dispatch({ type: "DUPLICATE_PAPER", payload: { subjectId, paper } });
+  };
+  
+  const handleDelete = () => {
+    if (deletingPaper) {
+      dispatch({ type: "DELETE_PAPER", payload: { subjectId, paperId: deletingPaper.id } });
+      setDeletingPaper(null);
+    }
   };
 
   const handleAddChapterClick = (paperId: string) => {
@@ -97,6 +106,13 @@ export function PaperList({ papers, subjectId }: PaperListProps) {
                        <DropdownMenuItem onClick={() => handleDuplicate(paper)}>
                         <Copy className="mr-2 h-4 w-4" /> Duplicate
                       </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem 
+                        className="text-destructive focus:bg-destructive/10 focus:text-destructive"
+                        onClick={() => setDeletingPaper(paper)}
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" /> Delete
+                      </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
@@ -114,6 +130,7 @@ export function PaperList({ papers, subjectId }: PaperListProps) {
           </AccordionItem>
         )})}
       </Accordion>
+
       {editingPaper && (
         <PaperDialog
           open={!!editingPaper}
@@ -122,6 +139,17 @@ export function PaperList({ papers, subjectId }: PaperListProps) {
           paper={editingPaper}
         />
       )}
+
+      {deletingPaper && (
+        <DeleteConfirmationDialog
+          open={!!deletingPaper}
+          onOpenChange={() => setDeletingPaper(null)}
+          onConfirm={handleDelete}
+          itemName={deletingPaper.name}
+          itemType="paper"
+        />
+      )}
+
        {activePaperId && (
         <ChapterDialog
             open={isChapterDialogOpen}

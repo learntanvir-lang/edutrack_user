@@ -8,10 +8,19 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/componen
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { ExamDialog } from "./ExamDialog";
-import { Pen, Calendar, BookOpen, Check, X } from "lucide-react";
+import { Pen, Calendar, Check, X, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Countdown } from "../Countdown";
 import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { MoreHorizontal } from "lucide-react";
+import { DeleteConfirmationDialog } from "../DeleteConfirmationDialog";
 
 interface ExamItemProps {
   exam: Exam;
@@ -20,12 +29,18 @@ interface ExamItemProps {
 function ExamItem({ exam }: ExamItemProps) {
   const { subjects, dispatch } = useContext(AppDataContext);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   const handleStatusChange = (isCompleted: boolean) => {
     dispatch({
       type: "UPDATE_EXAM",
       payload: { ...exam, isCompleted },
     });
+  };
+  
+  const handleDelete = () => {
+    dispatch({ type: "DELETE_EXAM", payload: { id: exam.id } });
+    setIsDeleteDialogOpen(false);
   };
 
   const isPast = new Date(exam.date) < new Date();
@@ -66,11 +81,27 @@ function ExamItem({ exam }: ExamItemProps) {
             <CardTitle className="font-bold text-xl text-foreground">
               {exam.name}
             </CardTitle>
-            <div className="flex gap-1">
-                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setIsEditDialogOpen(true)}>
-                    <Pen className="h-4 w-4" />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <MoreHorizontal className="h-4 w-4" />
                 </Button>
-            </div>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setIsEditDialogOpen(true)}>
+                  <Pen className="mr-2 h-4 w-4" />
+                  Edit
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="text-destructive focus:bg-destructive/10 focus:text-destructive"
+                  onClick={() => setIsDeleteDialogOpen(true)}
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </CardHeader>
         <CardContent className="space-y-4 px-6 pb-4">
@@ -123,6 +154,13 @@ function ExamItem({ exam }: ExamItemProps) {
         )}
       </Card>
       <ExamDialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen} exam={exam} />
+      <DeleteConfirmationDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        onConfirm={handleDelete}
+        itemName={exam.name}
+        itemType="exam"
+      />
     </>
   );
 }
