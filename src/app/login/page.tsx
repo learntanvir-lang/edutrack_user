@@ -24,19 +24,18 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useAuth } from '@/firebase';
+import { useAuth, useFirebase } from '@/firebase';
 import {
-  createUserWithEmailAndPassword,
   sendEmailVerification,
-  signInWithEmailAndPassword,
   updateProfile,
   ActionCodeSettings,
 } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { FirebaseError } from 'firebase/app';
+import { setDocumentNonBlocking, initiateEmailSignIn, initiateEmailSignUp } from '@/firebase';
 import { doc, setDoc } from 'firebase/firestore';
-import { useFirebase } from '@/firebase';
+
 
 const loginSchema = z.object({
   email: z.string().email({ message: 'Invalid email address.' }),
@@ -109,47 +108,45 @@ export default function LoginPage() {
     });
   };
 
-  const onLoginSubmit = async (values: LoginFormValues) => {
+  const onLoginSubmit = (values: LoginFormValues) => {
     setLoading(true);
-    try {
-      await signInWithEmailAndPassword(auth, values.email, values.password);
-      router.push('/');
-    } catch (error) {
-      handleAuthError(error as FirebaseError);
-    }
+    // Non-blocking call
+    initiateEmailSignIn(auth, values.email, values.password);
+    router.push('/');
   };
 
   const onSignupSubmit = async (values: SignupFormValues) => {
     setLoading(true);
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
-      const user = userCredential.user;
+        initiateEmailSignUp(auth, values.email, values.password, async (user) => {
+            // This callback runs after user is created
+            await updateProfile(user, { displayName: values.username });
+            
+            if (firestore) {
+              const userDocRef = doc(firestore, "users", user.uid);
+              setDocumentNonBlocking(userDocRef, {
+                id: user.uid,
+                username: values.username,
+                displayName: values.username,
+                email: user.email,
+              }, { merge: true });
+            }
 
-      // Update user profile with username
-      await updateProfile(user, { displayName: values.username });
-      
-      // Also save user to firestore collection
-      if (firestore) {
-        await setDoc(doc(firestore, "users", user.uid), {
-          id: user.uid,
-          username: values.username,
-          displayName: values.username,
-          email: user.email,
+            const actionCodeSettings: ActionCodeSettings = {
+                url: `${window.location.origin}/`,
+                handleCodeInApp: true,
+            };
+            await sendEmailVerification(user, actionCodeSettings);
+
+            toast({
+                title: 'Account Created!',
+                description: 'A verification email has been sent. Please verify to continue.',
+            });
+            router.push('/verify-email');
+        }, (error) => {
+            handleAuthError(error);
         });
-      }
 
-      const actionCodeSettings: ActionCodeSettings = {
-        url: `${window.location.origin}/`,
-        handleCodeInApp: true,
-      };
-      await sendEmailVerification(user, actionCodeSettings);
-
-      toast({
-        title: 'Account Created!',
-        description: 'A verification email has been sent to your email address. Please verify to continue.',
-      });
-
-      router.push('/verify-email');
     } catch (error) {
       handleAuthError(error as FirebaseError);
     }
@@ -202,7 +199,7 @@ export default function LoginPage() {
                 </CardContent>
                 <CardFooter>
                   <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? 'Logging in...' : 'Login'}
+                    {loading ? 'Redirecting...' : 'Login'}
                   </Button>
                 </CardFooter>
               </form>
@@ -286,3 +283,5 @@ export default function LoginPage() {
     </div>
   );
 }
+
+    

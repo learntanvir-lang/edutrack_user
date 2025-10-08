@@ -10,10 +10,14 @@ import {
   collection,
   doc,
   getDocs,
-  writeBatch,
-  deleteDoc,
   setDoc,
+  deleteDoc,
 } from "firebase/firestore";
+import {
+  setDocumentNonBlocking,
+  deleteDocumentNonBlocking
+} from "@/firebase/non-blocking-updates";
+
 
 type AppState = {
   subjects: Subject[];
@@ -178,10 +182,12 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
           dispatch({ type: "SET_STATE", payload: { subjects, exams } });
         } catch (error) {
           console.error("Error fetching from Firestore:", error);
+          // Fallback to initial data on error
           dispatch({ type: "SET_STATE", payload: initialData });
         }
       } else {
-        dispatch({ type: "SET_STATE", payload: initialData });
+        // Not logged in or Firestore not ready, use initial/empty data
+        dispatch({ type: "SET_STATE", payload: initialState });
       }
     };
     
@@ -189,85 +195,55 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
 
   }, [user, firestore, isUserLoading]);
 
-  const syncedDispatch = async (action: Action) => {
-    
-    if (user && firestore) {
-        const userId = user.uid;
-        try {
-             switch (action.type) {
-                case 'DELETE_SUBJECT':
-                    await deleteDoc(doc(firestore, `users/${userId}/subjects`, action.payload.id));
-                    break;
-                case 'DELETE_PAPER': {
-                    const subject = state.subjects.find(s => s.id === action.payload.subjectId);
-                    if (subject) {
-                        const updatedPapers = subject.papers.filter(p => p.id !== action.payload.paperId);
-                        await setDoc(doc(firestore, `users/${userId}/subjects`, subject.id), {...subject, papers: updatedPapers});
-                    }
-                    break;
-                }
-                case 'DELETE_CHAPTER': {
-                     const subject = state.subjects.find(s => s.id === action.payload.subjectId);
-                    if (subject) {
-                        const updatedPapers = subject.papers.map(p => {
-                            if (p.id === action.payload.paperId) {
-                                return {...p, chapters: p.chapters.filter(c => c.id !== action.payload.chapterId)};
-                            }
-                            return p;
-                        });
-                        await setDoc(doc(firestore, `users/${userId}/subjects`, subject.id), {...subject, papers: updatedPapers});
-                    }
-                    break;
-                }
-                case 'DELETE_EXAM':
-                    await deleteDoc(doc(firestore, `users/${userId}/exams`, action.payload.id));
-                    break;
-            }
-        } catch (error) {
-            console.error(`Firestore delete operation for ${action.type} failed:`, error);
-        }
-    }
-    
-    // Update local state AFTER Firestore operation
+  const syncedDispatch = (action: Action) => {
+    // 1. Optimistically update local state
     dispatch(action);
-    
+
+    // 2. Queue up the non-blocking Firestore operation
     if (user && firestore) {
-        const userId = user.uid;
-        const newState = appReducer(state, action);
-        try {
-            switch (action.type) {
-                case "ADD_SUBJECT":
-                case "UPDATE_SUBJECT":
-                    await setDoc(doc(firestore, `users/${userId}/subjects`, action.payload.id), action.payload);
-                    break;
-                case "DUPLICATE_SUBJECT": {
-                    const newSubject = newState.subjects.find(s => s.id !== action.payload.id && s.name === `${action.payload.name} (Copy)`);
-                    if (newSubject) {
-                        await setDoc(doc(firestore, `users/${userId}/subjects`, newSubject.id), newSubject);
-                    }
-                    break;
-                }
-                case "ADD_PAPER":
-                case "UPDATE_PAPER":
-                case "DUPLICATE_PAPER":
-                case "ADD_CHAPTER":
-                case "UPDATE_CHAPTER":
-                case "DUPLICATE_CHAPTER":
-                case "REORDER_CHAPTERS": {
-                    const subjectToUpdate = newState.subjects.find(s => s.id === action.payload.subjectId);
-                    if (subjectToUpdate) {
-                        await setDoc(doc(firestore, `users/${userId}/subjects`, subjectToUpdate.id), subjectToUpdate);
-                    }
-                    break;
-                }
-                case "ADD_EXAM":
-                case "UPDATE_EXAM":
-                    await setDoc(doc(firestore, `users/${userId}/exams`, action.payload.id), action.payload);
-                    break;
-            }
-        } catch (error) {
-            console.error(`Firestore write operation for ${action.type} failed:`, error);
+      const userId = user.uid;
+      const newState = appReducer(state, action);
+        
+      switch (action.type) {
+        case "ADD_SUBJECT":
+        case "UPDATE_SUBJECT":
+          setDocumentNonBlocking(doc(firestore, `users/${userId}/subjects`, action.payload.id), action.payload, { merge: true });
+          break;
+        case "DUPLICATE_SUBJECT": {
+          const newSubject = newState.subjects.find(s => s.name === `${action.payload.name} (Copy)`);
+          if (newSubject) {
+            setDocumentNonBlocking(doc(firestore, `users/${userId}/subjects`, newSubject.id), newSubject, { merge: true });
+          }
+          break;
         }
+        case "DELETE_SUBJECT":
+          deleteDocumentNonBlocking(doc(firestore, `users/${userId}/subjects`, action.payload.id));
+          break;
+        
+        case "ADD_PAPER":
+        case "UPDATE_PAPER":
+        case "DUPLICATE_PAPER":
+        case "DELETE_PAPER":
+        case "ADD_CHAPTER":
+        case "UPDATE_CHAPTER":
+        case "DUPLICATE_CHAPTER":
+        case "DELETE_CHAPTER":
+        case "REORDER_CHAPTERS": {
+          const subjectToUpdate = newState.subjects.find(s => s.id === action.payload.subjectId);
+          if (subjectToUpdate) {
+            setDocumentNonBlocking(doc(firestore, `users/${userId}/subjects`, subjectToUpdate.id), subjectToUpdate, { merge: true });
+          }
+          break;
+        }
+
+        case "ADD_EXAM":
+        case "UPDATE_EXAM":
+          setDocumentNonBlocking(doc(firestore, `users/${userId}/exams`, action.payload.id), action.payload, { merge: true });
+          break;
+        case "DELETE_EXAM":
+          deleteDocumentNonBlocking(doc(firestore, `users/${userId}/exams`, action.payload.id));
+          break;
+      }
     }
 };
 
@@ -277,3 +253,5 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
     </AppDataContext.Provider>
   );
 };
+
+    

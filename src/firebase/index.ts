@@ -13,6 +13,7 @@ export interface FirebaseServices {
 }
 
 let firebaseServices: FirebaseServices | null = null;
+let persistenceEnabled = false;
 
 // IMPORTANT: This function is now async.
 export async function initializeFirebase(): Promise<FirebaseServices> {
@@ -38,17 +39,18 @@ export async function initializeFirebase(): Promise<FirebaseServices> {
 
   const firestore = getFirestore(firebaseApp);
   
-  try {
-    // Await persistence enabling BEFORE returning the services
-    await enableIndexedDbPersistence(firestore);
-  } catch (err: any) {
-    if (err.code == 'failed-precondition') {
-        // This can happen if multiple tabs are open. Persistence will still work in one of them.
-        console.warn('Firestore persistence failed. It might be enabled in another tab.');
-    } else if (err.code == 'unimplemented') {
-        // The current browser does not support persistence.
-        console.warn('Firestore persistence is not available in this browser.');
-    }
+  if (!persistenceEnabled) {
+      try {
+        await enableIndexedDbPersistence(firestore);
+        persistenceEnabled = true;
+      } catch (err: any) {
+        if (err.code == 'failed-precondition') {
+            console.warn('Firestore persistence failed. It might be enabled in another tab.');
+            persistenceEnabled = true; // Still mark as "handled"
+        } else if (err.code == 'unimplemented') {
+            console.warn('Firestore persistence is not available in this browser.');
+        }
+      }
   }
   
   const auth = getAuth(firebaseApp);
@@ -72,3 +74,5 @@ export * from './non-blocking-updates';
 export * from './non-blocking-login';
 export * from './errors';
 export * from './error-emitter';
+
+    
