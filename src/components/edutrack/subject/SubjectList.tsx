@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useState, useContext } from 'react';
+import { useState, useContext, useMemo } from 'react';
 import { Subject } from '@/lib/types';
 import { AppDataContext } from '@/context/AppDataContext';
 import { Button } from '@/components/ui/button';
@@ -35,8 +35,16 @@ export function SubjectList() {
   const [isPaperDialogOpen, setIsPaperDialogOpen] = useState(false);
   const [activeSubjectId, setActiveSubjectId] = useState<string | null>(null);
 
+  const sortedSubjects = useMemo(() => {
+    return [...subjects].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+  }, [subjects]);
+
   const handleDuplicate = (subject: Subject) => {
-    dispatch({ type: 'DUPLICATE_SUBJECT', payload: subject });
+    const newSubject = {
+      ...subject,
+      createdAt: new Date().toISOString(), // new timestamp for duplicate
+    }
+    dispatch({ type: 'DUPLICATE_SUBJECT', payload: newSubject });
   };
   
   const handleDelete = () => {
@@ -70,7 +78,7 @@ export function SubjectList() {
   return (
     <>
       <Accordion type="multiple" className="w-full space-y-4">
-        {subjects.map(subject => {
+        {sortedSubjects.map(subject => {
             const subjectProgress = subject.papers.flatMap(p => p.chapters).flatMap(c => c.progressItems).reduce(
                 (acc, item) => {
                   acc.completed += item.completed;

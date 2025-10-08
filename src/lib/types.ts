@@ -1,5 +1,4 @@
 
-
 export interface ResourceLink {
   id: string;
   url: string;
@@ -33,6 +32,7 @@ export interface Subject {
   name: string;
   code?: string;
   papers: Paper[];
+  createdAt: string; // ISO 8601 format
 }
 
 export interface Exam {

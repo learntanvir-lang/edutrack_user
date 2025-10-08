@@ -1,3 +1,4 @@
+
 "use client";
 
 import { z } from "zod";
@@ -59,6 +60,7 @@ export function SubjectDialog({ open, onOpenChange, subject }: SubjectDialogProp
         name: values.name,
         code: values.code,
         papers: subject?.papers || [],
+        createdAt: subject?.createdAt || new Date().toISOString(),
       },
     });
     onOpenChange(false);

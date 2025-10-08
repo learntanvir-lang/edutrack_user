@@ -28,6 +28,7 @@ export const initialData: { subjects: Subject[], exams: Exam[] } = {
       id: subjectPhysicsId,
       name: "Physics",
       code: "PHY-101",
+      createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
       papers: [
         {
           id: uuidv4(),
@@ -65,6 +66,7 @@ export const initialData: { subjects: Subject[], exams: Exam[] } = {
         id: subjectChemistryId,
         name: "Chemistry",
         code: "CHEM-101",
+        createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
         papers: [
             {
                 id: uuidv4(),
