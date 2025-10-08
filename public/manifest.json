@@ -1,0 +1,27 @@
+{
+  "name": "EduTrack",
+  "short_name": "EduTrack",
+  "description": "A modern way to track your exams, subjects, and study progress.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#EAF2FA",
+  "theme_color": "#2563EB",
+  "icons": [
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/maskable_icon.png",
+      "sizes": "196x196",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
