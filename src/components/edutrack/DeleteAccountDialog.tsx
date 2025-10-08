@@ -7,7 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAuth, useUser, useFirebase } from '@/firebase';
 import { EmailAuthProvider, reauthenticateWithCredential, deleteUser } from 'firebase/auth';
-import { collection, doc, getDocs, writeBatch } from 'firebase/firestore';
+import { collection, doc, getDocs, deleteDoc } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -71,21 +71,20 @@ export function DeleteAccountDialog({ open, onOpenChange }: DeleteAccountDialogP
     const examsColRef = collection(firestore, `users/${userId}/exams`);
     const userDocRef = doc(firestore, `users/${userId}`);
 
-    const batch = writeBatch(firestore);
-
-    // Delete subcollections
+    // Delete subcollections' documents
     const [subjectsSnapshot, examsSnapshot] = await Promise.all([
       getDocs(subjectsColRef),
       getDocs(examsColRef),
     ]);
 
-    subjectsSnapshot.forEach(doc => batch.delete(doc.ref));
-    examsSnapshot.forEach(doc => batch.delete(doc.ref));
+    const deletePromises: Promise<void>[] = [];
+    subjectsSnapshot.forEach(subjectDoc => deletePromises.push(deleteDoc(subjectDoc.ref)));
+    examsSnapshot.forEach(examDoc => deletePromises.push(deleteDoc(examDoc.ref)));
     
+    await Promise.all(deletePromises);
+
     // Delete the user document itself
-    batch.delete(userDocRef);
-    
-    await batch.commit();
+    await deleteDoc(userDocRef);
   };
 
   const onSubmit = async (values: DeleteAccountFormValues) => {
