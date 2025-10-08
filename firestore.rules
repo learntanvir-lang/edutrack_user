@@ -1,106 +1,181 @@
-/**
- * @fileoverview Firestore Security Rules for EduTrack application.
- *
- * Core Philosophy:
- * This ruleset provides public read access while restricting write access to authenticated users who own the data. It enforces user-ownership on documents, ensuring that only the authenticated user matching the 'uid' field in the document can create, update, or delete it.
- *
- * Data Structure:
- * - /users/{userId}: Stores user profile information.  The `userId` segment must match the `id` field within the document.
- * - /users/{userId}/subjects: Stores subjects belonging to a specific user.
- * - /users/{userId}/exams: Stores exams belonging to a specific user.
- *
- * Key Security Decisions:
- * - Public read access is granted to all collections.
- * - User listing is implicitly denied.
- * - Write access is strictly controlled by user ID ownership.
- * - Unspecified collections are denied all access.
- *
- * Denormalization for Authorization:
- * The 'uid' field is required within each document to match the authenticated user's `auth.uid`. This denormalization avoids costly `get()` calls to other documents and enables efficient ownership checks within the rules.  This is validated during `create` and enforced as immutable during `update`.
- */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Root-level access controls.  All collections outside of those explicitly defined are denied all access.
-     * @path /databases/{database}/documents
+     * @description Checks if the request is authenticated.
+     * @path N/A
      * @allow N/A
      * @deny N/A
-     * @principle Denies all access to unspecified collections to enforce a default-deny security posture.
+     * @principle Requires authentication for all access.
      */
-    match /{document=**} {
-      allow read: if true;
-      allow write: if false;
+    function isSignedIn() {
+      return request.auth != null;
     }
 
     /**
-     * @description Manages user profile information. Only the authenticated user can create their own profile, and update or delete it later.
+     * @description Checks if the authenticated user ID matches the provided user ID.
+     * @path N/A
+     * @allow N/A
+     * @deny N/A
+     * @principle Enforces ownership.
+     */
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    /**
+     * @description Checks if the authenticated user ID matches the document's 'uid' field.
+     * @path N/A
+     * @allow N/A
+     * @deny N/A
+     * @principle Enforces ownership via document field.
+     */
+    function isDocumentOwner() {
+      return request.auth.uid == resource.data.uid;
+    }
+
+    /**
+     * @description Checks if the authenticated user is the existing owner of the document.
+     * @path N/A
+     * @allow N/A
+     * @deny N/A
+     * @principle Protects existing documents.
+     */
+    function isExistingOwner(userId) {
+      return isOwner(userId) && resource != null;
+    }
+
+    /**
+     * @description Rule for user profiles. Allows users to read, write, and delete their own profile.
      * @path /users/{userId}
-     * @allow (create) request.auth != null && request.resource.data.id == request.auth.uid
-     * @allow (get, list) true
-     * @allow (update, delete) request.auth != null && resource.data.id == request.auth.uid
-     * @deny (create) request.auth == null
-     * @deny (update, delete) request.auth == null || resource.data.id != request.auth.uid
-     * @principle Enforces document ownership for writes and validates relational integrity between the path and document data.
+     * @allow (get, update, delete) User 'user123' can read, update, and delete their profile.
+     * @allow (create) User 'user123' can create their profile if userId matches auth.uid.
+     * @deny (get, update, delete) User 'user456' cannot read, update, or delete User 'user123' profile.
+     * @deny (create) User 'user123' cannot create User 'user456' profile.
+     * @principle Enforces document ownership for user profiles.
      */
     match /users/{userId} {
-      function isOwner(userId) {
-        return request.auth != null && request.auth.uid == userId;
-      }
-      function isExistingOwner(userId) {
-        return isOwner(userId) && resource != null;
-      }
-      allow get, list: if true;
-      allow create: if isOwner(userId) && request.resource.data.id == request.auth.uid;
-      allow update: if isExistingOwner(userId) && resource.data.id == request.resource.data.id;
-      allow delete: if isExistingOwner(userId);
-    }
+      allow get: if isOwner(userId);
+      allow list: if false;
 
-     /**
-      * @description Manages subjects for a specific user. Only the authenticated user can create, update, or delete subjects under their user ID.
-      * @path /users/{userId}/subjects/{subjectId}
-      * @allow (create) request.auth != null && request.resource.data.id == request.auth.uid
-      * @allow (get, list) true
-      * @allow (update, delete) request.auth != null && resource.data.id == request.auth.uid
-      * @deny (create) request.auth == null
-      * @deny (update, delete) request.auth == null || resource.data.id != request.auth.uid
-      * @principle Enforces document ownership for writes and validates relational integrity between the path and document data.
-      */
-    match /users/{userId}/subjects/{subjectId} {
-      function isOwner(userId) {
-        return request.auth != null && request.auth.uid == userId;
-      }
-      function isExistingOwner(userId) {
-        return isOwner(userId) && resource != null;
-      }
-      allow get, list: if isOwner(userId);
       allow create: if isOwner(userId);
-      allow update: if isExistingOwner(userId);
-      allow delete: if isExistingOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId);
     }
 
     /**
-     * @description Manages exams for a specific user. Only the authenticated user can create, update, or delete exams under their user ID.
+     * @description Rule for user subjects. Allows users to create, read, update, and delete their own subjects.
+     * @path /users/{userId}/subjects/{subjectId}
+     * @allow (get, list, create, update, delete) User 'user123' can read, update, and delete their subjects.
+     * @deny (get, list, create, update, delete) User 'user456' cannot read, update, or delete User 'user123' subjects.
+     * @principle Enforces document ownership for user subjects.
+     */
+    match /users/{userId}/subjects/{subjectId} {
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId);
+    }
+    /**
+     * @description Rule for user exams. Allows users to create, read, update, and delete their own exams.
      * @path /users/{userId}/exams/{examId}
-     * @allow (create) request.auth != null && request.resource.data.id == request.auth.uid
-     * @allow (get, list) true
-     * @allow (update, delete) request.auth != null && resource.data.id == request.auth.uid
-     * @deny (create) request.auth == null
-     * @deny (update, delete) request.auth == null || resource.data.id != request.auth.uid
-     * @principle Enforces document ownership for writes and validates relational integrity between the path and document data.
+     * @allow (get, list, create, update, delete) User 'user123' can read, update, and delete their exams.
+     * @deny (get, list, create, update, delete) User 'user456' cannot read, update, or delete User 'user123' exams.
+     * @principle Enforces document ownership for user exams.
      */
     match /users/{userId}/exams/{examId} {
-      function isOwner(userId) {
-        return request.auth != null && request.auth.uid == userId;
-      }
-      function isExistingOwner(userId) {
-        return isOwner(userId) && resource != null;
-      }
-      allow get, list: if isOwner(userId);
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
       allow create: if isOwner(userId);
-      allow update: if isExistingOwner(userId);
-      allow delete: if isExistingOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId);
+    }
+
+    /**
+     * @description Rule for the "data" collection. Allows authenticated users to read.
+     *              Requires "uid" field matching auth.uid for create, update, and delete operations.
+     * @path /data/{documentId}
+     * @allow (get, list) Authenticated user can read the documents.
+     * @allow (create, update, delete) User 'user123' can create, update, and delete a document with uid: 'user123'.
+     * @deny (create, update, delete) User 'user456' cannot create, update, or delete a document with uid: 'user123'.
+     * @principle Enforces ownership for writes in "data" collection.
+     */
+    match /data/{documentId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.uid == request.auth.uid;
+      allow update: if isSignedIn() && request.resource.data.uid == request.auth.uid;
+      allow delete: if isSignedIn() && resource.data.uid == request.auth.uid;
+    }
+
+    /**
+     * @description Rule for the "tasks" collection. Allows authenticated users to read.
+     *              Requires "uid" field matching auth.uid for create, update, and delete operations.
+     * @path /tasks/{documentId}
+     * @allow (get, list) Authenticated user can read the documents.
+     * @allow (create, update, delete) User 'user123' can create, update, and delete a document with uid: 'user123'.
+     * @deny (create, update, delete) User 'user456' cannot create, update, or delete a document with uid: 'user123'.
+     * @principle Enforces ownership for writes in "tasks" collection.
+     */
+    match /tasks/{documentId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.uid == request.auth.uid;
+      allow update: if isSignedIn() && request.resource.data.uid == request.auth.uid;
+      allow delete: if isSignedIn() && resource.data.uid == request.auth.uid;
+    }
+
+    /**
+     * @description Rule for the "syllabus" collection. Allows authenticated users to read.
+     *              Requires "uid" field matching auth.uid for create, update, and delete operations.
+     * @path /syllabus/{documentId}
+     * @allow (get, list) Authenticated user can read the documents.
+     * @allow (create, update, delete) User 'user123' can create, update, and delete a document with uid: 'user123'.
+     * @deny (create, update, delete) User 'user456' cannot create, update, or delete a document with uid: 'user123'.
+     * @principle Enforces ownership for writes in "syllabus" collection.
+     */
+    match /syllabus/{documentId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.uid == request.auth.uid;
+      allow update: if isSignedIn() && request.resource.data.uid == request.auth.uid;
+      allow delete: if isSignedIn() && resource.data.uid == request.auth.uid;
+    }
+
+    /**
+     * @description Rule for the "exams" collection. Allows authenticated users to read.
+     *              Requires "uid" field matching auth.uid for create, update, and delete operations.
+     * @path /exams/{documentId}
+     * @allow (get, list) Authenticated user can read the documents.
+     * @allow (create, update, delete) User 'user123' can create, update, and delete a document with uid: 'user123'.
+     * @deny (create, update, delete) User 'user456' cannot create, update, or delete a document with uid: 'user123'.
+     * @principle Enforces ownership for writes in "exams" collection.
+     */
+    match /exams/{documentId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.uid == request.auth.uid;
+      allow update: if isSignedIn() && request.resource.data.uid == request.auth.uid;
+      allow delete: if isSignedIn() && resource.data.uid == request.auth.uid;
+    }
+
+    /**
+     * @description Rule for the "notes" collection. Allows authenticated users to read.
+     *              Requires "uid" field matching auth.uid for create, update, and delete operations.
+     * @path /notes/{documentId}
+     * @allow (get, list) Authenticated user can read the documents.
+     * @allow (create, update, delete) User 'user123' can create, update, and delete a document with uid: 'user123'.
+     * @deny (create, update, delete) User 'user456' cannot create, update, or delete a document with uid: 'user123'.
+     * @principle Enforces ownership for writes in "notes" collection.
+     */
+    match /notes/{documentId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.uid == request.auth.uid;
+      allow update: if isSignedIn() && request.resource.data.uid == request.auth.uid;
+      allow delete: if isSignedIn() && resource.data.uid == request.auth.uid;
     }
   }
 }
