@@ -59,7 +59,7 @@ function NextExamCard({ exam }: NextExamCardProps) {
                     <Calendar className="h-4 w-4" />
                     <span>Next Exam</span>
                   </div>
-                  <CardTitle className="text-4xl font-bold">
+                  <CardTitle className="text-3xl font-bold">
                     {exam.name}
                   </CardTitle>
                   <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-primary-foreground/10 px-4 py-2 text-lg font-bold text-primary-foreground">
