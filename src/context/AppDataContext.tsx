@@ -59,7 +59,6 @@ const appReducer = (state: AppState, action: Action): AppState => {
         ...subject,
         id: uuidv4(),
         name: `${subject.name} (Copy)`,
-        createdAt: new Date().toISOString(),
         papers: subject.papers.map(paper => ({
           ...paper,
           id: uuidv4(),
