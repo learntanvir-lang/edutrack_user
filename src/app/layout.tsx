@@ -49,7 +49,7 @@ export default function RootLayout({
               <main className="flex-1">{children}</main>
               <footer className="w-full border-t bg-background">
                 <div className="container mx-auto py-4 text-center text-sm text-muted-foreground">
-                  All Right Reserved By TANVIR MAHMUD
+                  All Right Reserved By <span className="font-bold text-base text-primary">TANVIR MAHMUD</span>
                 </div>
               </footer>
             </div>
