@@ -1,3 +1,4 @@
+
 import type { Metadata } from 'next';
 import { AppDataProvider } from '@/context/AppDataContext';
 import { Toaster } from '@/components/ui/toaster';
@@ -46,6 +47,11 @@ export default function RootLayout({
             <div className="relative flex min-h-screen flex-col">
               <AppHeader />
               <main className="flex-1">{children}</main>
+              <footer className="w-full border-t bg-background">
+                <div className="container mx-auto py-4 text-center text-sm text-muted-foreground">
+                  All Right Reserved By TANVIR MAHMUD
+                </div>
+              </footer>
             </div>
             <Toaster />
           </AppDataProvider>
