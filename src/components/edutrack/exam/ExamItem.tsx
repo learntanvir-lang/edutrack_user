@@ -129,13 +129,13 @@ function ExamItem({ exam }: ExamItemProps) {
               boxClassName="bg-primary/10"
             />
           ) : exam.isCompleted && exam.marksObtained != null && exam.totalMarks != null ? (
-            <div className="flex items-center justify-center gap-2 rounded-lg border bg-background/50 p-3 text-center">
+            <div className="flex items-center justify-center gap-4 rounded-lg border bg-background/50 p-3">
               <Award className="h-8 w-8 text-yellow-500" />
-              <div className="text-center">
-                <p className="text-xs text-muted-foreground uppercase tracking-wide">Score</p>
-                <p className="text-2xl font-bold text-card-foreground">
-                  {exam.marksObtained} <span className="text-lg text-muted-foreground">/ {exam.totalMarks}</span>
-                </p>
+              <div className="flex items-baseline gap-2">
+                <span className="text-sm font-medium text-muted-foreground">SCORE:</span>
+                <span className="text-2xl font-bold text-foreground">{exam.marksObtained}</span>
+                <span className="text-base text-muted-foreground">out of</span>
+                <span className="text-2xl font-bold text-foreground">{exam.totalMarks}</span>
               </div>
             </div>
           ) : (
