@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/componen
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { ExamDialog } from "./ExamDialog";
-import { Pen, Calendar, Check, X, Trash2 } from "lucide-react";
+import { Pen, Calendar, Check, X, Trash2, Award } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Countdown } from "../Countdown";
 import { Badge } from "@/components/ui/badge";
@@ -121,12 +121,30 @@ function ExamItem({ exam }: ExamItemProps) {
               <Calendar className="h-4 w-4" /> {format(new Date(exam.date), "d MMMM, yyyy, p")}
             </p>
           </div>
-          <Countdown 
-            targetDate={exam.date} 
-            isPastOrCompleted={isPast || exam.isCompleted} 
-            variant="bordered"
-            boxClassName={!isPast ? "bg-primary/10" : ""}
-          />
+          {!isPast ? (
+            <Countdown 
+              targetDate={exam.date} 
+              isPastOrCompleted={false} 
+              variant="bordered"
+              boxClassName="bg-primary/10"
+            />
+          ) : exam.isCompleted && exam.marksObtained != null && exam.totalMarks != null ? (
+            <div className="flex items-center justify-center gap-2 rounded-lg border bg-background/50 p-3 text-center">
+              <Award className="h-8 w-8 text-yellow-500" />
+              <div className="text-center">
+                <p className="text-xs text-muted-foreground uppercase tracking-wide">Score</p>
+                <p className="text-2xl font-bold text-card-foreground">
+                  {exam.marksObtained} <span className="text-lg text-muted-foreground">/ {exam.totalMarks}</span>
+                </p>
+              </div>
+            </div>
+          ) : (
+             <Countdown 
+                targetDate={exam.date} 
+                isPastOrCompleted={true}
+                variant="bordered"
+            />
+          )}
         </CardContent>
         {isPast && (
           <CardFooter className="flex justify-between gap-2">

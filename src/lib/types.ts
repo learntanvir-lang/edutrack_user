@@ -42,4 +42,6 @@ export interface Exam {
   chapterIds: string[];
   date: string; // ISO 8601 format
   isCompleted: boolean;
+  marksObtained?: number;
+  totalMarks?: number;
 }

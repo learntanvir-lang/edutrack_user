@@ -50,7 +50,9 @@
         "subjectIds": { "type": "array", "items": { "type": "string" } },
         "chapterIds": { "type": "array", "items": { "type": "string" } },
         "date": { "type": "string", "format": "date-time" },
-        "isCompleted": { "type": "boolean" }
+        "isCompleted": { "type": "boolean" },
+        "marksObtained": { "type": "number" },
+        "totalMarks": { "type": "number" }
       },
       "required": ["id", "name", "date", "isCompleted"]
     },

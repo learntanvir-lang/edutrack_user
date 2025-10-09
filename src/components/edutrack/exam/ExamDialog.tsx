@@ -25,7 +25,7 @@ import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
-import { CalendarIcon, Check, ChevronsUpDown } from "lucide-react";
+import { CalendarIcon, Check, ChevronsUpDown, X } from "lucide-react";
 import { format } from "date-fns";
 import { Exam } from "@/lib/types";
 import { useContext, useMemo, useState, useEffect } from "react";
@@ -34,6 +34,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
 
 const examSchema = z.object({
   name: z.string().min(1, "Exam name is required"),
@@ -41,6 +42,9 @@ const examSchema = z.object({
   chapterIds: z.array(z.string()).optional(),
   date: z.date({ required_error: "Exam date is required" }),
   time: z.string().optional(),
+  isCompleted: z.boolean(),
+  marksObtained: z.coerce.number().optional(),
+  totalMarks: z.coerce.number().optional(),
 });
 
 type ExamFormValues = z.infer<typeof examSchema>;
@@ -54,6 +58,7 @@ interface ExamDialogProps {
 export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
   const { subjects, dispatch } = useContext(AppDataContext);
   const isEditing = !!exam;
+  const isPast = isEditing && exam ? new Date(exam.date) < new Date() : false;
 
   const form = useForm<ExamFormValues>({
     resolver: zodResolver(examSchema),
@@ -63,6 +68,9 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
       chapterIds: [],
       date: undefined,
       time: '09:00',
+      isCompleted: false,
+      marksObtained: undefined,
+      totalMarks: undefined,
     },
   });
 
@@ -75,6 +83,9 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
         chapterIds: exam.chapterIds,
         date: examDate,
         time: format(examDate, "HH:mm"),
+        isCompleted: exam.isCompleted,
+        marksObtained: exam.marksObtained,
+        totalMarks: exam.totalMarks,
       })
     } else {
       form.reset({
@@ -83,12 +94,16 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
         chapterIds: [],
         date: undefined,
         time: '09:00',
+        isCompleted: false,
+        marksObtained: undefined,
+        totalMarks: undefined,
       })
     }
   }, [exam, isEditing, form, open]);
 
   const selectedSubjectIds = form.watch("subjectIds") || [];
   const selectedChapterIds = form.watch("chapterIds") || [];
+  const isCompleted = form.watch("isCompleted");
   
   const chaptersBySubject = useMemo(() => {
     if (!selectedSubjectIds.length) return [];
@@ -109,30 +124,22 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
     const combinedDate = new Date(values.date);
     combinedDate.setHours(hours, minutes);
 
-    if (isEditing && exam) {
-      dispatch({
-        type: "UPDATE_EXAM",
-        payload: {
-          ...exam,
-          name: values.name,
-          subjectIds: values.subjectIds || [],
-          chapterIds: values.chapterIds || [],
-          date: combinedDate.toISOString(),
-        },
-      });
-    } else {
-      dispatch({
-        type: "ADD_EXAM",
-        payload: {
-          id: uuidv4(),
-          name: values.name,
-          subjectIds: values.subjectIds || [],
-          chapterIds: values.chapterIds || [],
-          date: combinedDate.toISOString(),
-          isCompleted: false,
-        },
-      });
-    }
+    const examData: Exam = {
+      id: exam?.id || uuidv4(),
+      name: values.name,
+      subjectIds: values.subjectIds || [],
+      chapterIds: values.chapterIds || [],
+      date: combinedDate.toISOString(),
+      isCompleted: values.isCompleted,
+      marksObtained: values.isCompleted ? values.marksObtained : undefined,
+      totalMarks: values.isCompleted ? values.totalMarks : undefined,
+    };
+
+    dispatch({
+      type: isEditing ? "UPDATE_EXAM" : "ADD_EXAM",
+      payload: examData,
+    });
+    
 
     onOpenChange(false);
     form.reset();
@@ -147,11 +154,11 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
   
   return (
     <Dialog open={open} onOpenChange={handleDialogChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{isEditing ? "Edit Exam" : "Add Exam"}</DialogTitle>
           <DialogDescription>
-            {isEditing ? "Update the details of your exam." : "Add a new exam to your schedule. You can select multiple subjects and chapters to create exams for each."}
+            {isEditing ? "Update the details of your exam." : "Add a new exam to your schedule."}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -215,7 +222,6 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
                                                 : [...currentIds, subject.id];
                                             form.setValue("subjectIds", newIds, { shouldValidate: true });
                                             
-                                            // Filter out chapters from deselected subjects
                                             const availableChapterIds = subjects
                                               .filter(s => newIds.includes(s.id))
                                               .flatMap(s => s.papers)
@@ -369,6 +375,70 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
                 )}
               />
             </div>
+            
+            {isPast && (
+                <>
+                    <Separator />
+                    <div className="space-y-4 rounded-md border p-4">
+                        <h3 className="text-lg font-medium">Exam Result</h3>
+                        <FormField
+                            control={form.control}
+                            name="isCompleted"
+                            render={({ field }) => (
+                                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                                    <div className="space-y-0.5">
+                                        <FormLabel>Status</FormLabel>
+                                        <FormDescription>
+                                            Mark this exam as completed or not.
+                                        </FormDescription>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                        <Button type="button" onClick={() => field.onChange(false)} variant={!field.value ? "destructive" : "outline"} size="sm">
+                                            <X className="mr-2 h-4 w-4" />
+                                            Not Completed
+                                        </Button>
+                                        <Button type="button" onClick={() => field.onChange(true)} variant={field.value ? "default" : "outline"} size="sm" className={cn(field.value && "bg-green-600 hover:bg-green-700")}>
+                                            <Check className="mr-2 h-4 w-4" />
+                                            Completed
+                                        </Button>
+                                    </div>
+                                </FormItem>
+                            )}
+                        />
+                        {isCompleted && (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                                <FormField
+                                    control={form.control}
+                                    name="marksObtained"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Marks Obtained</FormLabel>
+                                            <FormControl>
+                                                <Input type="number" placeholder="e.g., 85" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="totalMarks"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Total Marks</FormLabel>
+                                            <FormControl>
+                                                <Input type="number" placeholder="e.g., 100" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+                        )}
+                    </div>
+                </>
+            )}
+
             <DialogFooter>
               <Button type="submit">{isEditing ? "Save Changes" : "Add Exam"}</Button>
             </DialogFooter>
@@ -378,5 +448,3 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
     </Dialog>
   );
 }
-
-    
