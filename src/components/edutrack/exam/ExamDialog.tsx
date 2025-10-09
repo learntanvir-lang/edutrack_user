@@ -415,7 +415,7 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
                                         <FormItem>
                                             <FormLabel>Marks Obtained</FormLabel>
                                             <FormControl>
-                                                <Input type="number" placeholder="e.g., 85" {...field} />
+                                                <Input type="number" placeholder="e.g., 85" {...field} value={field.value ?? ''} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -428,7 +428,7 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
                                         <FormItem>
                                             <FormLabel>Total Marks</FormLabel>
                                             <FormControl>
-                                                <Input type="number" placeholder="e.g., 100" {...field} />
+                                                <Input type="number" placeholder="e.g., 100" {...field} value={field.value ?? ''} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -449,5 +449,7 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
     </Dialog>
   );
 }
+
+    
 
     
