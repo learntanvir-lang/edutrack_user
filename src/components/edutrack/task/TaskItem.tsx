@@ -87,22 +87,30 @@ export function TaskItem({ task }: TaskItemProps) {
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
     const seconds = totalSeconds % 60;
-    
-    let parts = [];
-    if (hours > 0) parts.push(`${hours}h`);
-    if (minutes > 0) parts.push(`${minutes}m`);
-    if (seconds > 0 || parts.length === 0) parts.push(`${seconds}s`);
-    
+
+    const parts = [];
+    if (hours > 0) {
+      parts.push(`${hours}h`);
+    }
+    if (minutes > 0) {
+      parts.push(`${minutes}m`);
+    }
+    if (seconds > 0 || (hours === 0 && minutes === 0)) {
+        parts.push(`${seconds}s`);
+    }
+
     return parts.join(' ');
   };
+
 
   return (
     <>
     <div className={cn(
-        "flex items-start gap-4 p-4 rounded-lg bg-card border transition-all duration-300",
+        "flex items-start gap-4 p-4 rounded-lg bg-card border transition-shadow duration-300",
         task.isCompleted 
             ? "bg-muted/50 border-border" 
-            : "border-primary/50 shadow-sm hover:shadow-lg hover:shadow-primary/10"
+            : "border-primary/50",
+        !task.isCompleted && "hover:shadow-lg hover:shadow-primary/10"
       )}>
       <Checkbox
         id={`task-${task.id}`}
@@ -123,8 +131,8 @@ export function TaskItem({ task }: TaskItemProps) {
             </p>
             {task.description && (
                 <p className={cn(
-                    "text-sm text-muted-foreground",
-                    task.isCompleted && "line-through"
+                    "text-sm",
+                    task.isCompleted ? "text-muted-foreground/80 line-through" : "text-muted-foreground"
                 )}>
                     {task.description}
                 </p>
