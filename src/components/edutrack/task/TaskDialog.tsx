@@ -116,7 +116,7 @@ export function TaskDialog({ open, onOpenChange, date, task }: TaskDialogProps) 
       subcategory: values.subcategory,
       timeSpent: task?.timeSpent || 0,
       isTimerRunning: task?.isTimerRunning || false,
-      timerStartTime: task?.timerStartTime,
+      ...(task?.timerStartTime && { timerStartTime: task.timerStartTime }),
     };
 
     dispatch({
