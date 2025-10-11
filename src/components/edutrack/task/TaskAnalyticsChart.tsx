@@ -34,7 +34,7 @@ const formatTime = (totalMilliseconds: number, formatType: 'short' | 'long') => 
     
     let parts = [];
     if (hours > 0) parts.push(formatType === 'long' ? `${hours} hours` : `${hours}h`);
-    if (minutes > 0 || hours === 0) parts.push(formatType === 'long' ? `${minutes} minutes` : `${minutes}m`);
+    if (minutes > 0 || (hours === 0 && totalMilliseconds > 0)) parts.push(formatType === 'long' ? `${minutes} minutes` : `${minutes}m`);
 
     return parts.join(' ') || (formatType === 'short' ? '0m' : '0 minutes');
 };
@@ -56,7 +56,7 @@ const CustomLabel = (props: any) => {
     const timeString = formatTime(value * 3600000, 'short');
     
     return (
-        <text x={x} y={y} dy={-15} fill="hsl(var(--foreground))" fontSize={12} fontWeight="bold" textAnchor="middle">
+        <text x={x} y={y} dy={-15} fill="hsl(var(--foreground))" fontSize={14} fontWeight="bold" textAnchor="middle">
             {timeString}
         </text>
     );
