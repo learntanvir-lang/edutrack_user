@@ -119,9 +119,9 @@ export function PaperList({ papers, subjectId }: PaperListProps) {
               <AccordionContent className="px-4 pb-4 pt-0">
                  <div className="border-t pt-4 space-y-4">
                     <div className="flex justify-end">
-                      <Button 
-                        variant="outline"
+                      <Button
                         size="sm"
+                        className="transition-all duration-300 bg-primary text-primary-foreground border-2 border-primary hover:bg-transparent hover:text-primary hover:shadow-lg hover:shadow-primary/20"
                         onClick={() => handleAddChapterClick(paper.id)}
                       >
                         <PlusCircle className="mr-2 h-4 w-4" />
