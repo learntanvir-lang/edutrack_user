@@ -67,7 +67,7 @@ export function AppHeader() {
               <Skeleton className="h-8 w-20 rounded-md" />
             ) : user ? (
               <>
-                <Button asChild variant="ghost" size="sm">
+                <Button asChild variant="secondary" size="default" className="font-bold">
                     <Link href="/notes">
                         <Notebook className="mr-2 h-4 w-4" />
                         Notes
