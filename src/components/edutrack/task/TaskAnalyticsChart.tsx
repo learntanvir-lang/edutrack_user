@@ -5,7 +5,7 @@ import { useMemo, useState, useRef } from 'react';
 import { Line, LineChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, LabelList, Dot } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartConfig, ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
-import { format, eachDayOfInterval, startOfDay, eachWeekOfInterval } from 'date-fns';
+import { format, eachDayOfInterval, startOfDay, eachWeekOfInterval, max } from 'date-fns';
 import type { StudyTask } from '@/lib/types';
 import type { DateRange } from 'react-day-picker';
 import type { ViewType } from '@/app/studytask/page';
@@ -98,9 +98,9 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
 
   const availableSubcategories = subcategoriesByCategory[selectedCategory] || ['all'];
 
-  const { chartData, totalTime } = useMemo(() => {
+  const { chartData, totalTime, maxHours } = useMemo(() => {
     if (!dateRange.from || !dateRange.to) {
-        return { chartData: [], totalTime: 0 };
+        return { chartData: [], totalTime: 0, maxHours: 1 };
     }
 
     const filteredTasks = tasks.filter(task => {
@@ -131,14 +131,16 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
             tasksByDay[dayKey] += timeInMillis;
         }
     });
-
+    
+    let data: { date?: string; week?: string; hours: number }[];
+    
     if (viewType === 'monthly') {
         const weeks = eachWeekOfInterval(
             { start: dateRange.from, end: dateRange.to },
             { weekStartsOn: 6 } // Saturday
         );
 
-        const dataByWeek = weeks.map((weekStart, index) => {
+        data = weeks.map((weekStart, index) => {
             const weekEnd = new Date(weekStart);
             weekEnd.setDate(weekEnd.getDate() + 6);
             const daysInWeek = eachDayOfInterval({ start: weekStart, end: weekEnd });
@@ -154,24 +156,24 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
             };
         });
 
-        return { chartData: dataByWeek, totalTime: totalMilliseconds };
-
     } else { // weekly or daily
         const daysInInterval = eachDayOfInterval({
             start: startOfDay(dateRange.from),
             end: startOfDay(dateRange.to),
         });
 
-        const dataByDay = daysInInterval.map(day => {
+        data = daysInInterval.map(day => {
             const dayKey = format(day, 'yyyy-MM-dd');
             return {
                 date: dayKey,
                 hours: parseFloat(((tasksByDay[dayKey] || 0) / (1000 * 60 * 60)).toFixed(2)),
             };
         });
-
-        return { chartData: dataByDay, totalTime: totalMilliseconds };
     }
+
+    const maxHoursValue = data.length > 0 ? Math.max(...data.map(d => d.hours)) : 0;
+    
+    return { chartData: data, totalTime: totalMilliseconds, maxHours: Math.max(1, maxHoursValue + 0.5) };
     
   }, [tasks, dateRange, viewType, selectedCategory, selectedSubcategory]);
 
@@ -244,7 +246,7 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
         <div className="h-80 w-full">
             <ChartContainer config={chartConfig} className="h-full w-full">
                 <LineChart data={chartData} margin={{ top: 20, right: 20, left: -20, bottom: 20 }}>
-                    <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                    <CartesianGrid vertical={false} stroke="hsl(var(--border))" />
                     <XAxis
                         dataKey={viewType === 'monthly' ? "week" : "date"}
                         tickLine={false}
@@ -253,6 +255,7 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
                         tickFormatter={(value) => viewType === 'monthly' ? value : format(new Date(value), 'E')}
                     />
                     <YAxis
+                        domain={[0, maxHours]}
                         tickLine={false}
                         axisLine={false}
                         tickMargin={10}
@@ -287,5 +290,3 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
     </Card>
   );
 }
-
-  
