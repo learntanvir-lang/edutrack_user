@@ -9,9 +9,11 @@ import { Loader2 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useUser } from '@/firebase';
 import { useRouter } from 'next/navigation';
+import { SyllabusProgressOverview } from '@/components/edutrack/SyllabusProgressOverview';
+import { ExamOverview } from '@/components/edutrack/ExamOverview';
 
 export default function Home() {
-  const { exams } = useContext(AppDataContext);
+  const { subjects, exams } = useContext(AppDataContext);
   const { user, isUserLoading } = useUser();
   const router = useRouter();
 
@@ -63,8 +65,9 @@ export default function Home() {
           </Card>
         )}
 
-        <div className="mt-8">
-          {/* You can add more dashboard widgets here in the future */}
+        <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+          <SyllabusProgressOverview subjects={subjects} />
+          <ExamOverview exams={exams} />
         </div>
     </div>
   );
