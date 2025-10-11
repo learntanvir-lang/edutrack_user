@@ -181,7 +181,7 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
     }
 
     try {
-      const dataUrl = await toPng(cardRef.current, { cacheBust: true, backgroundColor: 'white' });
+      const dataUrl = await toPng(cardRef.current, { cacheBust: true, backgroundColor: 'white', skipFonts: true });
       const link = document.createElement('a');
       link.download = `task-analytics-${viewType}-${format(new Date(), 'yyyy-MM-dd')}.png`;
       link.href = dataUrl;
@@ -287,3 +287,5 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
     </Card>
   );
 }
+
+  
