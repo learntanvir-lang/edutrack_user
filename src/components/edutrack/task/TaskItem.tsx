@@ -162,7 +162,11 @@ export function TaskItem({ task }: TaskItemProps) {
         </div>
         
         <div className="flex flex-wrap items-center gap-2">
-            <Badge variant="outline" className={cn("flex items-center gap-1.5 border-primary", task.isCompleted && "border-muted-foreground/50 text-muted-foreground")}>
+            <Badge variant="outline" className={cn(
+                "flex items-center gap-1.5",
+                isOverdue ? "border-red-500 text-red-500" : "border-primary",
+                task.isCompleted && "border-muted-foreground/50 text-muted-foreground"
+            )}>
                 <Calendar className="h-3 w-3" />
                 {format(new Date(task.date), 'MMM dd')}
             </Badge>
