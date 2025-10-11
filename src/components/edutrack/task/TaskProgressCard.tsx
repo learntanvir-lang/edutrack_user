@@ -5,17 +5,21 @@ import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Clock } from "lucide-react";
 import type { StudyTask } from "@/lib/types";
+import { Progress } from '@/components/ui/progress';
 
 interface TaskProgressCardProps {
     tasks: StudyTask[];
 }
 
 export function TaskProgressCard({ tasks }: TaskProgressCardProps) {
-    const { completed, total, totalTimeSpent } = useMemo(() => {
+    const { completed, total, totalTimeSpent, percentage } = useMemo(() => {
+        const completedTasks = tasks.filter(t => t.isCompleted).length;
+        const totalTasks = tasks.length;
         return {
-            completed: tasks.filter(t => t.isCompleted).length,
-            total: tasks.length,
-            totalTimeSpent: tasks.reduce((acc, task) => acc + (task.timeSpent || 0), 0)
+            completed: completedTasks,
+            total: totalTasks,
+            totalTimeSpent: tasks.reduce((acc, task) => acc + (task.timeSpent || 0), 0),
+            percentage: totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0,
         }
     }, [tasks]);
 
@@ -32,7 +36,7 @@ export function TaskProgressCard({ tasks }: TaskProgressCardProps) {
             <CardHeader>
                 <CardTitle className="text-lg">Today's Progress</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-3">
                 <div className="flex justify-between items-center">
                     <span className="font-semibold text-foreground text-lg">{completed} / {total} completed</span>
                      <div className="flex items-center gap-2 text-sm text-primary font-semibold">
@@ -40,6 +44,7 @@ export function TaskProgressCard({ tasks }: TaskProgressCardProps) {
                         <span>{formatTime(totalTimeSpent)}</span>
                     </div>
                 </div>
+                <Progress value={percentage} className="h-2" />
             </CardContent>
         </Card>
     );
