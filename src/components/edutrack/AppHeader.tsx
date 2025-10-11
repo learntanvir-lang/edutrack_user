@@ -69,8 +69,8 @@ export function AppHeader() {
                         variant="ghost"
                         size="sm" 
                         className={cn(
-                            "font-bold",
-                            isDashboardPage && "bg-primary/10 text-primary"
+                            "font-bold hover:bg-primary/10 hover:text-primary",
+                            isDashboardPage && "text-primary"
                         )}
                     >
                         <Link href="/">
@@ -83,8 +83,8 @@ export function AppHeader() {
                         variant="ghost"
                         size="sm" 
                         className={cn(
-                            "font-bold",
-                            isNotesPage && "bg-primary/10 text-primary"
+                            "font-bold hover:bg-primary/10 hover:text-primary",
+                            isNotesPage && "text-primary"
                         )}
                     >
                         <Link href="/notes">
