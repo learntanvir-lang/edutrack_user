@@ -69,6 +69,42 @@ const CustomLabel = (props: any) => {
     );
 };
 
+const CustomXAxisTick = (props: any) => {
+    const { x, y, payload, viewType } = props;
+    const { value } = payload;
+    if (viewType === 'monthly') {
+      return (
+        <g transform={`translate(${x},${y})`}>
+          <text x={0} y={0} dy={16} textAnchor="middle" fill="#666">
+            {value}
+          </text>
+        </g>
+      );
+    }
+    try {
+        const date = new Date(`${value}T00:00:00`);
+        if (isValid(date)) {
+            return (
+                <g transform={`translate(${x},${y})`}>
+                    <text x={0} y={0} dy={16} textAnchor="middle" fill="#666" fontSize={12}>
+                        {format(date, 'd MMM')}
+                    </text>
+                    <text x={0} y={0} dy={30} textAnchor="middle" fill="#666" fontSize={12}>
+                        {format(date, 'E')}
+                    </text>
+                </g>
+            );
+        }
+    } catch (e) { /* ignore */ }
+    
+    return (
+        <g transform={`translate(${x},${y})`}>
+          <text x={0} y={0} dy={16} textAnchor="middle" fill="#666">
+            {value}
+          </text>
+        </g>
+      );
+}
 
 export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalyticsChartProps) {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -221,19 +257,6 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
     return null;
   };
   
-  const getXAxisTickFormatter = (value: string) => {
-    if (viewType === 'monthly') return value;
-    try {
-      const date = new Date(`${value}T00:00:00`);
-      if (isValid(date)) {
-        return format(date, 'd MMM - E');
-      }
-    } catch (e) {
-      // ignore
-    }
-    return value;
-  }
-  
   const getTooltipLabelFormatter = (label: string) => {
     if (viewType === 'monthly') return label;
     try {
@@ -306,7 +329,9 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
                         tickLine={false}
                         axisLine={false}
                         tickMargin={10}
-                        tickFormatter={getXAxisTickFormatter}
+                        tick={<CustomXAxisTick viewType={viewType} />}
+                        height={40}
+                        interval="preserveStartEnd"
                     />
                     <YAxis
                         tickLine={false}
