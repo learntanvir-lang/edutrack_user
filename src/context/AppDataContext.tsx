@@ -197,8 +197,8 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
           dispatch({ type: "SET_STATE", payload: { subjects, exams, notes } });
         } catch (error) {
           console.error("Error fetching from Firestore:", error);
-          // Fallback to initial data on error
-          dispatch({ type: "SET_STATE", payload: initialData });
+          // On error, clear the state instead of loading initial data
+          dispatch({ type: "SET_STATE", payload: initialState });
         }
       } else {
         // Not logged in or Firestore not ready, use initial/empty data
