@@ -4,7 +4,7 @@
 import { useState, useContext, memo, useMemo } from "react";
 import { Chapter, ResourceLink } from "@/lib/types";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Pen, Copy, Trash2, Link as LinkIcon, ExternalLink, Activity, PlusCircle, Edit } from "lucide-react";
+import { MoreHorizontal, Pen, Copy, Trash2, Link as LinkIcon, ExternalLink, Activity, PlusCircle, Edit, MoreVertical } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import {
   DropdownMenu,
