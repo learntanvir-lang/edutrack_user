@@ -10,7 +10,7 @@ import { Trash2, Edit, Play, Square, MoreVertical, Calendar, Flag, Tag, Clock } 
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { TaskDialog } from './TaskDialog';
-import { format } from 'date-fns';
+import { format, isBefore, startOfToday } from 'date-fns';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { v4 as uuidv4 } from 'uuid';
 import { TimeLogDetailsDialog } from './TimeLogDetailsDialog';
@@ -30,6 +30,11 @@ export function TaskItem({ task }: TaskItemProps) {
     if (!task.activeTimeLogId || !task.timeLogs) return null;
     return task.timeLogs.find(log => log.id === task.activeTimeLogId);
   }, [task.activeTimeLogId, task.timeLogs]);
+  
+  const isOverdue = useMemo(() => {
+    return isBefore(new Date(task.date), startOfToday()) && !task.isCompleted;
+  }, [task.date, task.isCompleted]);
+
 
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
@@ -115,7 +120,7 @@ export function TaskItem({ task }: TaskItemProps) {
         let parts = [];
         if (hours > 0) parts.push(`${hours}h`);
         if (minutes > 0) parts.push(`${minutes}m`);
-        if (seconds > 0 && hours === 0 && minutes < 1) parts.push(`${seconds}s`);
+        if (seconds > 0 && hours === 0) parts.push(`${seconds}s`);
 
         return parts.join(' ') || '0s';
   };
@@ -126,8 +131,9 @@ export function TaskItem({ task }: TaskItemProps) {
         "flex items-start gap-4 p-4 rounded-lg border transition-all duration-300",
         task.isCompleted 
             ? "bg-muted/30 border-dashed" 
-            : "bg-card border-primary/20",
-        !task.isCompleted && "hover:shadow-lg hover:shadow-primary/10 hover:border-primary/50"
+            : "bg-card",
+        !task.isCompleted && "hover:shadow-lg",
+        isOverdue && "border-red-500/50 hover:shadow-red-500/10"
       )}>
       <Checkbox
         id={`task-${task.id}`}
