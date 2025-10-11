@@ -5,7 +5,6 @@ import { useState, useContext } from 'react';
 import { ProgressItem } from "@/lib/types";
 import { AppDataContext } from "@/context/AppDataContext";
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
 import { Checkbox } from '@/components/ui/checkbox';
 import { MoreVertical, Edit, Trash2, Plus, Minus } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -54,7 +53,7 @@ export function ProgressItemDisplay({ item, subjectId, paperId, chapterId }: Pro
             <div className="p-2 pr-10 relative rounded-md bg-muted/50">
                 {item.type === 'counter' ? (
                      <div className="flex items-center justify-between gap-4">
-                        <p className="text-sm font-semibold text-foreground flex-shrink-0">{item.name}</p>
+                        <p className="text-base font-medium text-foreground flex-shrink-0">{item.name}</p>
                         <div className="flex-1 flex items-center gap-2">
                              <div className="w-full bg-secondary rounded-full h-2.5">
                                 <div
@@ -81,7 +80,7 @@ export function ProgressItemDisplay({ item, subjectId, paperId, chapterId }: Pro
                             onCheckedChange={(checked) => handleTodoToggle(!!checked)}
                             className="mr-3 h-5 w-5"
                         />
-                        <label htmlFor={item.id} className={cn("text-sm font-semibold flex-1", item.completed === 1 && "line-through text-muted-foreground")}>
+                        <label htmlFor={item.id} className={cn("text-base font-medium flex-1", item.completed === 1 && "line-through text-muted-foreground")}>
                             {item.name}
                         </label>
                     </div>
