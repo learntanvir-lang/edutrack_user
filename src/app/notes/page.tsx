@@ -45,8 +45,8 @@ export default function NotesPage() {
               My Notes
             </h1>
             <Button 
-                variant="default"
-                className="transition-all duration-300 hover:shadow-lg hover:shadow-primary/40 font-bold"
+                variant="outline"
+                className="transition-all duration-300 hover:bg-primary/10 hover:text-primary hover:border-primary font-bold"
                 onClick={() => setIsNoteDialogOpen(true)}>
                 <PlusCircle className="mr-2 h-4 w-4" />
                 Add Note
