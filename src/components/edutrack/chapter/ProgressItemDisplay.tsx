@@ -51,7 +51,7 @@ export function ProgressItemDisplay({ item, subjectId, paperId, chapterId }: Pro
 
     return (
         <>
-            <div className="p-2 pr-10 relative rounded-md bg-background border">
+            <div className="p-2 pr-10 relative rounded-md bg-muted/50">
                 {item.type === 'counter' ? (
                      <div className="flex items-center justify-between gap-2">
                         <p className="text-sm font-semibold text-foreground flex-shrink-0 mr-2">{item.name}</p>
