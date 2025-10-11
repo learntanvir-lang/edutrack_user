@@ -15,8 +15,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
 import { signOut } from 'firebase/auth';
-import { LogOut, Sparkles, KeyRound, User as UserIcon, LayoutDashboard, BookCopy, Target, ListTodo, Library } from 'lucide-react';
+import { LogOut, Sparkles, KeyRound, User as UserIcon, LayoutDashboard, BookCopy, Target, ListTodo, Library, Menu } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import { Skeleton } from '../ui/skeleton';
 import { ChangePasswordDialog } from './ChangePasswordDialog';
@@ -32,6 +33,8 @@ export function AppHeader() {
   const pathname = usePathname();
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
 
   const handleSignOut = async () => {
     try {
@@ -57,6 +60,29 @@ export function AppHeader() {
       { href: '/notes', label: 'Resources', icon: Library },
   ];
 
+  const NavLink = ({ href, label, icon: Icon, isMobile = false }: { href: string; label: string; icon: React.ElementType, isMobile?: boolean }) => (
+    <Button
+        key={href}
+        asChild
+        variant="ghost"
+        size={isMobile ? "lg" : "sm"}
+        className={cn(
+            "font-bold",
+            pathname === href
+            ? 'text-primary bg-primary/10'
+            : 'text-foreground/60',
+            "hover:bg-primary/10 hover:text-primary",
+            isMobile && 'w-full justify-start text-base'
+        )}
+        onClick={() => isMobile && setIsMobileMenuOpen(false)}
+    >
+        <Link href={href}>
+            <Icon className="mr-2 h-4 w-4" />
+            {label}
+        </Link>
+    </Button>
+  );
+
   return (
     <>
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -70,37 +96,20 @@ export function AppHeader() {
           
           <div className="flex flex-1 items-center justify-center">
             {user && (
-                 <nav className="flex items-center gap-2">
-                    {navLinks.map(({ href, label, icon: Icon }) => (
-                        <Button
-                            key={href}
-                            asChild
-                            variant="ghost"
-                            size="sm"
-                            className={cn(
-                                "font-bold",
-                                pathname === href
-                                ? 'text-primary'
-                                : 'text-foreground/60',
-                                "hover:bg-primary/10 hover:text-primary"
-                            )}
-                        >
-                            <Link href={href}>
-                                <Icon className="mr-2 h-4 w-4" />
-                                {label}
-                            </Link>
-                        </Button>
+                 <nav className="hidden md:flex items-center gap-1">
+                    {navLinks.map(link => (
+                        <NavLink key={link.href} {...link} />
                     ))}
                  </nav>
             )}
           </div>
           
-          <div className="flex items-center justify-end">
+          <div className="flex items-center justify-end gap-2">
             {isUserLoading ? (
               <Skeleton className="h-8 w-20 rounded-md" />
             ) : user ? (
               <>
-                 <div className="hidden md:flex items-center gap-2 rounded-lg bg-primary/10 px-3 py-1 mr-4">
+                 <div className="hidden lg:flex items-center gap-2 rounded-lg bg-primary/10 px-3 py-1">
                     <Sparkles className="h-4 w-4 text-primary/80" />
                     <span className="text-sm font-semibold text-primary">
                       Welcome, {user.displayName || 'User'}
@@ -139,6 +148,26 @@ export function AppHeader() {
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
+
+                <div className="md:hidden">
+                    <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+                        <SheetTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                                <Menu className="h-6 w-6" />
+                                <span className="sr-only">Open menu</span>
+                            </Button>
+                        </SheetTrigger>
+                        <SheetContent side="left">
+                             <div className="flex items-center space-x-2 mb-6">
+                                <EduTrackLogo className="h-6 w-6" />
+                                <span className="font-bold text-lg">EduTrack</span>
+                            </div>
+                            <nav className="flex flex-col gap-2">
+                                {navLinks.map(link => <NavLink key={link.href} {...link} isMobile={true} />)}
+                            </nav>
+                        </SheetContent>
+                    </Sheet>
+                </div>
               </>
             ) : (
               <Button asChild className="transition-all duration-300 bg-primary text-primary-foreground border-2 border-primary hover:bg-transparent hover:text-primary hover:shadow-lg hover:shadow-primary/20" size="sm">

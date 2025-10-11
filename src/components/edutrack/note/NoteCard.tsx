@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useContext } from 'react';
+import { useState, useContext, memo } from 'react';
 import Link from 'next/link';
 import { Note, NoteLink, ResourceLink } from '@/lib/types';
 import { AppDataContext } from '@/context/AppDataContext';
@@ -18,7 +18,7 @@ interface NoteCardProps {
     note: Note;
 }
 
-export function NoteCard({ note }: NoteCardProps) {
+function NoteCard({ note }: NoteCardProps) {
     const { dispatch } = useContext(AppDataContext);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -182,3 +182,5 @@ export function NoteCard({ note }: NoteCardProps) {
         </>
     );
 }
+
+export default memo(NoteCard);

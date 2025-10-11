@@ -34,7 +34,7 @@ export default function SyllabusPage() {
 
   return (
     <div className="container mx-auto p-4 md:p-8">
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
         <h1 className="text-3xl font-bold text-foreground">
           Syllabus
         </h1>

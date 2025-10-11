@@ -144,12 +144,12 @@ function ChapterAccordionItem({ chapter, subjectId, paperId }: ChapterAccordionI
                         
                         {/* Progress Section */}
                         <div className="space-y-3">
-                            <div className="flex items-center justify-between text-sm font-medium text-muted-foreground">
+                            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between text-sm font-medium text-muted-foreground gap-2">
                                 <div className="flex items-center gap-2">
                                     <Activity className="w-4 h-4" />
                                     <span>Progress Trackers</span>
                                 </div>
-                                <Button variant="default" size="sm" onClick={() => setIsProgressItemDialogOpen(true)} className="font-bold transition-all duration-300 bg-primary text-primary-foreground border-2 border-primary hover:bg-transparent hover:text-primary hover:shadow-lg hover:shadow-primary/20">
+                                <Button variant="default" size="sm" onClick={() => setIsProgressItemDialogOpen(true)} className="font-bold transition-all duration-300 bg-primary text-primary-foreground border-2 border-primary hover:bg-transparent hover:text-primary hover:shadow-lg hover:shadow-primary/20 w-full sm:w-auto">
                                     <PlusCircle className="mr-2 h-4 w-4" />
                                     Add Tracker
                                 </Button>
@@ -174,12 +174,12 @@ function ChapterAccordionItem({ chapter, subjectId, paperId }: ChapterAccordionI
 
                         {/* Resources Section */}
                         <div className="space-y-3">
-                             <div className="flex items-center justify-between text-sm font-medium text-muted-foreground">
+                             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between text-sm font-medium text-muted-foreground gap-2">
                                 <div className="flex items-center gap-2">
                                     <LinkIcon className="w-4 h-4" />
                                     <span>Resources</span>
                                 </div>
-                                <Button variant="default" size="sm" onClick={handleAddLink} className="font-bold transition-all duration-300 bg-primary text-primary-foreground border-2 border-primary hover:bg-transparent hover:text-primary hover:shadow-lg hover:shadow-primary/20">
+                                <Button variant="default" size="sm" onClick={handleAddLink} className="font-bold transition-all duration-300 bg-primary text-primary-foreground border-2 border-primary hover:bg-transparent hover:text-primary hover:shadow-lg hover:shadow-primary/20 w-full sm:w-auto">
                                     <PlusCircle className="mr-2 h-4 w-4" />
                                     Add Resource
                                 </Button>

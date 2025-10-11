@@ -8,7 +8,7 @@ import { PlusCircle, Loader2 } from 'lucide-react';
 import { useUser } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import { NoteDialog } from '@/components/edutrack/note/NoteDialog';
-import { NoteCard } from '@/components/edutrack/note/NoteCard';
+import NoteCard from '@/components/edutrack/note/NoteCard';
 
 export default function NotesPage() {
   const [isNoteDialogOpen, setIsNoteDialogOpen] = useState(false);
