@@ -30,7 +30,7 @@ export function OverdueTasks({ tasks }: OverdueTasksProps) {
                    </div>
                 </AccordionTrigger>
                 <AccordionContent className="bg-card border rounded-b-lg -mt-2 pt-2">
-                    <div className="p-4 space-y-2">
+                    <div className="p-4 space-y-4">
                         {tasks.map(task => (
                             <TaskItem key={task.id} task={task} />
                         ))}

@@ -27,7 +27,7 @@ export function TaskList({ tasks }: TaskListProps) {
   });
 
   return (
-    <div className="space-y-1">
+    <div className="space-y-4">
       {sortedTasks.map(task => (
         <TaskItem key={task.id} task={task} />
       ))}
