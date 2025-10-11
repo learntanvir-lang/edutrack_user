@@ -2,7 +2,6 @@
 "use client";
 
 import { useState, useContext } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { Note } from '@/lib/types';
 import { AppDataContext } from '@/context/AppDataContext';
@@ -32,11 +31,10 @@ export function NoteCard({ note }: NoteCardProps) {
         <>
             <Card className="flex flex-col overflow-hidden rounded-lg shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-1 bg-card border-border/50 group">
                 <div className="relative aspect-video w-full overflow-hidden">
-                    <Image
+                    <img
                         src={note.imageUrl}
                         alt={note.title}
-                        fill
-                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                        className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
                     <div className="absolute top-2 right-2">
