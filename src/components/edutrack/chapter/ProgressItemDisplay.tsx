@@ -61,19 +61,18 @@ export function ProgressItemDisplay({ item, subjectId, paperId, chapterId }: Pro
                                {Icon && <Icon className="h-5 w-5 text-primary" />}
                                {item.name}
                             </p>
-                             <span className="text-sm font-mono text-muted-foreground w-16 text-center">{item.completed}/{item.total}</span>
                         </div>
                          <div className="flex items-center gap-3">
-                            <div className="flex items-center gap-1">
+                           <Progress value={progress} className="h-2 flex-1" />
+                            <div className="flex items-center gap-2">
                                 <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => handleCounterChange(-1)}>
                                     <Minus className="h-4 w-4" />
                                 </Button>
+                                <span className="text-sm font-mono text-muted-foreground w-16 text-center">{item.completed}/{item.total}</span>
                                 <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => handleCounterChange(1)}>
                                     <Plus className="h-4 w-4" />
                                 </Button>
                             </div>
-                           <Progress value={progress} className="h-2 flex-1" />
-                           <span className="text-xs font-semibold text-muted-foreground w-10 text-right">{Math.round(progress)}%</span>
                         </div>
                     </div>
                 ) : ( // To-do type
@@ -127,4 +126,3 @@ export function ProgressItemDisplay({ item, subjectId, paperId, chapterId }: Pro
         </>
     );
 }
-
