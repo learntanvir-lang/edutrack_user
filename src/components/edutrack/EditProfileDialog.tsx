@@ -164,6 +164,10 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
                 <p className="text-sm font-medium text-foreground">Email</p>
                 <p className="text-sm text-muted-foreground">{user?.email}</p>
             </div>
+            <div className="space-y-2">
+                <p className="text-sm font-medium text-foreground">User ID</p>
+                <p className="text-sm text-muted-foreground">{user?.uid}</p>
+            </div>
             <DialogFooter>
               <Button type="submit" disabled={loading}>
                 {loading ? 'Saving...' : 'Save Changes'}
