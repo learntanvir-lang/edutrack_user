@@ -61,12 +61,14 @@ export function AppHeader() {
     <>
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-14 items-center">
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center justify-start">
             <Link href="https://edutrack-tms.vercel.app/" target="_blank" rel="noopener noreferrer" className="flex items-center space-x-2">
               <EduTrackLogo className="h-6 w-6" />
               <span className="font-bold text-lg hidden sm:inline-block">EduTrack</span>
             </Link>
-
+          </div>
+          
+          <div className="flex flex-1 items-center justify-center">
             {user && (
                  <nav className="flex items-center gap-2">
                     {navLinks.map(({ href, label, icon: Icon }) => (
@@ -92,8 +94,8 @@ export function AppHeader() {
                  </nav>
             )}
           </div>
-          <div className="flex-1" />
-          <div className="flex items-center space-x-4">
+          
+          <div className="flex items-center justify-end">
             {isUserLoading ? (
               <Skeleton className="h-8 w-20 rounded-md" />
             ) : user ? (
