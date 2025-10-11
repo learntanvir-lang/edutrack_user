@@ -343,9 +343,8 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
         {(viewType === 'weekly' || viewType === 'monthly') && (
           <Alert className="mt-4 bg-primary/5 border-primary/20">
             <Info className="h-4 w-4" color="hsl(var(--primary))" />
-            <AlertTitle className="text-primary font-bold">Daily Average</AlertTitle>
-            <AlertDescription>
-              You spent an average of <span className="font-bold">{formatTime(averageDailyTime, 'long')}</span> per day during this period.
+            <AlertDescription className="font-semibold text-foreground">
+                Daily Average - <span className="text-primary">{formatTime(averageDailyTime, 'long')} per day</span>
             </AlertDescription>
           </Alert>
         )}
