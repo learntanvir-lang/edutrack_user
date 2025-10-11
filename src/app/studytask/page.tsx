@@ -4,7 +4,7 @@
 import { useState, useMemo, useEffect, useContext } from 'react';
 import { Button } from '@/components/ui/button';
 import { AppDataContext } from '@/context/AppDataContext';
-import { Plus, Loader2 } from 'lucide-react';
+import { PlusCircle, Loader2 } from 'lucide-react';
 import { useUser } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import { format, startOfToday, isBefore, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
@@ -83,7 +83,7 @@ export default function StudyTaskPage() {
                     </h1>
                     <div className="flex items-center gap-2 mt-4 sm:mt-0">
                         <Button size="lg" onClick={() => setIsTaskDialogOpen(true)} className="font-bold transition-all duration-300 bg-primary text-primary-foreground border-2 border-primary hover:bg-transparent hover:text-primary hover:shadow-lg hover:shadow-primary/20">
-                            <Plus className="h-4 w-4 mr-2" />
+                            <PlusCircle className="h-4 w-4 mr-2" />
                             Add Task
                         </Button>
                         <Tabs value={activeView} onValueChange={(value) => setActiveView(value as ViewType)}>
