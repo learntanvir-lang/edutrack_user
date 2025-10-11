@@ -5,7 +5,6 @@ import { useState, useContext, memo, useMemo } from "react";
 import { Chapter, ResourceLink } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal, Pen, Copy, Trash2, Link as LinkIcon, ExternalLink, Activity, PlusCircle, Edit, MoreVertical } from "lucide-react";
-import { Progress } from "@/components/ui/progress";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,7 +15,6 @@ import {
 import { AppDataContext } from "@/context/AppDataContext";
 import { ChapterDialog } from "./ChapterDialog";
 import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
 import { DeleteConfirmationDialog } from "../DeleteConfirmationDialog";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
@@ -24,6 +22,8 @@ import { ProgressItemDialog } from "./ProgressItemDialog";
 import { ProgressItemDisplay } from "./ProgressItemDisplay";
 import { LinkDialog } from "../note/LinkDialog";
 import { v4 as uuidv4 } from "uuid";
+import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
 
 
 interface ChapterAccordionItemProps {
@@ -58,8 +58,7 @@ function ChapterAccordionItem({ chapter, subjectId, paperId }: ChapterAccordionI
 
     const overallProgress = useMemo(() => {
         if (chapter.progressItems.length === 0) {
-            const isCompleted = chapter.isCompleted;
-            return isCompleted ? 100 : 0;
+            return chapter.isCompleted ? 100 : 0;
         }
 
         const totalWeight = chapter.progressItems.reduce((acc, item) => acc + item.total, 0);
@@ -79,13 +78,13 @@ function ChapterAccordionItem({ chapter, subjectId, paperId }: ChapterAccordionI
     };
     
     const handleSaveLink = (linkData: { description: string; url: string }) => {
-        let updatedLinks: ResourceLink[];
+        const chapterPayload = { ...chapter };
         if (editingLink) {
-            updatedLinks = chapter.resourceLinks.map(l => l.id === editingLink.id ? { ...l, ...linkData } : l);
+            chapterPayload.resourceLinks = chapter.resourceLinks.map(l => l.id === editingLink.id ? { ...l, ...linkData } : l);
         } else {
-            updatedLinks = [...chapter.resourceLinks, { id: uuidv4(), ...linkData }];
+            chapterPayload.resourceLinks = [...chapter.resourceLinks, { id: uuidv4(), ...linkData }];
         }
-        dispatch({ type: "UPDATE_CHAPTER", payload: { subjectId, paperId, chapter: { ...chapter, resourceLinks: updatedLinks } } });
+        dispatch({ type: "UPDATE_CHAPTER", payload: { subjectId, paperId, chapter: chapterPayload } });
         setIsLinkDialogOpen(false);
         setEditingLink(undefined);
     };
@@ -93,7 +92,7 @@ function ChapterAccordionItem({ chapter, subjectId, paperId }: ChapterAccordionI
     const handleDeleteLink = () => {
         if (deletingLink) {
             const updatedLinks = chapter.resourceLinks.filter(link => link.id !== deletingLink.id);
-            dispatch({ type: "UPDATE_CHAPTER", payload: { ...chapter, resourceLinks: updatedLinks } });
+            dispatch({ type: "UPDATE_CHAPTER", payload: { subjectId, paperId, chapter: { ...chapter, resourceLinks: updatedLinks } } });
             setDeletingLink(null);
         }
     };
@@ -266,5 +265,4 @@ function ChapterAccordionItem({ chapter, subjectId, paperId }: ChapterAccordionI
     );
 }
 export default memo(ChapterAccordionItem);
-
     
