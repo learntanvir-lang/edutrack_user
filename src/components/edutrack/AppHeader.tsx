@@ -16,7 +16,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { signOut } from 'firebase/auth';
-import { LogOut, Sparkles, KeyRound, Notebook, User as UserIcon, LayoutDashboard, BookCopy, Target } from 'lucide-react';
+import { LogOut, Sparkles, KeyRound, Notebook, User as UserIcon, LayoutDashboard, BookCopy, Target, ListTodo } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import { Skeleton } from '../ui/skeleton';
 import { ChangePasswordDialog } from './ChangePasswordDialog';
@@ -53,6 +53,7 @@ export function AppHeader() {
       { href: '/', label: 'Dashboard', icon: LayoutDashboard },
       { href: '/syllabus', label: 'Syllabus', icon: BookCopy },
       { href: '/exams', label: 'Exams', icon: Target },
+      { href: '/studytask', label: 'Study Tasks', icon: ListTodo },
       { href: '/notes', label: 'Notes', icon: Notebook },
   ];
 

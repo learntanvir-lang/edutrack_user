@@ -61,3 +61,10 @@ export interface Note {
   links: NoteLink[];
   createdAt: string; // ISO 8601 format
 }
+
+export interface StudyTask {
+  id: string;
+  title: string;
+  isCompleted: boolean;
+  date: string; // YYYY-MM-DD format
+}

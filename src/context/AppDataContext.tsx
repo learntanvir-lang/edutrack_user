@@ -2,7 +2,7 @@
 "use client";
 
 import { createContext, useReducer, useEffect, ReactNode, useContext, useMemo } from "react";
-import { Subject, Exam, Paper, Chapter, Note } from "@/lib/types";
+import { Subject, Exam, Paper, Chapter, Note, StudyTask } from "@/lib/types";
 import { initialData } from "@/lib/data";
 import { v4 as uuidv4 } from 'uuid';
 import { useFirebase, useUser } from "@/firebase";
@@ -23,6 +23,7 @@ type AppState = {
   subjects: Subject[];
   exams: Exam[];
   notes: Note[];
+  tasks: StudyTask[];
 };
 
 type Action =
@@ -45,7 +46,11 @@ type Action =
   | { type: "DELETE_EXAM"; payload: { id: string } }
   | { type: "ADD_NOTE"; payload: Note }
   | { type: "UPDATE_NOTE"; payload: Note }
-  | { type: "DELETE_NOTE"; payload: { id: string } };
+  | { type: "DELETE_NOTE"; payload: { id: string } }
+  | { type: "ADD_TASK"; payload: StudyTask }
+  | { type: "UPDATE_TASK"; payload: StudyTask }
+  | { type: "DELETE_TASK"; payload: { id: string } };
+
 
 const appReducer = (state: AppState, action: Action): AppState => {
   switch (action.type) {
@@ -149,6 +154,12 @@ const appReducer = (state: AppState, action: Action): AppState => {
       return { ...state, notes: state.notes.map(n => n.id === action.payload.id ? action.payload : n) };
     case "DELETE_NOTE":
       return { ...state, notes: state.notes.filter(n => n.id !== action.payload.id) };
+    case "ADD_TASK":
+      return { ...state, tasks: [...state.tasks, action.payload] };
+    case "UPDATE_TASK":
+      return { ...state, tasks: state.tasks.map(t => t.id === action.payload.id ? action.payload : t) };
+    case "DELETE_TASK":
+      return { ...state, tasks: state.tasks.filter(t => t.id !== action.payload.id) };
     default:
       return state;
   }
@@ -158,12 +169,14 @@ const initialState: AppState = {
   subjects: [],
   exams: [],
   notes: [],
+  tasks: [],
 };
 
 export const AppDataContext = createContext<{
   subjects: Subject[];
   exams: Exam[];
   notes: Note[];
+  tasks: StudyTask[];
   dispatch: React.Dispatch<Action>;
 }>({
   ...initialState,
@@ -183,18 +196,21 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
           const subjectsCol = collection(firestore, `users/${user.uid}/subjects`);
           const examsCol = collection(firestore, `users/${user.uid}/exams`);
           const notesCol = collection(firestore, `users/${user.uid}/notes`);
+          const tasksCol = collection(firestore, `users/${user.uid}/tasks`);
 
-          const [subjectsSnapshot, examsSnapshot, notesSnapshot] = await Promise.all([
+          const [subjectsSnapshot, examsSnapshot, notesSnapshot, tasksSnapshot] = await Promise.all([
             getDocs(subjectsCol),
             getDocs(examsCol),
             getDocs(notesCol),
+            getDocs(tasksCol),
           ]);
           
           const subjects = subjectsSnapshot.docs.map(doc => doc.data() as Subject);
           const exams = examsSnapshot.docs.map(doc => doc.data() as Exam);
           const notes = notesSnapshot.docs.map(doc => doc.data() as Note);
+          const tasks = tasksSnapshot.docs.map(doc => doc.data() as StudyTask);
 
-          dispatch({ type: "SET_STATE", payload: { subjects, exams, notes } });
+          dispatch({ type: "SET_STATE", payload: { subjects, exams, notes, tasks } });
         } catch (error) {
           console.error("Error fetching from Firestore:", error);
           // On error, clear the state instead of loading initial data
@@ -269,6 +285,14 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
                     break;
                 case "DELETE_NOTE":
                     deleteDocumentNonBlocking(firestore, `users/${userId}/notes`, action.payload.id);
+                    break;
+                
+                case "ADD_TASK":
+                case "UPDATE_TASK":
+                    setDocumentNonBlocking(firestore, `users/${userId}/tasks`, action.payload.id, action.payload);
+                    break;
+                case "DELETE_TASK":
+                    deleteDocumentNonBlocking(firestore, `users/${userId}/tasks`, action.payload.id);
                     break;
             }
         }
