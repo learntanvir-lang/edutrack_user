@@ -71,7 +71,7 @@ export default function Home() {
               <CardDescription className="text-primary-foreground/80">Add an exam to start tracking.</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button variant="secondary" onClick={() => router.push('/exams')}>Add Exam</Button>
+              <Button className="transition-all duration-300 bg-primary-foreground text-primary border-2 border-primary-foreground hover:bg-transparent hover:text-primary-foreground hover:shadow-lg hover:shadow-primary/20" onClick={() => router.push('/exams')}>Add Exam</Button>
             </CardContent>
           </Card>
         )}

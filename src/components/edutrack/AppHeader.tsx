@@ -141,7 +141,7 @@ export function AppHeader() {
                 </DropdownMenu>
               </>
             ) : (
-              <Button asChild variant="outline" size="sm">
+              <Button asChild className="transition-all duration-300 bg-primary text-primary-foreground border-2 border-primary hover:bg-transparent hover:text-primary hover:shadow-lg hover:shadow-primary/20" size="sm">
                 <Link href="/login">Login</Link>
               </Button>
             )}

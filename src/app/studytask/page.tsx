@@ -82,7 +82,7 @@ export default function StudyTaskPage() {
                         {format(selectedDate, "MMMM do, yyyy")}
                     </h1>
                     <div className="flex items-center gap-2 mt-4 sm:mt-0">
-                        <Button size="lg" onClick={() => setIsTaskDialogOpen(true)}>
+                        <Button size="lg" onClick={() => setIsTaskDialogOpen(true)} className="transition-all duration-300 bg-primary text-primary-foreground border-2 border-primary hover:bg-transparent hover:text-primary hover:shadow-lg hover:shadow-primary/20">
                             <Plus className="h-4 w-4 mr-2" />
                             Add Task
                         </Button>
