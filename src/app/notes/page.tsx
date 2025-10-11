@@ -60,8 +60,14 @@ export default function NotesPage() {
             </div>
         ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {sortedNotes.map(note => (
-                    <NoteCard key={note.id} note={note} />
+                {sortedNotes.map((note, index) => (
+                    <div
+                      key={note.id}
+                      className="animate-fade-in-from-bottom"
+                      style={{ animationDelay: `${index * 0.1}s`, animationFillMode: 'both' }}
+                    >
+                      <NoteCard note={note} />
+                    </div>
                 ))}
             </div>
         )}
