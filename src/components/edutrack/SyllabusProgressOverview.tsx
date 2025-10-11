@@ -66,11 +66,11 @@ export function SyllabusProgressOverview({ subjects }: SyllabusProgressOverviewP
       <CardContent className="flex-grow pt-4">
         {visibleSubjects.length > 0 ? (
           <ScrollArea className="h-80 pr-4">
-            <div className="space-y-6">
+            <div className="space-y-4">
                 {progressData.map(({ subject, percentage, papersProgress }) => (
                     <div key={subject.id}>
                         {/* Subject Level Progress */}
-                        <div className="space-y-2 mb-3">
+                        <div className="space-y-1.5 mb-2">
                             <div className="flex justify-between items-center text-sm">
                                 <span className="font-semibold text-foreground">{subject.name}</span>
                                 <span className="font-semibold text-foreground">{percentage}%</span>
@@ -80,14 +80,14 @@ export function SyllabusProgressOverview({ subjects }: SyllabusProgressOverviewP
 
                         {/* Paper Level Progress */}
                         {papersProgress.length > 0 && (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-3 pl-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2 pl-4">
                                 {papersProgress.map(({ paper, percentage: paperPercentage }) => (
                                     <div key={paper.id} className="space-y-1">
                                         <div className="flex justify-between items-center text-xs">
                                             <span className="font-medium text-muted-foreground truncate" title={paper.name}>{paper.name}</span>
                                             <span className="font-medium text-muted-foreground">{paperPercentage}%</span>
                                         </div>
-                                        <Progress value={paperPercentage} className="h-1.5" />
+                                        <Progress value={paperPercentage} className="h-1" />
                                     </div>
                                 ))}
                             </div>
