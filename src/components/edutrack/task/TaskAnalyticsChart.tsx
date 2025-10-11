@@ -2,10 +2,10 @@
 "use client";
 
 import { useMemo, useState } from 'react';
-import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, LineChart, Line, DotProps, LabelList, Dot } from 'recharts';
+import { Line, LineChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, LabelList, Dot } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartConfig, ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
-import { format, eachDayOfInterval, startOfDay, eachWeekOfInterval, getWeekOfMonth } from 'date-fns';
+import { format, eachDayOfInterval, startOfDay, eachWeekOfInterval } from 'date-fns';
 import type { StudyTask } from '@/lib/types';
 import type { DateRange } from 'react-day-picker';
 import type { ViewType } from '@/app/studytask/page';
@@ -30,7 +30,7 @@ const formatTime = (totalMilliseconds: number, formatType: 'short' | 'long') => 
     if (totalMilliseconds < 60000) return formatType === 'short' ? '0m' : '0 minutes';
 
     const hours = Math.floor(totalMilliseconds / 3600000);
-    const minutes = Math.floor((totalMilliseconds % 3600000) / 60000);
+    const minutes = Math.round((totalMilliseconds % 3600000) / 60000);
     
     let parts = [];
     if (hours > 0) parts.push(formatType === 'long' ? `${hours} hours` : `${hours}h`);
@@ -52,14 +52,9 @@ const CustomDot = (props: any) => {
 const CustomLabel = (props: any) => {
     const { x, y, value } = props;
     if (value === 0) {
-        return (
-            <text x={x} y={y} dy={-15} fill="hsl(var(--foreground))" fontSize={14} fontWeight="bold" textAnchor="middle">
-                0m
-            </text>
-        );
+        return null;
     }
     if (!value) return null;
-
 
     const timeString = formatTime(value * 3600000, 'short');
     
@@ -70,23 +65,36 @@ const CustomLabel = (props: any) => {
     );
 };
 
-
 export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalyticsChartProps) {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedSubcategory, setSelectedSubcategory] = useState<string>('all');
 
-  const { categories, subcategories } = useMemo(() => {
+  const { categories, subcategoriesByCategory } = useMemo(() => {
     const allCategories = new Set<string>();
-    const allSubcategories = new Set<string>();
+    const subcats: { [key: string]: Set<string> } = {};
+
     tasks.forEach(task => {
-        if (task.category) allCategories.add(task.category);
-        if (task.subcategory) allSubcategories.add(task.subcategory);
+        if (task.category) {
+            allCategories.add(task.category);
+            if (task.subcategory) {
+                if (!subcats[task.category]) {
+                    subcats[task.category] = new Set<string>();
+                }
+                subcats[task.category].add(task.subcategory);
+            }
+        }
     });
+
     return {
         categories: ['all', ...Array.from(allCategories).sort()],
-        subcategories: ['all', ...Array.from(allSubcategories).sort()],
+        subcategoriesByCategory: Object.entries(subcats).reduce((acc, [key, value]) => {
+            acc[key] = ['all', ...Array.from(value).sort()];
+            return acc;
+        }, {} as { [key: string]: string[] }),
     };
   }, [tasks]);
+
+  const availableSubcategories = subcategoriesByCategory[selectedCategory] || ['all'];
 
   const { chartData, totalTime } = useMemo(() => {
     if (!dateRange.from || !dateRange.to) {
@@ -165,18 +173,6 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
     
   }, [tasks, dateRange, viewType, selectedCategory, selectedSubcategory]);
 
-
-    if (chartData.every(d => d.hours === 0) && selectedCategory === 'all' && selectedSubcategory === 'all') {
-        return (
-            <div className="flex h-[450px] w-full items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/30 bg-card p-12 text-center shadow-sm">
-                <div>
-                    <h3 className="text-lg font-semibold text-muted-foreground">No data to display</h3>
-                    <p className="mt-1 text-sm text-muted-foreground">Track time on your tasks to see your progress here.</p>
-                </div>
-            </div>
-        )
-    }
-
   return (
     <Card className="shadow-lg rounded-xl">
       <CardHeader>
@@ -195,7 +191,10 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
                         {categories.map(cat => (
-                            <DropdownMenuItem key={cat} onSelect={() => setSelectedCategory(cat)}>
+                            <DropdownMenuItem key={cat} onSelect={() => {
+                                setSelectedCategory(cat);
+                                setSelectedSubcategory('all'); // Reset subcategory when category changes
+                            }}>
                                 {cat === 'all' ? 'All Categories' : cat}
                             </DropdownMenuItem>
                         ))}
@@ -203,13 +202,13 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
                 </DropdownMenu>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="outline">
+                        <Button variant="outline" disabled={selectedCategory === 'all' || availableSubcategories.length <= 1}>
                             {selectedSubcategory === 'all' ? 'All Subcategories' : selectedSubcategory}
                              <ChevronDown className="ml-2 h-4 w-4" />
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
-                        {subcategories.map(subcat => (
+                        {availableSubcategories.map(subcat => (
                             <DropdownMenuItem key={subcat} onSelect={() => setSelectedSubcategory(subcat)}>
                                 {subcat === 'all' ? 'All Subcategories' : subcat}
                             </DropdownMenuItem>
