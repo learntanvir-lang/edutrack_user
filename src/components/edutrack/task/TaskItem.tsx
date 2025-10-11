@@ -6,11 +6,11 @@ import { StudyTask, TimeLog } from "@/lib/types";
 import { AppDataContext } from '@/context/AppDataContext';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
-import { Trash2, Edit, Play, Square, MoreVertical, Calendar, Flag, Tag, Clock, CornerDownRight } from 'lucide-react';
+import { Trash2, Edit, Play, Square, MoreVertical, Calendar, Flag, Tag, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { TaskDialog } from './TaskDialog';
-import { format, isBefore, startOfToday } from 'date-fns';
+import { format } from 'date-fns';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { v4 as uuidv4 } from 'uuid';
 import { TimeLogDetailsDialog } from './TimeLogDetailsDialog';
@@ -71,10 +71,6 @@ export function TaskItem({ task }: TaskItemProps) {
     dispatch({ type: 'DELETE_TASK', payload: { id: task.id } });
   };
   
-  const handleMoveToToday = () => {
-    dispatch({ type: 'DUPLICATE_TASK_TO_TODAY', payload: { id: task.id } });
-  };
-  
   const handleTimerToggle = () => {
     if (task.activeTimeLogId) {
       // Stop timer
@@ -119,21 +115,19 @@ export function TaskItem({ task }: TaskItemProps) {
         let parts = [];
         if (hours > 0) parts.push(`${hours}h`);
         if (minutes > 0) parts.push(`${minutes}m`);
-        if (seconds > 0 && hours === 0) parts.push(`${seconds}s`);
+        if (seconds > 0 && hours === 0 && minutes < 1) parts.push(`${seconds}s`);
 
         return parts.join(' ') || '0s';
   };
 
-  const isOverdue = isBefore(new Date(task.date), startOfToday()) && !task.isCompleted;
-
   return (
     <>
     <div className={cn(
-        "flex items-start gap-4 p-4 rounded-lg border transition-shadow duration-300",
+        "flex items-start gap-4 p-4 rounded-lg border transition-all duration-300",
         task.isCompleted 
-            ? "bg-muted/50 border-border" 
+            ? "bg-muted/30 border-dashed" 
             : "bg-card border-primary/20",
-         !task.isCompleted && "hover:shadow-md hover:shadow-primary/10"
+        !task.isCompleted && "hover:shadow-lg hover:shadow-primary/10 hover:border-primary/50"
       )}>
       <Checkbox
         id={`task-${task.id}`}
@@ -163,11 +157,11 @@ export function TaskItem({ task }: TaskItemProps) {
         </div>
         
         <div className="flex flex-wrap items-center gap-2">
-            <Badge variant="outline" className={cn("flex items-center gap-1.5", task.isCompleted && "border-muted-foreground/50")}>
+            <Badge variant="outline" className={cn("flex items-center gap-1.5", task.isCompleted && "border-muted-foreground/50 text-muted-foreground")}>
                 <Calendar className="h-3 w-3" />
                 {format(new Date(task.date), 'MMM dd')}
             </Badge>
-            <Badge variant="outline" className={cn("flex items-center gap-1.5", task.isCompleted && "border-muted-foreground/50")}>
+            <Badge variant="outline" className={cn("flex items-center gap-1.5", task.isCompleted && "border-muted-foreground/50 text-muted-foreground")}>
                 <Flag className="h-3 w-3" />
                 Priority: {task.priority}
             </Badge>
@@ -178,7 +172,7 @@ export function TaskItem({ task }: TaskItemProps) {
             {task.subcategory && <Badge variant="secondary" className={cn("flex items-center gap-1.5", task.isCompleted && "bg-muted text-muted-foreground")}>{task.subcategory}</Badge>}
             
             <button onClick={() => setIsTimeLogOpen(true)} className="disabled:opacity-50" disabled={!task.timeLogs || task.timeLogs.length === 0}>
-                <Badge variant="outline" className={cn("flex items-center gap-1.5 font-mono cursor-pointer transition-colors", task.isCompleted ? "border-muted-foreground/50" : "hover:bg-primary/10 hover:border-primary/50")}>
+                <Badge variant="outline" className={cn("flex items-center gap-1.5 font-mono cursor-pointer transition-colors", task.isCompleted ? "border-muted-foreground/50 text-muted-foreground" : "hover:bg-primary/10 hover:border-primary/50")}>
                     <Clock className="h-3 w-3" />
                     {formatTime(totalTimeSpent)}
                 </Badge>
@@ -187,18 +181,6 @@ export function TaskItem({ task }: TaskItemProps) {
       </div>
       
       <div className="flex items-center gap-1">
-        {isOverdue && (
-            <Button
-                variant="outline"
-                size="icon"
-                className="h-8 w-8 text-foreground"
-                onClick={handleMoveToToday}
-                title="Move to Today"
-            >
-                <CornerDownRight className="h-4 w-4" />
-                <span className="sr-only">Move to Today</span>
-            </Button>
-        )}
         {!task.isCompleted && (
             <Button
                 variant={task.activeTimeLogId ? 'destructive' : 'outline'}

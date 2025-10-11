@@ -74,7 +74,7 @@ export default function StudyTaskPage() {
                   </Button>
               </div>
               
-              <div className="space-y-6">
+              <div className="space-y-8">
                   <OverdueTasks tasks={overdueTasks} />
 
                   <div className="p-6 bg-card rounded-lg border shadow-sm">

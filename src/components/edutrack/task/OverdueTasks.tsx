@@ -1,12 +1,10 @@
 
 "use client";
 
-import { useState } from 'react';
 import { AlertCircle, ChevronDown } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { TaskItem } from './TaskItem';
 import { StudyTask } from '@/lib/types';
-import { cn } from '@/lib/utils';
+import { OverdueTaskItem } from './OverdueTaskItem';
 
 interface OverdueTasksProps {
     tasks: StudyTask[];
@@ -18,10 +16,10 @@ export function OverdueTasks({ tasks }: OverdueTasksProps) {
     }
 
     return (
-        <Accordion type="single" collapsible className="w-full">
+        <Accordion type="single" collapsible defaultValue="overdue-tasks" className="w-full">
             <AccordionItem value="overdue-tasks" className="border-none">
-                <AccordionTrigger className="p-0 hover:no-underline [&[data-state=open]>div]:bg-red-100/80">
-                   <div className="flex items-center justify-between w-full p-3 rounded-lg bg-red-100/50 border border-red-200 text-red-700 transition-colors">
+                <AccordionTrigger className="p-0 hover:no-underline [&[data-state=open]>div]:rounded-b-none">
+                   <div className="flex items-center justify-between w-full p-3 rounded-lg bg-red-100/50 border border-red-200 text-red-700 transition-all">
                      <div className="flex items-center gap-2 font-semibold">
                         <AlertCircle className="h-5 w-5" />
                         <span>{tasks.length} Overdue Task(s)</span>
@@ -29,10 +27,10 @@ export function OverdueTasks({ tasks }: OverdueTasksProps) {
                      <ChevronDown className="h-5 w-5 transition-transform duration-200" />
                    </div>
                 </AccordionTrigger>
-                <AccordionContent className="bg-card border rounded-b-lg -mt-2 pt-2">
-                    <div className="p-4 space-y-6">
+                <AccordionContent className="bg-card border-x border-b border-border/70 rounded-b-lg -mt-2 p-4">
+                    <div className="space-y-3">
                         {tasks.map(task => (
-                            <TaskItem key={task.id} task={task} />
+                            <OverdueTaskItem key={task.id} task={task} />
                         ))}
                     </div>
                 </AccordionContent>
