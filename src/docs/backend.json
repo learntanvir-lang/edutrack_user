@@ -109,16 +109,27 @@
       },
       "required": ["id", "name", "isCompleted", "progressItems", "resourceLinks"]
     },
+    "TodoItem": {
+        "title": "To-do Item",
+        "type": "object",
+        "properties": {
+            "id": { "type": "string" },
+            "text": { "type": "string" },
+            "completed": { "type": "boolean" }
+        },
+        "required": ["id", "text", "completed"]
+    },
     "ProgressItem": {
       "title": "Progress Item",
       "type": "object",
       "properties": {
         "id": { "type": "string" },
         "name": { "type": "string" },
+        "type": { "type": "string", "enum": ["counter", "todo"] },
         "completed": { "type": "number" },
         "total": { "type": "number" }
       },
-      "required": ["id", "name", "completed", "total"]
+      "required": ["id", "name", "type", "completed", "total"]
     },
     "ResourceLink": {
       "title": "Resource Link",
@@ -158,6 +169,17 @@
       },
       "required": ["id", "title", "url"]
     },
+    "TimeLog": {
+        "title": "Time Log",
+        "type": "object",
+        "description": "Represents a single time-logged session for a task.",
+        "properties": {
+          "id": { "type": "string" },
+          "startTime": { "type": "string", "format": "date-time" },
+          "endTime": { "type": "string", "format": "date-time" }
+        },
+        "required": ["id", "startTime", "endTime"]
+    },
     "StudyTask": {
         "title": "Study Task",
         "type": "object",
@@ -168,11 +190,16 @@
           "description": { "type": "string" },
           "isCompleted": { "type": "boolean" },
           "date": { "type": "string", "format": "date", "description": "The date for the task in YYYY-MM-DD format." },
-          "priority": { "type": "string", "enum": ["Low", "Medium", "High"] },
+          "priority": { "type": "number" },
           "category": { "type": "string" },
-          "subcategory": { "type": "string" }
+          "subcategory": { "type": "string" },
+          "timeLogs": {
+            "type": "array",
+            "items": { "$ref": "#/entities/TimeLog" }
+          },
+          "activeTimeLogId": { "type": ["string", "null"] }
         },
-        "required": ["id", "title", "isCompleted", "date", "priority", "category"]
+        "required": ["id", "title", "isCompleted", "date", "priority", "category", "timeLogs"]
     }
   },
   "auth": {

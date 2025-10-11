@@ -53,25 +53,10 @@ function ChapterAccordionItem({ chapter, subjectId, paperId }: ChapterAccordionI
     };
 
     const overallProgress = useMemo(() => {
-        const counters = chapter.progressItems.filter(item => item.type === 'counter');
-        const todolists = chapter.progressItems.filter(item => item.type === 'todolist');
+        if (chapter.progressItems.length === 0) return 0;
 
-        let totalWeight = 0;
-        let weightedCompleted = 0;
-
-        counters.forEach(item => {
-            if (item.total > 0) {
-                totalWeight += item.total;
-                weightedCompleted += item.completed;
-            }
-        });
-
-        todolists.forEach(item => {
-            if (item.todos.length > 0) {
-                totalWeight += item.todos.length;
-                weightedCompleted += item.todos.filter(t => t.completed).length;
-            }
-        });
+        const totalWeight = chapter.progressItems.reduce((acc, item) => acc + item.total, 0);
+        const weightedCompleted = chapter.progressItems.reduce((acc, item) => acc + item.completed, 0);
         
         return totalWeight > 0 ? Math.round((weightedCompleted / totalWeight) * 100) : 0;
     }, [chapter.progressItems]);

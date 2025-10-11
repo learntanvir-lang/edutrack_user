@@ -15,12 +15,9 @@ export interface TodoItem {
 export interface ProgressItem {
   id: string;
   name: string;
-  type: 'counter' | 'todolist';
-  // For counter
+  type: 'todo' | 'counter';
   completed: number;
   total: number;
-  // For todolist
-  todos: TodoItem[];
 }
 
 export interface Chapter {
