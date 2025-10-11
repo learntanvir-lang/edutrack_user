@@ -18,6 +18,9 @@ export function TaskProgressCard({ tasks }: TaskProgressCardProps) {
         const totalTasks = tasks.length;
         
         const timeInMillis = tasks.reduce((acc, task) => {
+            if (!task.timeLogs) {
+                return acc;
+            }
             return acc + task.timeLogs.reduce((logAcc, log) => {
                 if (log.endTime) {
                     return logAcc + (new Date(log.endTime).getTime() - new Date(log.startTime).getTime());
