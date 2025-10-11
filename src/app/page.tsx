@@ -60,28 +60,34 @@ export default function Home() {
           Dashboard
         </h1>
         
-        {nextExam ? (
-          <NextExamCard
-            exam={nextExam}
-          />
-        ) : (
-          <Card className="bg-primary text-primary-foreground border-0">
-            <CardHeader>
-              <CardTitle>No Upcoming Exams</CardTitle>
-              <CardDescription className="text-primary-foreground/80">Add an exam to start tracking.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button className="transition-all duration-300 bg-primary-foreground text-primary border-2 border-primary-foreground hover:bg-transparent hover:text-primary-foreground hover:shadow-lg hover:shadow-primary/20" onClick={() => router.push('/exams')}>Add Exam</Button>
-            </CardContent>
-          </Card>
-        )}
-
-        <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
-          <SyllabusProgressOverview subjects={subjects} />
-          <ExamOverview exams={exams} />
+        <div className="animate-fade-in-from-bottom">
+          {nextExam ? (
+            <NextExamCard
+              exam={nextExam}
+            />
+          ) : (
+            <Card className="bg-primary text-primary-foreground border-0">
+              <CardHeader>
+                <CardTitle>No Upcoming Exams</CardTitle>
+                <CardDescription className="text-primary-foreground/80">Add an exam to start tracking.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button className="transition-all duration-300 bg-primary-foreground text-primary border-2 border-primary-foreground hover:bg-transparent hover:text-primary-foreground hover:shadow-lg hover:shadow-primary/20" onClick={() => router.push('/exams')}>Add Exam</Button>
+              </CardContent>
+            </Card>
+          )}
         </div>
 
-        <div className="mt-8">
+        <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="animate-fade-in-from-left" style={{ animationDelay: '0.2s' }}>
+            <SyllabusProgressOverview subjects={subjects} />
+          </div>
+          <div className="animate-fade-in-from-right" style={{ animationDelay: '0.2s' }}>
+            <ExamOverview exams={exams} />
+          </div>
+        </div>
+
+        <div className="mt-8 animate-fade-in-from-bottom" style={{ animationDelay: '0.4s' }}>
             <Card>
                 <CardHeader>
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
