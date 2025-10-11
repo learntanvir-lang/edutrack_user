@@ -71,31 +71,31 @@ export default function StudyTaskPage() {
   return (
     <>
       <div className="container mx-auto p-4 md:p-8">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6">
-            <h1 className="text-3xl font-bold text-foreground">
-                {activeView === 'daily' ? format(selectedDate, "MMMM do, yyyy") : `Your ${activeView.charAt(0).toUpperCase() + activeView.slice(1)} Summary`}
-            </h1>
-            <div className="flex items-center gap-2 mt-4 sm:mt-0">
-                <Button size="lg" onClick={() => setIsTaskDialogOpen(true)}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Task
-                </Button>
-                <Tabs value={activeView} onValueChange={(value) => setActiveView(value as ViewType)}>
-                    <TabsList className="bg-primary/10 rounded-lg">
-                        <TabsTrigger value="daily" className="text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-md rounded-md">Daily</TabsTrigger>
-                        <TabsTrigger value="weekly" className="text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-md rounded-md">Weekly</TabsTrigger>
-                        <TabsTrigger value="monthly" className="text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-md rounded-md">Monthly</TabsTrigger>
-                    </TabsList>
-                </Tabs>
-            </div>
-        </div>
-
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <aside className="lg:col-span-1 space-y-6">
                 <TaskProgressCard tasks={todaysTasks} />
                 <CalendarView selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
             </aside>
             <main className="lg:col-span-2">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6">
+                    <h1 className="text-3xl font-bold text-foreground">
+                        {activeView === 'daily' ? format(selectedDate, "MMMM do, yyyy") : `Your ${activeView.charAt(0).toUpperCase() + activeView.slice(1)} Summary`}
+                    </h1>
+                    <div className="flex items-center gap-2 mt-4 sm:mt-0">
+                        <Button size="lg" onClick={() => setIsTaskDialogOpen(true)}>
+                            <Plus className="h-4 w-4 mr-2" />
+                            Add Task
+                        </Button>
+                        <Tabs value={activeView} onValueChange={(value) => setActiveView(value as ViewType)}>
+                            <TabsList className="bg-primary/10 rounded-lg">
+                                <TabsTrigger value="daily" className="text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-md rounded-md">Daily</TabsTrigger>
+                                <TabsTrigger value="weekly" className="text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-md rounded-md">Weekly</TabsTrigger>
+                                <TabsTrigger value="monthly" className="text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-md rounded-md">Monthly</TabsTrigger>
+                            </TabsList>
+                        </Tabs>
+                    </div>
+                </div>
+
                  <Tabs value={activeView}>
                     <TabsContent value="daily">
                         <div className="space-y-8">
