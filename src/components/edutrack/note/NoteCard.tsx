@@ -110,7 +110,7 @@ export function NoteCard({ note }: NoteCardProps) {
                     )}
                 </CardContent>
                 <CardFooter className="border-t p-2">
-                    <Button variant="default" className="w-full transition-all duration-300 hover:shadow-lg hover:shadow-primary/40" onClick={handleAddLink}>
+                    <Button variant="outline" className="w-full transition-all duration-300 hover:text-primary hover:bg-primary/5 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/20" onClick={handleAddLink}>
                         <PlusCircle className="mr-2 h-4 w-4" />
                         Add Link
                     </Button>
