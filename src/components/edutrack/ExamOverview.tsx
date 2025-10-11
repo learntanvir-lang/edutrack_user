@@ -6,7 +6,7 @@ import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
-import { Target, Check, CalendarDays } from 'lucide-react';
+import { Target, Check, CalendarDays, Clock } from 'lucide-react';
 
 interface ExamOverviewProps {
   exams: Exam[];
@@ -47,6 +47,13 @@ export function ExamOverview({ exams }: ExamOverviewProps) {
           <div>
             <div className="text-3xl font-bold text-green-600">{overview.completedExams}</div>
             <p className="text-sm text-muted-foreground font-medium">Completed Exam(s)</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-4 p-4 rounded-lg bg-slate-500/10">
+          <Clock className="h-8 w-8 text-slate-600" />
+          <div>
+            <div className="text-3xl font-bold text-slate-600">{overview.totalPast}</div>
+            <p className="text-sm text-muted-foreground font-medium">Past Exam(s)</p>
           </div>
         </div>
       </CardContent>
