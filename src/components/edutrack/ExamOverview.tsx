@@ -58,7 +58,7 @@ export function ExamOverview({ exams }: ExamOverviewProps) {
         </div>
       </CardContent>
       <CardFooter>
-        <Button variant="outline" size="sm" className="w-full" onClick={() => router.push('/exams')}>
+        <Button variant="default" size="sm" className="w-full font-bold transition-all duration-300 bg-primary text-primary-foreground border-2 border-primary hover:bg-transparent hover:text-primary hover:shadow-lg hover:shadow-primary/20" onClick={() => router.push('/exams')}>
           View All Exams
         </Button>
       </CardFooter>
