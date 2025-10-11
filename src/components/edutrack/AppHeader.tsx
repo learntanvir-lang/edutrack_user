@@ -15,7 +15,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { signOut } from 'firebase/auth';
 import { LogOut, Sparkles, KeyRound, User as UserIcon, LayoutDashboard, BookCopy, Target, ListTodo, Library, Menu } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
@@ -158,10 +158,14 @@ export function AppHeader() {
                             </Button>
                         </SheetTrigger>
                         <SheetContent side="left">
-                             <div className="flex items-center space-x-2 mb-6">
-                                <EduTrackLogo className="h-6 w-6" />
-                                <span className="font-bold text-lg">EduTrack</span>
-                            </div>
+                             <SheetHeader className="mb-6">
+                                <SheetTitle className="sr-only">Menu</SheetTitle>
+                                <SheetDescription className="sr-only">Main navigation for the application.</SheetDescription>
+                                <div className="flex items-center space-x-2">
+                                    <EduTrackLogo className="h-6 w-6" />
+                                    <span className="font-bold text-lg">EduTrack</span>
+                                </div>
+                             </SheetHeader>
                             <nav className="flex flex-col gap-2">
                                 {navLinks.map(link => <NavLink key={link.href} {...link} isMobile={true} />)}
                             </nav>
