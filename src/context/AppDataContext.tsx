@@ -167,13 +167,26 @@ const appReducer = (state: AppState, action: Action): AppState => {
       
       // If the updated task was completed and has an originalId, complete the original task too
       if (updatedTask.isCompleted && updatedTask.originalId) {
-        tasks = tasks.map(t => t.id === updatedTask.originalId ? { ...t, isCompleted: true } : t);
+        tasks = tasks.map(t => t.id === updatedTask.originalId ? { ...t, isCompleted: true, isArchived: true } : t);
       }
       
       return { ...state, tasks };
     }
-    case "DELETE_TASK":
-      return { ...state, tasks: state.tasks.filter(t => t.id !== action.payload.id) };
+    case "DELETE_TASK": {
+        const taskToDelete = state.tasks.find(t => t.id === action.payload.id);
+        if (!taskToDelete) return state;
+
+        let newTasks = state.tasks.filter(t => t.id !== action.payload.id);
+
+        // If the deleted task was a duplicate, un-archive the original task.
+        if (taskToDelete.originalId) {
+            newTasks = newTasks.map(t => 
+                t.id === taskToDelete.originalId ? { ...t, isArchived: false } : t
+            );
+        }
+        
+        return { ...state, tasks: newTasks };
+    }
     case "DUPLICATE_TASK_TO_TODAY": {
       const taskToDuplicate = state.tasks.find(t => t.id === action.payload.id);
       if (!taskToDuplicate) return state;
@@ -185,10 +198,14 @@ const appReducer = (state: AppState, action: Action): AppState => {
         isCompleted: false, // New task is not completed
         timeLogs: [], // Reset time logs
         activeTimeLogId: null,
-        originalId: taskToDuplicate.id // Link back to the original task
+        originalId: taskToDuplicate.id, // Link back to the original task
+        isArchived: false,
       };
 
-      return { ...state, tasks: [...state.tasks, newTask] };
+      // Archive the original task
+      const updatedTasks = state.tasks.map(t => t.id === taskToDuplicate.id ? { ...t, isArchived: true } : t);
+
+      return { ...state, tasks: [...updatedTasks, newTask] };
     }
     case "ADD_TIME_LOG": {
         return {
@@ -362,13 +379,25 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
                       }
                     }
                     break;
-                case "DELETE_TASK":
+                case "DELETE_TASK": {
                     deleteDocumentNonBlocking(firestore, `users/${userId}/tasks`, action.payload.id);
+                    const taskToDelete = state.tasks.find(t => t.id === action.payload.id);
+                     if (taskToDelete?.originalId) {
+                        const originalTask = newState.tasks.find(t => t.id === taskToDelete.originalId);
+                        if(originalTask) {
+                            setDocumentNonBlocking(firestore, `users/${userId}/tasks`, originalTask.id, originalTask);
+                        }
+                    }
                     break;
+                }
                 case "DUPLICATE_TASK_TO_TODAY": {
                     const newTask = newState.tasks.find(t => t.originalId === action.payload.id);
                      if (newTask) {
                         setDocumentNonBlocking(firestore, `users/${userId}/tasks`, newTask.id, newTask);
+                    }
+                    const originalTask = newState.tasks.find(t => t.id === action.payload.id);
+                    if (originalTask) {
+                        setDocumentNonBlocking(firestore, `users/${userId}/tasks`, originalTask.id, originalTask);
                     }
                     break;
                 }

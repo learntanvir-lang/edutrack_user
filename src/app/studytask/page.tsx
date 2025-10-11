@@ -38,7 +38,7 @@ export default function StudyTaskPage() {
     const today = startOfToday();
     const allTasks = tasks;
     const todaysTasks = allTasks.filter(task => format(new Date(task.date), 'yyyy-MM-dd') === selectedDateStr);
-    const overdueTasks = allTasks.filter(task => isBefore(new Date(task.date), today) && !task.isCompleted);
+    const overdueTasks = allTasks.filter(task => isBefore(new Date(task.date), today) && !task.isCompleted && !task.isArchived);
     return { todaysTasks, overdueTasks };
   }, [tasks, selectedDateStr]);
 

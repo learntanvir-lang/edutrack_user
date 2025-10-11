@@ -81,4 +81,5 @@ export interface StudyTask {
   timeLogs: TimeLog[];
   activeTimeLogId?: string | null;
   originalId?: string; // To link a duplicated task to its original
+  isArchived?: boolean; // To hide overdue tasks that have been moved
 }
