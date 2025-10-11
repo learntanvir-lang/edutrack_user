@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { EduTrackLogo } from './EduTrackLogo';
-import { useUser, useAuth } from '@/firebase';
+import { useUser } from '@/firebase';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -16,12 +16,14 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { signOut } from 'firebase/auth';
-import { LogOut, Sparkles, KeyRound, Notebook, User as UserIcon } from 'lucide-react';
+import { LogOut, Sparkles, KeyRound, Notebook, User as UserIcon, LayoutDashboard } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import { Skeleton } from '../ui/skeleton';
 import { ChangePasswordDialog } from './ChangePasswordDialog';
 import { EditProfileDialog } from './EditProfileDialog';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/firebase';
+
 
 export function AppHeader() {
   const { user, isUserLoading } = useUser();
@@ -48,45 +50,64 @@ export function AppHeader() {
   };
 
   const isNotesPage = pathname === '/notes';
+  const isDashboardPage = pathname === '/';
 
   return (
     <>
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-14 items-center">
-          <div className="mr-auto flex items-center space-x-4">
-            <Link href="/" className="flex items-center space-x-2">
+          <div className="flex items-center space-x-4">
+            <Link href="https://edutrack-tms.vercel.app/" target="_blank" rel="noopener noreferrer" className="flex items-center space-x-2">
               <EduTrackLogo className="h-6 w-6" />
-              <span className="font-bold text-lg">EduTrack</span>
+              <span className="font-bold text-lg hidden sm:inline-block">EduTrack</span>
             </Link>
-            {user && !isUserLoading && (
-              <div className="hidden md:flex items-center gap-2 rounded-lg bg-primary/10 px-3 py-1 animate-subtle-pulse">
-                <Sparkles className="h-4 w-4 text-primary/80" />
-                <span className="text-base font-semibold text-primary">
-                  Welcome, {user.displayName || 'User'}
-                </span>
-                <Sparkles className="h-4 w-4 text-primary/80" />
-              </div>
+
+            {user && (
+                 <nav className="flex items-center gap-2">
+                    <Button 
+                        asChild 
+                        variant="ghost"
+                        size="sm" 
+                        className={cn(
+                            "font-bold",
+                            isDashboardPage && "bg-primary/10 text-primary"
+                        )}
+                    >
+                        <Link href="/">
+                            <LayoutDashboard className="mr-2 h-4 w-4" />
+                            Dashboard
+                        </Link>
+                    </Button>
+                    <Button 
+                        asChild 
+                        variant="ghost"
+                        size="sm" 
+                        className={cn(
+                            "font-bold",
+                            isNotesPage && "bg-primary/10 text-primary"
+                        )}
+                    >
+                        <Link href="/notes">
+                            <Notebook className="mr-2 h-4 w-4" />
+                            Notes
+                        </Link>
+                    </Button>
+                 </nav>
             )}
           </div>
+          <div className="flex-1" />
           <div className="flex items-center space-x-4">
             {isUserLoading ? (
               <Skeleton className="h-8 w-20 rounded-md" />
             ) : user ? (
               <>
-                <Button 
-                    asChild 
-                    variant="ghost"
-                    size="lg" 
-                    className={cn(
-                        "font-bold text-primary transition-all duration-300 hover:text-primary hover:shadow-lg hover:shadow-primary/20 hover:ring-2 hover:ring-primary/30",
-                        isNotesPage && "bg-primary/10"
-                    )}
-                >
-                    <Link href="/notes">
-                        <Notebook className="mr-2 h-4 w-4" />
-                        Notes
-                    </Link>
-                </Button>
+                 <div className="hidden md:flex items-center gap-2 rounded-lg bg-primary/10 px-3 py-1 animate-subtle-pulse">
+                    <Sparkles className="h-4 w-4 text-primary/80" />
+                    <span className="text-sm font-semibold text-primary">
+                      Welcome, {user.displayName || 'User'}
+                    </span>
+                    <Sparkles className="h-4 w-4 text-primary/80" />
+                  </div>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="relative h-8 w-8 rounded-full">
