@@ -11,23 +11,21 @@ interface TaskProgressCardProps {
 }
 
 export function TaskProgressCard({ tasks }: TaskProgressCardProps) {
-    const { completed, total } = useMemo(() => {
+    const { completed, total, totalTimeSpent } = useMemo(() => {
         return {
             completed: tasks.filter(t => t.isCompleted).length,
-            total: tasks.length
+            total: tasks.length,
+            totalTimeSpent: tasks.reduce((acc, task) => acc + (task.timeSpent || 0), 0)
         }
     }, [tasks]);
 
-    // Simple estimation, can be refined
-    const estimatedTime = useMemo(() => {
-        const remainingTasks = total - completed;
-        if (remainingTasks <= 0) return "Done!";
-        if (remainingTasks * 25 < 60) return `${remainingTasks * 25} minutes`;
-        const hours = Math.floor((remainingTasks * 25) / 60);
-        const minutes = (remainingTasks * 25) % 60;
-        return `${hours}h ${minutes}m remaining`;
-
-    }, [completed, total]);
+    const formatTime = (totalSeconds: number) => {
+        if (totalSeconds === 0) return 'No time tracked';
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        if (hours > 0) return `${hours}h ${minutes}m spent`;
+        return `${minutes}m spent`;
+    };
     
     return (
         <Card>
@@ -39,7 +37,7 @@ export function TaskProgressCard({ tasks }: TaskProgressCardProps) {
                     <span className="font-semibold text-foreground text-lg">{completed} / {total} completed</span>
                      <div className="flex items-center gap-2 text-sm text-primary font-semibold">
                         <Clock className="h-4 w-4" />
-                        <span>{total > 0 ? estimatedTime : 'No tasks'}</span>
+                        <span>{formatTime(totalTimeSpent)}</span>
                     </div>
                 </div>
             </CardContent>

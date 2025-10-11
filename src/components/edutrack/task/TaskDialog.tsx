@@ -114,6 +114,9 @@ export function TaskDialog({ open, onOpenChange, date, task }: TaskDialogProps) 
       priority: values.priority,
       category: values.category,
       subcategory: values.subcategory,
+      timeSpent: task?.timeSpent || 0,
+      isTimerRunning: task?.isTimerRunning || false,
+      timerStartTime: task?.timerStartTime,
     };
 
     dispatch({

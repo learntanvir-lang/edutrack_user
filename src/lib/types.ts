@@ -71,4 +71,8 @@ export interface StudyTask {
   priority: number;
   category: string;
   subcategory?: string;
+  timeSpent: number; // in seconds
+  isTimerRunning?: boolean;
+  timerStartTime?: string; // ISO string
 }
+

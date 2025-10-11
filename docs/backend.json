@@ -170,9 +170,12 @@
           "date": { "type": "string", "format": "date", "description": "The date for the task in YYYY-MM-DD format." },
           "priority": { "type": "number" },
           "category": { "type": "string" },
-          "subcategory": { "type": "string" }
+          "subcategory": { "type": "string" },
+          "timeSpent": { "type": "number", "description": "Total time spent on the task in seconds." },
+          "isTimerRunning": { "type": "boolean", "description": "Whether the timer for this task is currently running." },
+          "timerStartTime": { "type": "string", "format": "date-time", "description": "The timestamp when the timer was started." }
         },
-        "required": ["id", "title", "isCompleted", "date", "priority", "category"]
+        "required": ["id", "title", "isCompleted", "date", "priority", "category", "timeSpent"]
     }
   },
   "auth": {
