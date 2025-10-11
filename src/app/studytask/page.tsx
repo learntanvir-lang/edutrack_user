@@ -72,11 +72,11 @@ export default function StudyTaskPage() {
     <>
       <div className="container mx-auto p-4 md:p-8">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-            <aside className="lg:col-span-1 space-y-6">
+            <aside className="lg:col-span-1 space-y-6 animate-fade-in-from-left">
                 <TaskProgressCard tasks={todaysTasks} />
                 <CalendarView selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
             </aside>
-            <main className="lg:col-span-3">
+            <main className="lg:col-span-3 animate-fade-in-from-right">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6">
                     <h1 className="text-3xl font-bold text-foreground">
                         {format(selectedDate, "MMMM do, yyyy")}
