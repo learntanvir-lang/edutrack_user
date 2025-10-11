@@ -12,6 +12,7 @@ import { ProgressItemDialog } from './ProgressItemDialog';
 import { DeleteConfirmationDialog } from '../DeleteConfirmationDialog';
 import { cn } from '@/lib/utils';
 import { getIcon, IconName } from './IconPicker';
+import { Progress } from '@/components/ui/progress';
 
 interface ProgressItemDisplayProps {
     item: ProgressItem;
@@ -52,29 +53,27 @@ export function ProgressItemDisplay({ item, subjectId, paperId, chapterId }: Pro
 
     return (
         <>
-            <div className="p-2 pr-10 relative rounded-md bg-muted/50">
+            <div className="p-3 pr-10 relative rounded-md bg-card border">
                 {item.type === 'counter' ? (
-                     <div className="flex items-center justify-between gap-4">
-                        <p className="text-base font-medium text-foreground flex-shrink-0 flex items-center gap-2">
-                           {Icon && <Icon className="h-5 w-5 text-primary" />}
-                           {item.name}
-                        </p>
-                        <div className="flex-1 flex items-center gap-2">
-                             <div className="w-full bg-secondary rounded-full h-2.5">
-                                <div
-                                    className="bg-primary h-2.5 rounded-full"
-                                    style={{ width: `${progress}%` }}
-                                ></div>
+                     <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                            <p className="text-base font-medium text-foreground flex items-center gap-2">
+                               {Icon && <Icon className="h-5 w-5 text-primary" />}
+                               {item.name}
+                            </p>
+                            <div className="flex items-center gap-1">
+                                <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => handleCounterChange(-1)}>
+                                    <Minus className="h-4 w-4" />
+                                </Button>
+                                 <span className="text-sm font-mono text-muted-foreground w-16 text-center">{item.completed}/{item.total}</span>
+                                <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => handleCounterChange(1)}>
+                                    <Plus className="h-4 w-4" />
+                                </Button>
                             </div>
                         </div>
-                        <div className="flex items-center gap-1">
-                            <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => handleCounterChange(-1)}>
-                                <Minus className="h-4 w-4" />
-                            </Button>
-                             <span className="text-xs font-mono text-muted-foreground w-12 text-center">{item.completed}/{item.total}</span>
-                            <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => handleCounterChange(1)}>
-                                <Plus className="h-4 w-4" />
-                            </Button>
+                         <div className="flex items-center gap-3">
+                           <Progress value={progress} className="h-2 flex-1" />
+                           <span className="text-xs font-semibold text-muted-foreground w-10 text-right">{Math.round(progress)}%</span>
                         </div>
                     </div>
                 ) : ( // To-do type
