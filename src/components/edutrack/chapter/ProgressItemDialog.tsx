@@ -136,7 +136,7 @@ export function ProgressItemDialog({ open, onOpenChange, subjectId, paperId, cha
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel>Tracker Type</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isEditing}>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
                                 <FormControl>
                                     <SelectTrigger>
                                         <SelectValue placeholder="Select a tracker type" />
