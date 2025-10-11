@@ -22,13 +22,11 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Note, NoteLink } from "@/lib/types";
-import { useContext, useEffect } from "react";
-import { AppDataContext } from "@/context/AppDataContext";
-import { v4 as uuidv4 } from 'uuid';
+import { ResourceLink } from "@/lib/types";
+import { useEffect } from "react";
 
 const linkSchema = z.object({
-  title: z.string().min(1, "Link title is required"),
+  description: z.string().min(1, "Link title is required"),
   url: z.string().url("Must be a valid URL"),
 });
 
@@ -37,18 +35,18 @@ type LinkFormValues = z.infer<typeof linkSchema>;
 interface LinkDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  note: Note;
-  link?: NoteLink;
+  onSave: (data: LinkFormValues) => void;
+  link?: ResourceLink;
+  itemType?: string;
 }
 
-export function LinkDialog({ open, onOpenChange, note, link }: LinkDialogProps) {
-  const { dispatch } = useContext(AppDataContext);
+export function LinkDialog({ open, onOpenChange, onSave, link, itemType = 'Link' }: LinkDialogProps) {
   const isEditing = !!link;
 
   const form = useForm<LinkFormValues>({
     resolver: zodResolver(linkSchema),
     defaultValues: {
-      title: "",
+      description: "",
       url: "",
     },
   });
@@ -56,26 +54,14 @@ export function LinkDialog({ open, onOpenChange, note, link }: LinkDialogProps) 
   useEffect(() => {
     if (open) {
       form.reset({
-        title: link?.title || "",
+        description: link?.description || "",
         url: link?.url || "",
       });
     }
   }, [link, open, form]);
 
   const onSubmit = (values: LinkFormValues) => {
-    let updatedLinks: NoteLink[];
-
-    if (isEditing) {
-      updatedLinks = note.links.map(l => (l.id === link.id ? { ...l, ...values } : l));
-    } else {
-      updatedLinks = [...note.links, { id: uuidv4(), ...values }];
-    }
-
-    dispatch({
-      type: "UPDATE_NOTE",
-      payload: { ...note, links: updatedLinks },
-    });
-    
+    onSave(values);
     onOpenChange(false);
   };
   
@@ -90,19 +76,19 @@ export function LinkDialog({ open, onOpenChange, note, link }: LinkDialogProps) 
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{isEditing ? "Edit Link" : "Add New Link"}</DialogTitle>
+          <DialogTitle>{isEditing ? `Edit ${itemType}` : `Add New ${itemType}`}</DialogTitle>
           <DialogDescription>
-            {isEditing ? "Update the details for this link." : `Add a new link to "${note.title}".`}
+            {isEditing ? "Update the details for this link." : `Add a new link.`}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form id="link-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField
                 control={form.control}
-                name="title"
+                name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Link Title</FormLabel>
+                    <FormLabel>Title</FormLabel>
                     <FormControl>
                       <Input placeholder="e.g., Official Documentation" {...field} />
                     </FormControl>
@@ -126,7 +112,7 @@ export function LinkDialog({ open, onOpenChange, note, link }: LinkDialogProps) 
           </form>
         </Form>
         <DialogFooter>
-          <Button onClick={form.handleSubmit(onSubmit)} form="link-form">{isEditing ? "Save Changes" : "Add Link"}</Button>
+          <Button onClick={form.handleSubmit(onSubmit)} form="link-form">{isEditing ? "Save Changes" : `Add ${itemType}`}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

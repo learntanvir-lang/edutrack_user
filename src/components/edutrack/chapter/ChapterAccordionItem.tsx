@@ -1,11 +1,10 @@
 
-
 "use client";
 
 import { useState, useContext, memo, useMemo } from "react";
-import { Chapter } from "@/lib/types";
+import { Chapter, ResourceLink } from "@/lib/types";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Pen, Copy, Trash2, Link as LinkIcon, ExternalLink, Activity, PlusCircle } from "lucide-react";
+import { MoreHorizontal, Pen, Copy, Trash2, Link as LinkIcon, ExternalLink, Activity, PlusCircle, Edit } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import {
   DropdownMenu,
@@ -23,6 +22,8 @@ import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { ProgressItemDialog } from "./ProgressItemDialog";
 import { ProgressItemDisplay } from "./ProgressItemDisplay";
+import { LinkDialog } from "../note/LinkDialog";
+import { v4 as uuidv4 } from "uuid";
 
 
 interface ChapterAccordionItemProps {
@@ -36,6 +37,9 @@ function ChapterAccordionItem({ chapter, subjectId, paperId }: ChapterAccordionI
     const [isEditingChapter, setIsEditingChapter] = useState(false);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [isProgressItemDialogOpen, setIsProgressItemDialogOpen] = useState(false);
+    const [isLinkDialogOpen, setIsLinkDialogOpen] = useState(false);
+    const [editingLink, setEditingLink] = useState<ResourceLink | undefined>(undefined);
+    const [deletingLink, setDeletingLink] = useState<ResourceLink | null>(null);
 
     const handleDuplicate = () => {
         dispatch({
@@ -53,14 +57,47 @@ function ChapterAccordionItem({ chapter, subjectId, paperId }: ChapterAccordionI
     };
 
     const overallProgress = useMemo(() => {
-        if (chapter.progressItems.length === 0) return 0;
+        if (chapter.progressItems.length === 0) {
+            const isCompleted = chapter.isCompleted;
+            return isCompleted ? 100 : 0;
+        }
 
         const totalWeight = chapter.progressItems.reduce((acc, item) => acc + item.total, 0);
         const weightedCompleted = chapter.progressItems.reduce((acc, item) => acc + item.completed, 0);
         
         return totalWeight > 0 ? Math.round((weightedCompleted / totalWeight) * 100) : 0;
-    }, [chapter.progressItems]);
+    }, [chapter.progressItems, chapter.isCompleted]);
     
+    const handleAddLink = () => {
+        setEditingLink(undefined);
+        setIsLinkDialogOpen(true);
+    };
+
+    const handleEditLink = (link: ResourceLink) => {
+        setEditingLink(link);
+        setIsLinkDialogOpen(true);
+    };
+    
+    const handleSaveLink = (linkData: { description: string; url: string }) => {
+        let updatedLinks: ResourceLink[];
+        if (editingLink) {
+            updatedLinks = chapter.resourceLinks.map(l => l.id === editingLink.id ? { ...l, ...linkData } : l);
+        } else {
+            updatedLinks = [...chapter.resourceLinks, { id: uuidv4(), ...linkData }];
+        }
+        dispatch({ type: "UPDATE_CHAPTER", payload: { subjectId, paperId, chapter: { ...chapter, resourceLinks: updatedLinks } } });
+        setIsLinkDialogOpen(false);
+        setEditingLink(undefined);
+    };
+
+    const handleDeleteLink = () => {
+        if (deletingLink) {
+            const updatedLinks = chapter.resourceLinks.filter(link => link.id !== deletingLink.id);
+            dispatch({ type: "UPDATE_CHAPTER", payload: { ...chapter, resourceLinks: updatedLinks } });
+            setDeletingLink(null);
+        }
+    };
+
     return (
         <>
             <div className="border-none bg-card rounded-lg shadow-sm">
@@ -103,7 +140,7 @@ function ChapterAccordionItem({ chapter, subjectId, paperId }: ChapterAccordionI
                         <Progress value={overallProgress} className="h-2 flex-1" />
                         <Badge variant={overallProgress === 100 ? "default" : "secondary"} className={cn("font-bold", overallProgress === 100 && 'bg-green-600')}>{overallProgress}%</Badge>
                     </div>
-                    <Separator />
+                    
                     <div className="pt-4 space-y-6">
                         
                         {/* Progress Section */}
@@ -134,25 +171,56 @@ function ChapterAccordionItem({ chapter, subjectId, paperId }: ChapterAccordionI
                             </div>
                         </div>
                         
+                        <Separator />
+
                         {/* Resources Section */}
-                        {chapter.resourceLinks && chapter.resourceLinks.length > 0 && (
-                            <div className="space-y-3">
-                                 <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                        <div className="space-y-3">
+                             <div className="flex items-center justify-between text-sm font-medium text-muted-foreground">
+                                <div className="flex items-center gap-2">
                                     <LinkIcon className="w-4 h-4" />
                                     <span>Resources</span>
                                 </div>
-                                <div className="flex flex-col gap-2">
-                                    {chapter.resourceLinks.map(link => (
-                                         <Button key={link.id} variant="outline" size="sm" className="w-full justify-between bg-blue-50 text-blue-700 hover:bg-blue-100 hover:text-blue-800" asChild>
+                                <Button variant="outline" size="sm" onClick={handleAddLink}>
+                                    <PlusCircle className="mr-2 h-4 w-4" />
+                                    Add Resource
+                                </Button>
+                            </div>
+                            <div className="space-y-2">
+                                {chapter.resourceLinks.map(link => (
+                                     <div key={link.id} className="group/link flex items-center gap-1 rounded-md transition-colors border hover:bg-primary/10 hover:border-primary hover:text-primary">
+                                        <Button variant="ghost" size="sm" className="w-full justify-start gap-2 flex-grow hover:bg-transparent text-foreground/80 hover:text-primary" asChild>
                                             <Link href={link.url} target="_blank" rel="noopener noreferrer">
+                                                <ExternalLink className="h-4 w-4 flex-shrink-0" />
                                                 <span className="truncate">{link.description || link.url}</span>
-                                                <ExternalLink className="h-4 w-4 ml-2 flex-shrink-0" />
                                             </Link>
                                         </Button>
-                                    ))}
-                                </div>
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0">
+                                                    <MoreVertical className="h-4 w-4" />
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end">
+                                                <DropdownMenuItem onClick={() => handleEditLink(link)}>
+                                                    <Edit className="mr-2 h-4 w-4" />
+                                                    Edit
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem 
+                                                    className="text-destructive focus:text-destructive"
+                                                    onClick={() => setDeletingLink(link)}
+                                                >
+                                                    <Trash2 className="mr-2 h-4 w-4" />
+                                                    Delete
+                                                </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </div>
+                                ))}
+                                {chapter.resourceLinks.length === 0 && (
+                                     <p className="text-sm text-center text-muted-foreground py-4">No resources added.</p>
+                                )}
                             </div>
-                        )}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -178,6 +246,22 @@ function ChapterAccordionItem({ chapter, subjectId, paperId }: ChapterAccordionI
                 paperId={paperId}
                 chapterId={chapter.id}
             />
+            <LinkDialog
+                open={isLinkDialogOpen}
+                onOpenChange={setIsLinkDialogOpen}
+                onSave={handleSaveLink}
+                link={editingLink}
+                itemType="Resource"
+            />
+             {deletingLink && (
+                 <DeleteConfirmationDialog
+                    open={!!deletingLink}
+                    onOpenChange={() => setDeletingLink(null)}
+                    onConfirm={handleDeleteLink}
+                    itemName={deletingLink.description}
+                    itemType="resource link"
+                />
+            )}
         </>
     );
 }

@@ -3,15 +3,16 @@
 
 import { useState, useContext } from 'react';
 import Link from 'next/link';
-import { Note, NoteLink } from '@/lib/types';
+import { Note, NoteLink, ResourceLink } from '@/lib/types';
 import { AppDataContext } from '@/context/AppDataContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { MoreVertical, Pen, Trash2, Link as LinkIcon, PlusCircle, Edit } from 'lucide-react';
+import { MoreVertical, Pen, Trash2, Link as LinkIcon, PlusCircle, Edit, ExternalLink } from 'lucide-react';
 import { NoteDialog } from './NoteDialog';
 import { DeleteConfirmationDialog } from '../DeleteConfirmationDialog';
 import { LinkDialog } from './LinkDialog';
+import { v4 as uuidv4 } from 'uuid';
 
 interface NoteCardProps {
     note: Note;
@@ -39,6 +40,21 @@ export function NoteCard({ note }: NoteCardProps) {
         setEditingLink(link);
         setIsLinkDialogOpen(true);
     };
+    
+    const handleSaveLink = (linkData: { description: string, url: string }) => {
+        const linkToSave = { id: editingLink?.id || uuidv4(), title: linkData.description, url: linkData.url };
+        
+        let updatedLinks: NoteLink[];
+        if (editingLink) {
+             updatedLinks = note.links.map(l => l.id === editingLink.id ? linkToSave : l);
+        } else {
+             updatedLinks = [...note.links, linkToSave];
+        }
+        dispatch({ type: "UPDATE_NOTE", payload: { ...note, links: updatedLinks } });
+        setIsLinkDialogOpen(false);
+        setEditingLink(undefined);
+    };
+
 
     const handleDeleteLink = () => {
         if (deletingLink) {
@@ -94,7 +110,7 @@ export function NoteCard({ note }: NoteCardProps) {
                                 <div key={link.id} className="group/link flex items-center gap-1 rounded-md transition-colors border hover:bg-primary/10 hover:border-primary hover:text-primary">
                                     <Button variant="ghost" size="sm" className="w-full justify-start gap-2 flex-grow hover:bg-transparent text-foreground/80 hover:text-primary" asChild>
                                         <Link href={link.url} target="_blank" rel="noopener noreferrer">
-                                            <LinkIcon className="h-4 w-4 flex-shrink-0" />
+                                            <ExternalLink className="h-4 w-4 flex-shrink-0" />
                                             <span className="truncate">{link.title}</span>
                                         </Link>
                                     </Button>
@@ -140,11 +156,12 @@ export function NoteCard({ note }: NoteCardProps) {
                 onOpenChange={setIsEditDialogOpen}
                 note={note}
             />
-            <LinkDialog
+             <LinkDialog
                 open={isLinkDialogOpen}
                 onOpenChange={setIsLinkDialogOpen}
-                note={note}
-                link={editingLink}
+                onSave={handleSaveLink}
+                link={editingLink ? { ...editingLink, description: editingLink.title } : undefined}
+                itemType="Link"
             />
             <DeleteConfirmationDialog
                 open={isDeleteDialogOpen}
