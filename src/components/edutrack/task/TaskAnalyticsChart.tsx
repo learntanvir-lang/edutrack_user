@@ -248,7 +248,7 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
   }
 
   return (
-    <Card className="shadow-lg rounded-xl" ref={cardRef}>
+    <Card className="shadow-lg rounded-xl border-2 border-border/50" ref={cardRef}>
       <CardHeader>
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between">
             <div>
