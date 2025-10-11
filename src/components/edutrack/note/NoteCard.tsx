@@ -3,14 +3,15 @@
 
 import { useState, useContext } from 'react';
 import Link from 'next/link';
-import { Note } from '@/lib/types';
+import { Note, NoteLink } from '@/lib/types';
 import { AppDataContext } from '@/context/AppDataContext';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { MoreVertical, Pen, Trash2, Link as LinkIcon } from 'lucide-react';
+import { MoreVertical, Pen, Trash2, Link as LinkIcon, PlusCircle, Edit } from 'lucide-react';
 import { NoteDialog } from './NoteDialog';
 import { DeleteConfirmationDialog } from '../DeleteConfirmationDialog';
+import { LinkDialog } from './LinkDialog';
 
 interface NoteCardProps {
     note: Note;
@@ -20,10 +21,31 @@ export function NoteCard({ note }: NoteCardProps) {
     const { dispatch } = useContext(AppDataContext);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+    const [isLinkDialogOpen, setIsLinkDialogOpen] = useState(false);
+    const [editingLink, setEditingLink] = useState<NoteLink | undefined>(undefined);
+    const [deletingLink, setDeletingLink] = useState<NoteLink | null>(null);
 
-    const handleDelete = () => {
+    const handleDeleteNote = () => {
         dispatch({ type: "DELETE_NOTE", payload: { id: note.id } });
         setIsDeleteDialogOpen(false);
+    };
+
+    const handleAddLink = () => {
+        setEditingLink(undefined);
+        setIsLinkDialogOpen(true);
+    };
+
+    const handleEditLink = (link: NoteLink) => {
+        setEditingLink(link);
+        setIsLinkDialogOpen(true);
+    };
+
+    const handleDeleteLink = () => {
+        if (deletingLink) {
+            const updatedLinks = note.links.filter(link => link.id !== deletingLink.id);
+            dispatch({ type: "UPDATE_NOTE", payload: { ...note, links: updatedLinks } });
+            setDeletingLink(null);
+        }
     };
 
     return (
@@ -47,7 +69,7 @@ export function NoteCard({ note }: NoteCardProps) {
                             <DropdownMenuContent align="end">
                                 <DropdownMenuItem onClick={() => setIsEditDialogOpen(true)}>
                                 <Pen className="mr-2 h-4 w-4" />
-                                Edit
+                                Edit Note Details
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem
@@ -55,7 +77,7 @@ export function NoteCard({ note }: NoteCardProps) {
                                 onClick={() => setIsDeleteDialogOpen(true)}
                                 >
                                 <Trash2 className="mr-2 h-4 w-4" />
-                                Delete
+                                Delete Note
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
@@ -63,22 +85,36 @@ export function NoteCard({ note }: NoteCardProps) {
                 </div>
                 <CardHeader className="pt-4">
                     <CardTitle className="font-bold text-xl text-foreground">{note.title}</CardTitle>
-                    <CardDescription className="text-muted-foreground line-clamp-3">{note.description}</CardDescription>
+                    {note.description && <CardDescription className="text-muted-foreground line-clamp-3">{note.description}</CardDescription>}
                 </CardHeader>
                 <CardContent className="flex-grow space-y-3">
                     {note.links && note.links.length > 0 && (
                         <div className="space-y-2">
                              {note.links.map(link => (
-                                <Button key={link.id} variant="outline" size="sm" className="w-full justify-start gap-2" asChild>
-                                    <Link href={link.url} target="_blank" rel="noopener noreferrer">
-                                        <LinkIcon className="h-4 w-4 flex-shrink-0" />
-                                        <span className="truncate">{link.title}</span>
-                                    </Link>
-                                </Button>
+                                <div key={link.id} className="group/link flex items-center gap-2">
+                                    <Button variant="outline" size="sm" className="w-full justify-start gap-2 flex-grow" asChild>
+                                        <Link href={link.url} target="_blank" rel="noopener noreferrer">
+                                            <LinkIcon className="h-4 w-4 flex-shrink-0" />
+                                            <span className="truncate">{link.title}</span>
+                                        </Link>
+                                    </Button>
+                                    <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover/link:opacity-100 transition-opacity" onClick={() => handleEditLink(link)}>
+                                        <Edit className="h-4 w-4" />
+                                    </Button>
+                                     <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive opacity-0 group-hover/link:opacity-100 transition-opacity" onClick={() => setDeletingLink(link)}>
+                                        <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                </div>
                             ))}
                         </div>
                     )}
                 </CardContent>
+                <CardFooter className="border-t p-2">
+                    <Button variant="ghost" className="w-full" onClick={handleAddLink}>
+                        <PlusCircle className="mr-2 h-4 w-4" />
+                        Add Link
+                    </Button>
+                </CardFooter>
             </Card>
 
             <NoteDialog
@@ -86,13 +122,28 @@ export function NoteCard({ note }: NoteCardProps) {
                 onOpenChange={setIsEditDialogOpen}
                 note={note}
             />
+            <LinkDialog
+                open={isLinkDialogOpen}
+                onOpenChange={setIsLinkDialogOpen}
+                note={note}
+                link={editingLink}
+            />
             <DeleteConfirmationDialog
                 open={isDeleteDialogOpen}
                 onOpenChange={setIsDeleteDialogOpen}
-                onConfirm={handleDelete}
+                onConfirm={handleDeleteNote}
                 itemName={note.title}
                 itemType="note"
             />
+             {deletingLink && (
+                 <DeleteConfirmationDialog
+                    open={!!deletingLink}
+                    onOpenChange={() => setDeletingLink(null)}
+                    onConfirm={handleDeleteLink}
+                    itemName={deletingLink.title}
+                    itemType="link"
+                />
+            )}
         </>
     );
 }
