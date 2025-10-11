@@ -38,7 +38,7 @@ export function ProgressItemDisplay({ item, subjectId, paperId, chapterId }: Pro
     const handleTodoToggle = (completed: boolean) => {
         dispatch({
             type: 'UPDATE_PROGRESS_ITEM',
-            payload: { subjectId, paperId, chapterId, progressItem: { ...item, completed: completed ? 1 : 0 } }
+            payload: { subjectId, paperId, chapterId, progressItem: { ...item, completed: completed ? 1 : 0, total: 1 } }
         });
     };
     
@@ -51,15 +51,13 @@ export function ProgressItemDisplay({ item, subjectId, paperId, chapterId }: Pro
 
     return (
         <>
-            <div className="p-2 rounded-md bg-background border">
+            <div className="p-2 pr-10 relative rounded-md bg-background border">
                 {item.type === 'counter' ? (
-                     <div className="flex items-center justify-between">
-                        <div className="flex-1 space-y-1">
-                            <p className="text-sm font-semibold text-foreground">{item.name}</p>
-                            <div className="flex items-center gap-2">
-                                <Progress value={progress} className="h-2 w-full max-w-48" />
-                                <span className="text-xs font-mono text-muted-foreground">{item.completed}/{item.total}</span>
-                            </div>
+                     <div className="flex items-center justify-between gap-2">
+                        <p className="text-sm font-semibold text-foreground flex-shrink-0 mr-2">{item.name}</p>
+                        <div className="flex-1 flex items-center gap-2">
+                            <Progress value={progress} className="h-2 w-full max-w-48" />
+                            <span className="text-xs font-mono text-muted-foreground">{item.completed}/{item.total}</span>
                         </div>
                         <div className="flex items-center gap-1">
                             <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => handleCounterChange(-1)}>
