@@ -227,7 +227,7 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
     try {
       const date = new Date(`${value}T00:00:00`);
       if (isValid(date)) {
-        return format(date, 'E');
+        return format(date, 'E d');
       }
     } catch (e) {
       // ignore
