@@ -67,6 +67,10 @@ function ExamItem({ exam }: ExamItemProps) {
     };
   }).filter(Boolean);
 
+  const scorePercentage = exam.isCompleted && exam.totalMarks && exam.marksObtained != null
+    ? (exam.marksObtained / exam.totalMarks) * 100
+    : 0;
+  const isGoodScore = scorePercentage >= 80;
 
   return (
     <>
@@ -129,8 +133,10 @@ function ExamItem({ exam }: ExamItemProps) {
               boxClassName="bg-primary/10"
             />
           ) : exam.isCompleted && exam.marksObtained != null && exam.totalMarks != null ? (
-            <div className="flex items-center justify-center gap-4 rounded-lg border bg-background/50 p-3">
-              <Award className="h-8 w-8 text-yellow-500" />
+            <div className={cn("flex items-center justify-center gap-4 rounded-lg border p-3",
+              isGoodScore ? 'bg-green-100 border-green-500' : 'bg-red-100 border-red-500'
+            )}>
+              <Award className={cn("h-8 w-8", isGoodScore ? 'text-green-600' : 'text-red-600')} />
               <div className="flex items-baseline gap-2">
                 <span className="text-sm font-medium text-muted-foreground">SCORE:</span>
                 <span className="text-2xl font-bold text-foreground">{exam.marksObtained}</span>
