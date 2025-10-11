@@ -209,12 +209,12 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
     const { active, coordinate, payload, viewBox } = props;
     if (active && coordinate && viewBox && payload && payload.length) {
       return (
-        <path
-          d={`M ${coordinate.x} ${viewBox.y} L ${coordinate.x} ${viewBox.y + viewBox.height}`}
-          stroke="hsl(var(--primary))"
-          strokeWidth={2}
-          strokeDasharray="3 3"
-          fill="none"
+        <Rectangle
+            fill="hsl(var(--primary) / 0.2)"
+            x={coordinate.x}
+            y={viewBox.y}
+            width={1}
+            height={viewBox.height}
         />
       );
     }
