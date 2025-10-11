@@ -1,10 +1,11 @@
 
+
 "use client";
 
 import { useState, useContext, memo } from "react";
 import { Chapter } from "@/lib/types";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Pen, Copy, Trash2, Link as LinkIcon, ExternalLink, Activity } from "lucide-react";
+import { MoreHorizontal, Pen, Copy, Trash2, Link as LinkIcon, ExternalLink, Activity, PlusCircle } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import {
   DropdownMenu,
@@ -19,6 +20,10 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { DeleteConfirmationDialog } from "../DeleteConfirmationDialog";
 import { cn } from "@/lib/utils";
+import { Separator } from "@/components/ui/separator";
+import { ProgressItemDialog } from "./ProgressItemDialog";
+import { ProgressItemDisplay } from "./ProgressItemDisplay";
+
 
 interface ChapterAccordionItemProps {
     chapter: Chapter;
@@ -30,6 +35,7 @@ function ChapterAccordionItem({ chapter, subjectId, paperId }: ChapterAccordionI
     const { dispatch } = useContext(AppDataContext);
     const [isEditingChapter, setIsEditingChapter] = useState(false);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+    const [isProgressItemDialogOpen, setIsProgressItemDialogOpen] = useState(false);
 
     const handleDuplicate = () => {
         dispatch({
@@ -46,16 +52,29 @@ function ChapterAccordionItem({ chapter, subjectId, paperId }: ChapterAccordionI
         setIsDeleteDialogOpen(false);
     };
 
-    const chapterProgress = chapter.progressItems.reduce(
-        (acc, item) => {
-          acc.completed += item.completed;
-          acc.total += item.total;
-          return acc;
-        },
-        { completed: 0, total: 0 }
-    );
-    
-    const percentage = chapterProgress.total > 0 ? Math.round((chapterProgress.completed / chapterProgress.total) * 100) : 0;
+    const overallProgress = useMemo(() => {
+        const counters = chapter.progressItems.filter(item => item.type === 'counter');
+        const todolists = chapter.progressItems.filter(item => item.type === 'todolist');
+
+        let totalWeight = 0;
+        let weightedCompleted = 0;
+
+        counters.forEach(item => {
+            if (item.total > 0) {
+                totalWeight += item.total;
+                weightedCompleted += item.completed;
+            }
+        });
+
+        todolists.forEach(item => {
+            if (item.todos.length > 0) {
+                totalWeight += item.todos.length;
+                weightedCompleted += item.todos.filter(t => t.completed).length;
+            }
+        });
+        
+        return totalWeight > 0 ? Math.round((weightedCompleted / totalWeight) * 100) : 0;
+    }, [chapter.progressItems]);
     
     return (
         <>
@@ -67,7 +86,6 @@ function ChapterAccordionItem({ chapter, subjectId, paperId }: ChapterAccordionI
                                 {chapter.number && `Chapter ${chapter.number}: `}
                                 {chapter.name}
                             </span>
-                            <Badge variant={percentage === 100 ? "default" : "secondary"} className={cn(percentage === 100 && 'bg-green-600')}>{percentage}%</Badge>
                         </div>
                     </div>
                     <div className="flex items-center gap-1 ml-4">
@@ -96,29 +114,37 @@ function ChapterAccordionItem({ chapter, subjectId, paperId }: ChapterAccordionI
                     </div>
                 </div>
                 <div className="px-3 pb-3 pt-0">
-                    <div className="border-t pt-4 space-y-6">
+                    <div className="flex items-center gap-3 mb-4">
+                        <Progress value={overallProgress} className="h-2 flex-1" />
+                        <Badge variant={overallProgress === 100 ? "default" : "secondary"} className={cn("font-bold", overallProgress === 100 && 'bg-green-600')}>{overallProgress}%</Badge>
+                    </div>
+                    <Separator />
+                    <div className="pt-4 space-y-6">
                         
                         {/* Progress Section */}
                         <div className="space-y-3">
-                            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                                <Activity className="w-4 h-4" />
-                                <span>Progress Trackers</span>
+                            <div className="flex items-center justify-between text-sm font-medium text-muted-foreground">
+                                <div className="flex items-center gap-2">
+                                    <Activity className="w-4 h-4" />
+                                    <span>Progress Trackers</span>
+                                </div>
+                                <Button variant="outline" size="sm" onClick={() => setIsProgressItemDialogOpen(true)}>
+                                    <PlusCircle className="mr-2 h-4 w-4" />
+                                    Add Tracker
+                                </Button>
                             </div>
-                            <div className="space-y-4 rounded-md bg-muted/50 p-4">
-                                {chapter.progressItems.map(item => {
-                                    const progress = item.total > 0 ? (item.completed / item.total) * 100 : 0;
-                                    return (
-                                        <div key={item.id}>
-                                            <div className="flex justify-between items-center mb-1">
-                                                <span className="text-sm text-foreground font-medium">{item.name}</span>
-                                                <span className="text-sm font-medium text-muted-foreground">{item.completed} / {item.total}</span>
-                                            </div>
-                                            <Progress value={progress} />
-                                        </div>
-                                    );
-                                })}
+                            <div className="space-y-2 rounded-md bg-muted/50 p-2">
+                               {chapter.progressItems.map(item => (
+                                    <ProgressItemDisplay 
+                                        key={item.id}
+                                        item={item} 
+                                        subjectId={subjectId}
+                                        paperId={paperId}
+                                        chapterId={chapter.id}
+                                    />
+                               ))}
                                 {chapter.progressItems.length === 0 && (
-                                    <p className="text-sm text-center text-muted-foreground py-2">No progress trackers added.</p>
+                                    <p className="text-sm text-center text-muted-foreground py-4">No progress trackers added.</p>
                                 )}
                             </div>
                         </div>
@@ -159,6 +185,13 @@ function ChapterAccordionItem({ chapter, subjectId, paperId }: ChapterAccordionI
                 onConfirm={handleDelete}
                 itemName={chapter.name}
                 itemType="chapter"
+            />
+            <ProgressItemDialog
+                open={isProgressItemDialogOpen}
+                onOpenChange={setIsProgressItemDialogOpen}
+                subjectId={subjectId}
+                paperId={paperId}
+                chapterId={chapter.id}
             />
         </>
     );

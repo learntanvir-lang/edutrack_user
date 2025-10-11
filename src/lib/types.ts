@@ -6,11 +6,21 @@ export interface ResourceLink {
   description: string;
 }
 
+export interface TodoItem {
+  id: string;
+  text: string;
+  completed: boolean;
+}
+
 export interface ProgressItem {
   id: string;
   name: string;
+  type: 'counter' | 'todolist';
+  // For counter
   completed: number;
   total: number;
+  // For todolist
+  todos: TodoItem[];
 }
 
 export interface Chapter {

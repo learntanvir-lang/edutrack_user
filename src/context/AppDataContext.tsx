@@ -1,8 +1,9 @@
 
+
 "use client";
 
 import { createContext, useReducer, useEffect, ReactNode, useContext, useMemo } from "react";
-import { Subject, Exam, Paper, Chapter, Note, StudyTask, TimeLog } from "@/lib/types";
+import { Subject, Exam, Paper, Chapter, Note, StudyTask, TimeLog, ProgressItem, TodoItem } from "@/lib/types";
 import { initialData } from "@/lib/data";
 import { v4 as uuidv4 } from 'uuid';
 import { useFirebase, useUser } from "@/firebase";
@@ -54,7 +55,11 @@ type Action =
   | { type: "DUPLICATE_TASK_TO_TODAY", payload: { id: string } }
   | { type: "ADD_TIME_LOG"; payload: { taskId: string; log: TimeLog } }
   | { type: "UPDATE_TIME_LOG"; payload: { taskId: string; log: TimeLog } }
-  | { type: "DELETE_TIME_LOG"; payload: { taskId: string; logId: string } };
+  | { type: "DELETE_TIME_LOG"; payload: { taskId: string; logId: string } }
+  | { type: "ADD_PROGRESS_ITEM"; payload: { subjectId: string, paperId: string, chapterId: string, progressItem: ProgressItem } }
+  | { type: "UPDATE_PROGRESS_ITEM"; payload: { subjectId: string, paperId: string, chapterId: string, progressItem: ProgressItem } }
+  | { type: "DELETE_PROGRESS_ITEM"; payload: { subjectId: string, paperId: string, chapterId: string, progressItemId: string } }
+  | { type: "TOGGLE_TODO"; payload: { subjectId: string, paperId: string, chapterId: string, progressItemId: string, todoId: string, completed: boolean } };
 
 
 const appReducer = (state: AppState, action: Action): AppState => {
@@ -145,6 +150,126 @@ const appReducer = (state: AppState, action: Action): AppState => {
           }
           return s;
         }),
+      };
+    }
+     case "ADD_PROGRESS_ITEM": {
+      const { subjectId, paperId, chapterId, progressItem } = action.payload;
+      return {
+        ...state,
+        subjects: state.subjects.map(s =>
+          s.id === subjectId
+            ? {
+                ...s,
+                papers: s.papers.map(p =>
+                  p.id === paperId
+                    ? {
+                        ...p,
+                        chapters: p.chapters.map(c =>
+                          c.id === chapterId
+                            ? { ...c, progressItems: [...c.progressItems, progressItem] }
+                            : c
+                        ),
+                      }
+                    : p
+                ),
+              }
+            : s
+        ),
+      };
+    }
+    case "UPDATE_PROGRESS_ITEM": {
+      const { subjectId, paperId, chapterId, progressItem } = action.payload;
+      return {
+        ...state,
+        subjects: state.subjects.map(s =>
+          s.id === subjectId
+            ? {
+                ...s,
+                papers: s.papers.map(p =>
+                  p.id === paperId
+                    ? {
+                        ...p,
+                        chapters: p.chapters.map(c =>
+                          c.id === chapterId
+                            ? {
+                                ...c,
+                                progressItems: c.progressItems.map(item =>
+                                  item.id === progressItem.id ? progressItem : item
+                                ),
+                              }
+                            : c
+                        ),
+                      }
+                    : p
+                ),
+              }
+            : s
+        ),
+      };
+    }
+    case "DELETE_PROGRESS_ITEM": {
+      const { subjectId, paperId, chapterId, progressItemId } = action.payload;
+       return {
+        ...state,
+        subjects: state.subjects.map(s =>
+          s.id === subjectId
+            ? {
+                ...s,
+                papers: s.papers.map(p =>
+                  p.id === paperId
+                    ? {
+                        ...p,
+                        chapters: p.chapters.map(c =>
+                          c.id === chapterId
+                            ? {
+                                ...c,
+                                progressItems: c.progressItems.filter(item => item.id !== progressItemId),
+                              }
+                            : c
+                        ),
+                      }
+                    : p
+                ),
+              }
+            : s
+        ),
+      };
+    }
+    case "TOGGLE_TODO": {
+      const { subjectId, paperId, chapterId, progressItemId, todoId, completed } = action.payload;
+      return {
+        ...state,
+        subjects: state.subjects.map(s =>
+          s.id === subjectId
+            ? {
+                ...s,
+                papers: s.papers.map(p =>
+                  p.id === paperId
+                    ? {
+                        ...p,
+                        chapters: p.chapters.map(c =>
+                          c.id === chapterId
+                            ? {
+                                ...c,
+                                progressItems: c.progressItems.map(item =>
+                                  item.id === progressItemId && item.type === 'todolist'
+                                    ? {
+                                        ...item,
+                                        todos: item.todos.map(todo =>
+                                          todo.id === todoId ? { ...todo, completed } : todo
+                                        ),
+                                      }
+                                    : item
+                                ),
+                              }
+                            : c
+                        ),
+                      }
+                    : p
+                ),
+              }
+            : s
+        ),
       };
     }
     case "ADD_EXAM":
@@ -346,6 +471,16 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
                 case "DUPLICATE_CHAPTER":
                 case "DELETE_CHAPTER":
                 case "REORDER_CHAPTERS": {
+                    const subjectToUpdate = newState.subjects.find(s => s.id === action.payload.subjectId);
+                    if (subjectToUpdate) {
+                        setDocumentNonBlocking(firestore, `users/${userId}/subjects`, subjectToUpdate.id, subjectToUpdate);
+                    }
+                    break;
+                }
+                 case "ADD_PROGRESS_ITEM":
+                case "UPDATE_PROGRESS_ITEM":
+                case "DELETE_PROGRESS_ITEM":
+                case "TOGGLE_TODO": {
                     const subjectToUpdate = newState.subjects.find(s => s.id === action.payload.subjectId);
                     if (subjectToUpdate) {
                         setDocumentNonBlocking(firestore, `users/${userId}/subjects`, subjectToUpdate.id, subjectToUpdate);

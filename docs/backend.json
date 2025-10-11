@@ -109,16 +109,31 @@
       },
       "required": ["id", "name", "isCompleted", "progressItems", "resourceLinks"]
     },
+    "TodoItem": {
+        "title": "To-do Item",
+        "type": "object",
+        "properties": {
+            "id": { "type": "string" },
+            "text": { "type": "string" },
+            "completed": { "type": "boolean" }
+        },
+        "required": ["id", "text", "completed"]
+    },
     "ProgressItem": {
       "title": "Progress Item",
       "type": "object",
       "properties": {
         "id": { "type": "string" },
         "name": { "type": "string" },
+        "type": { "type": "string", "enum": ["counter", "todolist"] },
         "completed": { "type": "number" },
-        "total": { "type": "number" }
+        "total": { "type": "number" },
+        "todos": {
+            "type": "array",
+            "items": { "$ref": "#/entities/TodoItem" }
+        }
       },
-      "required": ["id", "name", "completed", "total"]
+      "required": ["id", "name", "type", "completed", "total", "todos"]
     },
     "ResourceLink": {
       "title": "Resource Link",
