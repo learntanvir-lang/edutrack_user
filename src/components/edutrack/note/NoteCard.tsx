@@ -91,7 +91,7 @@ export function NoteCard({ note }: NoteCardProps) {
                     {note.links && note.links.length > 0 && (
                         <div className="space-y-2">
                              {note.links.map(link => (
-                                <div key={link.id} className="group/link flex items-center gap-1 rounded-md transition-colors border hover:bg-primary/10">
+                                <div key={link.id} className="group/link flex items-center gap-1 rounded-md transition-colors border hover:bg-primary/10 hover:border-primary hover:text-primary">
                                     <Button variant="ghost" size="sm" className="w-full justify-start gap-2 flex-grow hover:bg-transparent text-foreground/80 hover:text-primary" asChild>
                                         <Link href={link.url} target="_blank" rel="noopener noreferrer">
                                             <LinkIcon className="h-4 w-4 flex-shrink-0" />
