@@ -23,7 +23,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { StudyTask } from "@/lib/types";
-import { useContext, useEffect, useMemo } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { AppDataContext } from "@/context/AppDataContext";
 import { v4 as uuidv4 } from 'uuid';
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -247,9 +247,10 @@ export function TaskDialog({ open, onOpenChange, date, task }: TaskDialogProps) 
                                     </PopoverTrigger>
                                     <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
                                         <Command>
-                                            <CommandInput 
-                                                placeholder="Search or create category..." 
-                                                onValueChange={(value) => field.onChange(value)}
+                                            <CommandInput
+                                                placeholder="Search or create category..."
+                                                value={field.value}
+                                                onValueChange={field.onChange}
                                             />
                                             <CommandList>
                                                 <CommandEmpty>No category found.</CommandEmpty>
@@ -259,7 +260,7 @@ export function TaskDialog({ open, onOpenChange, date, task }: TaskDialogProps) 
                                                             value={category}
                                                             key={category}
                                                             onSelect={() => {
-                                                                form.setValue("category", category);
+                                                                form.setValue("category", category, { shouldValidate: true });
                                                             }}
                                                         >
                                                             <Check className={cn("mr-2 h-4 w-4", category === field.value ? "opacity-100" : "opacity-0")} />
