@@ -1,11 +1,8 @@
 
 "use client";
 
-import { useState, useContext, DragEvent } from "react";
+import { useMemo } from "react";
 import { Chapter } from "@/lib/types";
-import { Accordion } from "@/components/ui/accordion";
-import { AppDataContext } from "@/context/AppDataContext";
-import { cn } from "@/lib/utils";
 import ChapterAccordionItem from "./ChapterAccordionItem";
 
 interface ChapterListProps {
@@ -15,44 +12,18 @@ interface ChapterListProps {
 }
 
 export function ChapterList({ chapters, subjectId, paperId }: ChapterListProps) {
-  const { dispatch } = useContext(AppDataContext);
-
-  // Drag and Drop state
-  const [draggedItem, setDraggedItem] = useState<Chapter | null>(null);
-  const [dragOverItem, setDragOverItem] = useState<Chapter | null>(null);
-  
-  const handleDragStart = (e: DragEvent<HTMLDivElement>, chapter: Chapter) => {
-    setDraggedItem(chapter);
-    e.dataTransfer.effectAllowed = "move";
-  };
-  
-  const handleDragOver = (e: DragEvent<HTMLDivElement>, chapter: Chapter) => {
-    e.preventDefault();
-    if(draggedItem?.id === chapter.id) return;
-    setDragOverItem(chapter);
-  };
-  
-  const handleDragEnd = () => {
-    if (draggedItem && dragOverItem && draggedItem.id !== dragOverItem.id) {
-      const startIndex = chapters.findIndex(c => c.id === draggedItem.id);
-      const endIndex = chapters.findIndex(c => c.id === dragOverItem.id);
-      
-      if (startIndex !== -1 && endIndex !== -1) {
-        dispatch({
-          type: "REORDER_CHAPTERS",
-          payload: {
-            subjectId,
-            paperId,
-            startIndex: startIndex,
-            endIndex: endIndex,
-          },
-        });
+  const sortedChapters = useMemo(() => {
+    return [...chapters].sort((a, b) => {
+      const numA = parseFloat(a.number || '0');
+      const numB = parseFloat(b.number || '0');
+      if (isNaN(numA) || isNaN(numB)) {
+        if (a.name < b.name) return -1;
+        if (a.name > b.name) return 1;
+        return 0;
       }
-    }
-    setDraggedItem(null);
-    setDragOverItem(null);
-  };
-  
+      return numA - numB;
+    });
+  }, [chapters]);
 
   if (chapters.length === 0) {
     return (
@@ -64,22 +35,9 @@ export function ChapterList({ chapters, subjectId, paperId }: ChapterListProps) 
   }
 
   return (
-      <div className="w-full">
-        <Accordion type="multiple" className="w-full space-y-2">
-          {chapters.map((chapter) => (
-            <div
-              key={chapter.id}
-              draggable
-              onDragStart={(e) => handleDragStart(e, chapter)}
-              onDragOver={(e) => handleDragOver(e, chapter)}
-              onDragEnd={handleDragEnd}
-              onDragLeave={() => setDragOverItem(null)}
-              className={cn(
-                "transition-all",
-                draggedItem?.id === chapter.id && "opacity-50",
-                dragOverItem?.id === chapter.id && "bg-accent"
-              )}
-            >
+      <div className="w-full space-y-2">
+          {sortedChapters.map((chapter) => (
+            <div key={chapter.id}>
               <ChapterAccordionItem 
                 chapter={chapter}
                 subjectId={subjectId}
@@ -87,7 +45,6 @@ export function ChapterList({ chapters, subjectId, paperId }: ChapterListProps) 
               />
             </div>
           ))}
-        </Accordion>
       </div>
   );
 }
