@@ -55,7 +55,6 @@ export function AppHeader() {
       { href: '/exams', label: 'Exams', icon: Target },
       { href: '/studytask', label: 'Study Tasks', icon: ListTodo },
       { href: '/notes', label: 'Notes', icon: Notebook },
-      { href: '/analytics', label: 'Analytics', icon: LineChart },
   ];
 
   return (

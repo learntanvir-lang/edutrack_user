@@ -7,12 +7,17 @@ import { AppDataContext } from '@/context/AppDataContext';
 import { Plus, Loader2 } from 'lucide-react';
 import { useUser } from '@/firebase';
 import { useRouter } from 'next/navigation';
-import { format, startOfToday, isBefore } from 'date-fns';
+import { format, startOfToday, isBefore, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays } from 'date-fns';
 import { TaskList } from '@/components/edutrack/task/TaskList';
 import { TaskDialog } from '@/components/edutrack/task/TaskDialog';
 import { CalendarView } from '@/components/edutrack/task/CalendarView';
 import { TaskProgressCard } from '@/components/edutrack/task/TaskProgressCard';
 import { OverdueTasks } from '@/components/edutrack/task/OverdueTasks';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { TaskAnalyticsChart } from '@/components/edutrack/task/TaskAnalyticsChart';
+import type { DateRange } from 'react-day-picker';
+
+type ViewType = 'daily' | 'weekly' | 'monthly';
 
 export default function StudyTaskPage() {
   const { tasks } = useContext(AppDataContext);
@@ -21,6 +26,7 @@ export default function StudyTaskPage() {
   
   const [selectedDate, setSelectedDate] = useState<Date>(startOfToday());
   const [isTaskDialogOpen, setIsTaskDialogOpen] = useState(false);
+  const [activeView, setActiveView] = useState<ViewType>('daily');
   
   useEffect(() => {
     if (!isUserLoading) {
@@ -41,7 +47,18 @@ export default function StudyTaskPage() {
     const overdueTasks = allTasks.filter(task => isBefore(new Date(task.date), today) && !task.isCompleted && !task.isArchived);
     return { todaysTasks, overdueTasks };
   }, [tasks, selectedDateStr]);
-
+  
+  const chartDateRange = useMemo((): DateRange => {
+    const today = new Date();
+    switch (activeView) {
+        case 'weekly':
+            return { from: startOfWeek(today), to: endOfWeek(today) };
+        case 'monthly':
+            return { from: startOfMonth(today), to: endOfMonth(today) };
+        default:
+             return { from: startOfWeek(today), to: endOfWeek(today) };
+    }
+  }, [activeView]);
 
   if (isUserLoading || !user || !user.emailVerified) {
     return (
@@ -54,35 +71,47 @@ export default function StudyTaskPage() {
   return (
     <>
       <div className="container mx-auto p-4 md:p-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
-          {/* Left Column */}
-          <aside className="lg:col-span-1 space-y-6">
-            <TaskProgressCard tasks={todaysTasks} />
-            <CalendarView selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
-          </aside>
+        <Tabs defaultValue="daily" onValueChange={(value) => setActiveView(value as ViewType)}>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6">
+                <h1 className="text-3xl font-bold text-foreground">
+                    {activeView === 'daily' ? format(selectedDate, "MMMM do, yyyy") : `Your ${activeView.charAt(0).toUpperCase() + activeView.slice(1)} Summary`}
+                </h1>
+                <div className="flex items-center gap-2 mt-4 sm:mt-0">
+                    <Button size="lg" onClick={() => setIsTaskDialogOpen(true)}>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Task
+                    </Button>
+                    <TabsList>
+                        <TabsTrigger value="daily">Daily</TabsTrigger>
+                        <TabsTrigger value="weekly">Weekly</TabsTrigger>
+                        <TabsTrigger value="monthly">Monthly</TabsTrigger>
+                    </TabsList>
+                </div>
+            </div>
 
-          {/* Right Column */}
-          <main className="lg:col-span-2">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6">
-                  <h1 className="text-3xl font-bold text-foreground">
-                      {format(selectedDate, "MMMM do, yyyy")}
-                  </h1>
-                  <Button size="lg" onClick={() => setIsTaskDialogOpen(true)}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Task
-                  </Button>
-              </div>
-              
-              <div className="space-y-8">
-                  <OverdueTasks tasks={overdueTasks} />
-
-                  <div className="p-6 bg-card rounded-lg border shadow-sm">
-                      <TaskList tasks={todaysTasks} />
-                  </div>
-              </div>
-          </main>
-        </div>
+            <TabsContent value="daily">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <aside className="lg:col-span-1 space-y-6">
+                        <TaskProgressCard tasks={todaysTasks} />
+                        <CalendarView selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
+                    </aside>
+                    <main className="lg:col-span-2">
+                        <div className="space-y-8">
+                            <OverdueTasks tasks={overdueTasks} />
+                            <div className="p-6 bg-card rounded-lg border shadow-sm">
+                                <TaskList tasks={todaysTasks} />
+                            </div>
+                        </div>
+                    </main>
+                </div>
+            </TabsContent>
+            <TabsContent value="weekly">
+                 <TaskAnalyticsChart tasks={tasks} dateRange={chartDateRange} />
+            </TabsContent>
+            <TabsContent value="monthly">
+                 <TaskAnalyticsChart tasks={tasks} dateRange={chartDateRange} />
+            </TabsContent>
+        </Tabs>
       </div>
       <TaskDialog
         open={isTaskDialogOpen}
