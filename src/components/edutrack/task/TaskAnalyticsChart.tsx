@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, LineChart, Line, DotProps, LabelList, Dot } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartConfig, ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
@@ -9,6 +9,9 @@ import { format, eachDayOfInterval, startOfDay, eachWeekOfInterval, getWeekOfMon
 import type { StudyTask } from '@/lib/types';
 import type { DateRange } from 'react-day-picker';
 import type { ViewType } from '@/app/studytask/page';
+import { Button } from '@/components/ui/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { ChevronDown } from 'lucide-react';
 
 interface TaskAnalyticsChartProps {
   tasks: StudyTask[];
@@ -33,7 +36,7 @@ const formatTime = (totalMilliseconds: number, formatType: 'short' | 'long') => 
     if (hours > 0) parts.push(formatType === 'long' ? `${hours} hours` : `${hours}h`);
     if (minutes > 0) parts.push(formatType === 'long' ? `${minutes} minutes` : `${minutes}m`);
 
-    return parts.join(' ');
+    return parts.join(' ') || (formatType === 'short' ? '0m' : '0 minutes');
 };
 
 const CustomDot = (props: any) => {
@@ -61,17 +64,38 @@ const CustomLabel = (props: any) => {
 
 
 export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalyticsChartProps) {
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [selectedSubcategory, setSelectedSubcategory] = useState<string>('all');
+
+  const { categories, subcategories } = useMemo(() => {
+    const allCategories = new Set<string>();
+    const allSubcategories = new Set<string>();
+    tasks.forEach(task => {
+        if (task.category) allCategories.add(task.category);
+        if (task.subcategory) allSubcategories.add(task.subcategory);
+    });
+    return {
+        categories: ['all', ...Array.from(allCategories).sort()],
+        subcategories: ['all', ...Array.from(allSubcategories).sort()],
+    };
+  }, [tasks]);
 
   const { chartData, totalTime } = useMemo(() => {
     if (!dateRange.from || !dateRange.to) {
         return { chartData: [], totalTime: 0 };
     }
 
+    const filteredTasks = tasks.filter(task => {
+        const categoryMatch = selectedCategory === 'all' || task.category === selectedCategory;
+        const subcategoryMatch = selectedSubcategory === 'all' || task.subcategory === selectedSubcategory;
+        return categoryMatch && subcategoryMatch;
+    });
+
     let totalMilliseconds = 0;
     
     const tasksByDay: { [key: string]: number } = {};
 
-    tasks.forEach(task => {
+    filteredTasks.forEach(task => {
         const taskDate = startOfDay(new Date(task.date));
         if (taskDate >= startOfDay(dateRange.from!) && taskDate <= startOfDay(dateRange.to!)) {
             const dayKey = format(taskDate, 'yyyy-MM-dd');
@@ -131,7 +155,7 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
         return { chartData: dataByDay, totalTime: totalMilliseconds };
     }
     
-  }, [tasks, dateRange, viewType]);
+  }, [tasks, dateRange, viewType, selectedCategory, selectedSubcategory]);
 
 
     if (chartData.every(d => d.hours === 0)) {
@@ -152,6 +176,38 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
             <div>
                 <CardTitle className="text-xl font-bold">{viewType.charAt(0).toUpperCase() + viewType.slice(1)} Time Summary</CardTitle>
                 <CardDescription className="text-3xl font-bold text-primary">{formatTime(totalTime, 'long')}</CardDescription>
+            </div>
+            <div className="flex items-center gap-2 mt-4 sm:mt-0">
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="outline">
+                            {selectedCategory === 'all' ? 'All Categories' : selectedCategory}
+                            <ChevronDown className="ml-2 h-4 w-4" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                        {categories.map(cat => (
+                            <DropdownMenuItem key={cat} onSelect={() => setSelectedCategory(cat)}>
+                                {cat === 'all' ? 'All Categories' : cat}
+                            </DropdownMenuItem>
+                        ))}
+                    </DropdownMenuContent>
+                </DropdownMenu>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="outline">
+                            {selectedSubcategory === 'all' ? 'All Subcategories' : selectedSubcategory}
+                             <ChevronDown className="ml-2 h-4 w-4" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                        {subcategories.map(subcat => (
+                            <DropdownMenuItem key={subcat} onSelect={() => setSelectedSubcategory(subcat)}>
+                                {subcat === 'all' ? 'All Subcategories' : subcat}
+                            </DropdownMenuItem>
+                        ))}
+                    </DropdownMenuContent>
+                </DropdownMenu>
             </div>
         </div>
       </CardHeader>
@@ -177,7 +233,7 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
                         cursor={{ strokeDasharray: '3 3' }}
                         content={<ChartTooltipContent 
                             labelFormatter={(label) => viewType === 'monthly' ? label : format(new Date(label), 'PPP')}
-                            formatter={(value) => `${formatTime(Number(value) * 3600000, 'long')}`}
+                            formatter={(value) => `${formatTime(Number(value) * 3600000, 'long') || '0 minutes'}`}
                             indicator="dot"
                         />}
                     />
@@ -202,3 +258,5 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
     </Card>
   );
 }
+
+    
