@@ -29,11 +29,10 @@ import { v4 as uuidv4 } from 'uuid';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Check, ChevronsUpDown } from "lucide-react";
+import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
-import { Command, CommandEmpty, CommandInput, CommandItem, CommandList, CommandGroup } from "@/components/ui/command";
 
 
 const taskSchema = z.object({
@@ -55,17 +54,8 @@ interface TaskDialogProps {
 }
 
 export function TaskDialog({ open, onOpenChange, date, task }: TaskDialogProps) {
-  const { dispatch, tasks, subjects, exams } = useContext(AppDataContext);
+  const { dispatch } = useContext(AppDataContext);
   const isEditing = !!task;
-
-  const categories = useMemo(() => {
-    const allCategories = new Set<string>(["General"]);
-    subjects.forEach(s => allCategories.add(s.name));
-    exams.forEach(e => allCategories.add(e.name));
-    tasks.forEach(t => allCategories.add(t.category));
-    return Array.from(allCategories);
-  }, [subjects, exams, tasks]);
-
 
   const form = useForm<TaskFormValues>({
     resolver: zodResolver(taskSchema),
@@ -114,9 +104,8 @@ export function TaskDialog({ open, onOpenChange, date, task }: TaskDialogProps) 
       priority: values.priority,
       category: values.category,
       subcategory: values.subcategory,
-      timeSpent: task?.timeSpent || 0,
-      isTimerRunning: task?.isTimerRunning || false,
-      ...(task?.timerStartTime && { timerStartTime: task.timerStartTime }),
+      timeLogs: task?.timeLogs || [],
+      activeTimeLogId: task?.activeTimeLogId,
     };
 
     dispatch({

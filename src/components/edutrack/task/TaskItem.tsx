@@ -1,8 +1,8 @@
 
 "use client";
 
-import { useContext, useState, useEffect } from 'react';
-import { StudyTask } from "@/lib/types";
+import { useContext, useState, useEffect, useMemo } from 'react';
+import { StudyTask, TimeLog } from "@/lib/types";
 import { AppDataContext } from '@/context/AppDataContext';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
@@ -10,8 +10,9 @@ import { Trash2, Edit, Play, Square, MoreVertical, Calendar, Flag, Tag, Clock } 
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { TaskDialog } from './TaskDialog';
-import { format } from 'date-fns';
+import { format, formatDistanceStrict } from 'date-fns';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { v4 as uuidv4 } from 'uuid';
 
 interface TaskItemProps {
   task: StudyTask;
@@ -20,16 +21,18 @@ interface TaskItemProps {
 export function TaskItem({ task }: TaskItemProps) {
   const { dispatch } = useContext(AppDataContext);
   const [isEditing, setIsEditing] = useState(false);
-  const [elapsedTime, setElapsedTime] = useState(task.timeSpent);
+  const [now, setNow] = useState(new Date());
+
+  const activeLog = useMemo(() => {
+    if (!task.activeTimeLogId) return null;
+    return task.timeLogs.find(log => log.id === task.activeTimeLogId);
+  }, [task.activeTimeLogId, task.timeLogs]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
-    if (task.isTimerRunning && task.timerStartTime) {
+    if (activeLog) {
       interval = setInterval(() => {
-        const now = new Date();
-        const start = new Date(task.timerStartTime!);
-        const newElapsedTime = task.timeSpent + Math.floor((now.getTime() - start.getTime()) / 1000);
-        setElapsedTime(newElapsedTime);
+        setNow(new Date());
       }, 1000);
     }
     return () => {
@@ -37,11 +40,21 @@ export function TaskItem({ task }: TaskItemProps) {
         clearInterval(interval);
       }
     };
-  }, [task.isTimerRunning, task.timerStartTime, task.timeSpent]);
-  
-  useEffect(() => {
-    setElapsedTime(task.timeSpent);
-  }, [task.timeSpent]);
+  }, [activeLog]);
+
+  const totalTimeSpent = useMemo(() => {
+    return task.timeLogs.reduce((acc, log) => {
+        if (log.id === task.activeTimeLogId) {
+            // This is the currently running log
+             return acc + (now.getTime() - new Date(log.startTime).getTime());
+        }
+        if (log.endTime) {
+            return acc + (new Date(log.endTime).getTime() - new Date(log.startTime).getTime());
+        }
+        return acc;
+    }, 0);
+  }, [task.timeLogs, task.activeTimeLogId, now]);
+
 
   const handleToggle = () => {
     dispatch({
@@ -55,51 +68,48 @@ export function TaskItem({ task }: TaskItemProps) {
   };
   
   const handleTimerToggle = () => {
-    if (task.isTimerRunning) {
+    if (task.activeTimeLogId) {
       // Stop timer
-      const now = new Date();
-      const start = new Date(task.timerStartTime!);
-      const newTimeSpent = task.timeSpent + Math.floor((now.getTime() - start.getTime()) / 1000);
-      const { timerStartTime, ...taskWithoutStartTime } = task;
+      const now = new Date().toISOString();
+      const updatedLogs = task.timeLogs.map(log => 
+        log.id === task.activeTimeLogId ? { ...log, endTime: now } : log
+      );
 
       dispatch({
         type: 'UPDATE_TASK',
         payload: {
-          ...taskWithoutStartTime,
-          isTimerRunning: false,
-          timeSpent: newTimeSpent,
+          ...task,
+          timeLogs: updatedLogs,
+          activeTimeLogId: null,
         },
       });
     } else {
       // Start timer
+      const newLog: TimeLog = {
+        id: uuidv4(),
+        startTime: new Date().toISOString(),
+        endTime: '', // No end time yet
+      };
       dispatch({
         type: 'UPDATE_TASK',
         payload: {
           ...task,
-          isTimerRunning: true,
-          timerStartTime: new Date().toISOString(),
+          timeLogs: [...task.timeLogs, newLog],
+          activeTimeLogId: newLog.id,
         },
       });
     }
   };
   
-  const formatTime = (totalSeconds: number) => {
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const seconds = totalSeconds % 60;
-
-    const parts = [];
-    if (hours > 0) {
-      parts.push(`${hours}h`);
-    }
-    if (minutes > 0) {
-      parts.push(`${minutes}m`);
-    }
-    if (seconds > 0 || (hours === 0 && minutes === 0)) {
-        parts.push(`${seconds}s`);
-    }
-
-    return parts.join(' ');
+  const formatTime = (totalMilliseconds: number) => {
+    if (totalMilliseconds < 1000) return '0s';
+    return formatDistanceStrict(0, totalMilliseconds, { unit: 'second' })
+      .replace(' seconds', 's')
+      .replace(' second', 's')
+      .replace(' minutes', 'm')
+      .replace(' minute', 'm')
+      .replace(' hours', 'h')
+      .replace(' hour', 'h');
   };
 
 
@@ -109,7 +119,7 @@ export function TaskItem({ task }: TaskItemProps) {
         "flex items-start gap-4 p-4 rounded-lg bg-card border transition-shadow duration-300",
         task.isCompleted 
             ? "bg-muted/50 border-border" 
-            : "border-primary/50",
+            : "border-primary/20",
         !task.isCompleted && "hover:shadow-lg hover:shadow-primary/10"
       )}>
       <Checkbox
@@ -155,7 +165,7 @@ export function TaskItem({ task }: TaskItemProps) {
             {task.subcategory && <Badge variant="secondary" className={cn("flex items-center gap-1.5", task.isCompleted && "bg-muted text-muted-foreground")}>{task.subcategory}</Badge>}
             <Badge variant="outline" className={cn("flex items-center gap-1.5 font-mono", task.isCompleted && "border-muted-foreground/50")}>
                 <Clock className="h-3 w-3" />
-                {formatTime(elapsedTime)}
+                {formatTime(totalTimeSpent)}
             </Badge>
         </div>
       </div>
@@ -163,13 +173,13 @@ export function TaskItem({ task }: TaskItemProps) {
       <div className="flex items-center gap-1">
         {!task.isCompleted && (
             <Button
-                variant={task.isTimerRunning ? 'destructive' : 'outline'}
+                variant={task.activeTimeLogId ? 'destructive' : 'outline'}
                 size="icon"
                 className="h-8 w-8 text-foreground"
                 onClick={handleTimerToggle}
             >
-                {task.isTimerRunning ? <Square className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-                <span className="sr-only">{task.isTimerRunning ? 'Stop timer' : 'Start timer'}</span>
+                {task.activeTimeLogId ? <Square className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+                <span className="sr-only">{task.activeTimeLogId ? 'Stop timer' : 'Start timer'}</span>
             </Button>
         )}
          <DropdownMenu>

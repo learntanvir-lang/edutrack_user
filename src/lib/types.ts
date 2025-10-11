@@ -1,4 +1,5 @@
 
+
 export interface ResourceLink {
   id: string;
   url: string;
@@ -62,6 +63,12 @@ export interface Note {
   createdAt: string; // ISO 8601 format
 }
 
+export interface TimeLog {
+  id: string;
+  startTime: string; // ISO string
+  endTime: string; // ISO string
+}
+
 export interface StudyTask {
   id: string;
   title: string;
@@ -71,8 +78,6 @@ export interface StudyTask {
   priority: number;
   category: string;
   subcategory?: string;
-  timeSpent: number; // in seconds
-  isTimerRunning?: boolean;
-  timerStartTime?: string; // ISO string
+  timeLogs: TimeLog[];
+  activeTimeLogId?: string | null;
 }
-

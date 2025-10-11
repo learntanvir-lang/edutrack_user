@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Clock } from "lucide-react";
 import type { StudyTask } from "@/lib/types";
 import { Progress } from '@/components/ui/progress';
+import { formatDistanceStrict } from 'date-fns';
 
 interface TaskProgressCardProps {
     tasks: StudyTask[];
@@ -15,18 +16,30 @@ export function TaskProgressCard({ tasks }: TaskProgressCardProps) {
     const { completed, total, totalTimeSpent, percentage } = useMemo(() => {
         const completedTasks = tasks.filter(t => t.isCompleted).length;
         const totalTasks = tasks.length;
+        
+        const timeInMillis = tasks.reduce((acc, task) => {
+            return acc + task.timeLogs.reduce((logAcc, log) => {
+                if (log.endTime) {
+                    return logAcc + (new Date(log.endTime).getTime() - new Date(log.startTime).getTime());
+                }
+                return logAcc;
+            }, 0);
+        }, 0);
+
         return {
             completed: completedTasks,
             total: totalTasks,
-            totalTimeSpent: tasks.reduce((acc, task) => acc + (task.timeSpent || 0), 0),
+            totalTimeSpent: timeInMillis,
             percentage: totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0,
         }
     }, [tasks]);
 
-    const formatTime = (totalSeconds: number) => {
-        if (totalSeconds === 0) return 'No time tracked';
-        const hours = Math.floor(totalSeconds / 3600);
-        const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const formatTime = (totalMilliseconds: number) => {
+        if (totalMilliseconds < 1000) return 'No time tracked';
+        
+        const hours = Math.floor(totalMilliseconds / 3600000);
+        const minutes = Math.floor((totalMilliseconds % 3600000) / 60000);
+        
         if (hours > 0) return `${hours}h ${minutes}m spent`;
         return `${minutes}m spent`;
     };

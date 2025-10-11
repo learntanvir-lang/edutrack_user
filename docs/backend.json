@@ -158,6 +158,17 @@
       },
       "required": ["id", "title", "url"]
     },
+    "TimeLog": {
+        "title": "Time Log",
+        "type": "object",
+        "description": "Represents a single time-logged session for a task.",
+        "properties": {
+          "id": { "type": "string" },
+          "startTime": { "type": "string", "format": "date-time" },
+          "endTime": { "type": "string", "format": "date-time" }
+        },
+        "required": ["id", "startTime", "endTime"]
+    },
     "StudyTask": {
         "title": "Study Task",
         "type": "object",
@@ -171,11 +182,13 @@
           "priority": { "type": "number" },
           "category": { "type": "string" },
           "subcategory": { "type": "string" },
-          "timeSpent": { "type": "number", "description": "Total time spent on the task in seconds." },
-          "isTimerRunning": { "type": "boolean", "description": "Whether the timer for this task is currently running." },
-          "timerStartTime": { "type": "string", "format": "date-time", "description": "The timestamp when the timer was started." }
+          "timeLogs": {
+            "type": "array",
+            "items": { "$ref": "#/entities/TimeLog" }
+          },
+          "activeTimeLogId": { "type": ["string", "null"] }
         },
-        "required": ["id", "title", "isCompleted", "date", "priority", "category", "timeSpent"]
+        "required": ["id", "title", "isCompleted", "date", "priority", "category", "timeLogs"]
     }
   },
   "auth": {
