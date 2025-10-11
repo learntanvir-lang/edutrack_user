@@ -6,6 +6,7 @@ import './globals.css';
 import { cn } from '@/lib/utils';
 import { AppHeader } from '@/components/edutrack/AppHeader';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
+import { BottomNavBar } from '@/components/edutrack/BottomNavBar';
 
 export const metadata: Metadata = {
   title: 'EduTrack - Student Exam & Syllabus Tracker',
@@ -44,14 +45,15 @@ export default function RootLayout({
       <body className={cn('min-h-screen bg-background font-body antialiased')}>
         <FirebaseClientProvider>
           <AppDataProvider>
-            <div className="relative flex min-h-screen flex-col">
+            <div className="relative flex min-h-screen flex-col pb-16 md:pb-0">
               <AppHeader />
               <main className="flex-1">{children}</main>
-              <footer className="w-full border-t bg-background">
+              <footer className="w-full border-t bg-background hidden md:block">
                 <div className="container mx-auto py-4 text-center text-sm text-muted-foreground">
                   All Right Reserved By <span className="font-bold text-base text-primary">TANVIR MAHMUD</span>
                 </div>
               </footer>
+              <BottomNavBar />
             </div>
             <Toaster />
           </AppDataProvider>

@@ -15,7 +15,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { signOut } from 'firebase/auth';
 import { LogOut, Sparkles, KeyRound, User as UserIcon, LayoutDashboard, BookCopy, Target, ListTodo, Library, Menu } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
@@ -33,7 +32,6 @@ export function AppHeader() {
   const pathname = usePathname();
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
 
   const handleSignOut = async () => {
@@ -60,21 +58,19 @@ export function AppHeader() {
       { href: '/notes', label: 'Resources', icon: Library },
   ];
 
-  const NavLink = ({ href, label, icon: Icon, isMobile = false }: { href: string; label: string; icon: React.ElementType, isMobile?: boolean }) => (
+  const NavLink = ({ href, label, icon: Icon }: { href: string; label: string; icon: React.ElementType }) => (
     <Button
         key={href}
         asChild
         variant="ghost"
-        size={isMobile ? "lg" : "sm"}
+        size="sm"
         className={cn(
             "font-bold",
             pathname === href
             ? 'text-primary bg-primary/10'
             : 'text-foreground/60',
             "hover:bg-primary/10 hover:text-primary",
-            isMobile && 'w-full justify-start text-base'
         )}
-        onClick={() => isMobile && setIsMobileMenuOpen(false)}
     >
         <Link href={href}>
             <Icon className="mr-2 h-4 w-4" />
@@ -148,30 +144,6 @@ export function AppHeader() {
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
-
-                <div className="md:hidden">
-                    <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-                        <SheetTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                                <Menu className="h-6 w-6" />
-                                <span className="sr-only">Open menu</span>
-                            </Button>
-                        </SheetTrigger>
-                        <SheetContent side="left">
-                             <SheetHeader className="mb-6">
-                                <SheetTitle className="sr-only">Menu</SheetTitle>
-                                <SheetDescription className="sr-only">Main navigation for the application.</SheetDescription>
-                                <div className="flex items-center space-x-2">
-                                    <EduTrackLogo className="h-6 w-6" />
-                                    <span className="font-bold text-lg">EduTrack</span>
-                                </div>
-                             </SheetHeader>
-                            <nav className="flex flex-col gap-2">
-                                {navLinks.map(link => <NavLink key={link.href} {...link} isMobile={true} />)}
-                            </nav>
-                        </SheetContent>
-                    </Sheet>
-                </div>
               </>
             ) : (
               <Button asChild className="transition-all duration-300 bg-primary text-primary-foreground border-2 border-primary hover:bg-transparent hover:text-primary hover:shadow-lg hover:shadow-primary/20" size="sm">
