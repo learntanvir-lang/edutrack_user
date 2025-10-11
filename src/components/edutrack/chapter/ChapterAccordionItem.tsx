@@ -99,7 +99,7 @@ function ChapterAccordionItem({ chapter, subjectId, paperId }: ChapterAccordionI
 
     return (
         <>
-            <div className="bg-card rounded-lg shadow-sm border">
+            <div className="bg-card rounded-lg shadow-sm border transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
                 <div className="flex items-center justify-between w-full p-3">
                     <div className="flex items-center gap-3 flex-1">
                         <div className="flex-1 flex items-center gap-3">
