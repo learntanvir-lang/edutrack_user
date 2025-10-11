@@ -1,7 +1,7 @@
 
 'use client';
 
-import type { Subject } from '@/lib/types';
+import type { Subject, Paper } from '@/lib/types';
 import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -14,11 +14,17 @@ interface SyllabusProgressOverviewProps {
   subjects: Subject[];
 }
 
+interface PaperProgress {
+    paper: Paper;
+    completedChapters: number;
+    totalChapters: number;
+    percentage: number;
+}
+
 interface SubjectOverallProgress {
     subject: Subject;
-    completed: number;
-    total: number;
     percentage: number;
+    papersProgress: PaperProgress[];
 }
 
 
@@ -27,24 +33,24 @@ export function SyllabusProgressOverview({ subjects }: SyllabusProgressOverviewP
 
   const progressData: SubjectOverallProgress[] = useMemo(() => {
     return subjects
-    .filter(subject => subject.showOnDashboard ?? true)
-    .map(subject => {
-        const progress = subject.papers.flatMap(p => p.chapters).flatMap(c => c.progressItems).reduce(
-            (acc, item) => {
-              acc.completed += item.completed;
-              acc.total += item.total;
-              return acc;
-            },
-            { completed: 0, total: 0 }
-        );
+      .filter(subject => subject.showOnDashboard ?? true)
+      .map(subject => {
+        
+        const papersProgress = subject.papers.map(paper => {
+          const completedChapters = paper.chapters.filter(c => c.isCompleted).length;
+          const totalChapters = paper.chapters.length;
+          const percentage = totalChapters > 0 ? Math.round((completedChapters / totalChapters) * 100) : 0;
+          return { paper, completedChapters, totalChapters, percentage };
+        });
 
-        const percentage = progress.total > 0 ? Math.round((progress.completed / progress.total) * 100) : 0;
+        const totalCompletedChapters = papersProgress.reduce((sum, p) => sum + p.completedChapters, 0);
+        const totalChapters = papersProgress.reduce((sum, p) => sum + p.totalChapters, 0);
+        const subjectPercentage = totalChapters > 0 ? Math.round((totalCompletedChapters / totalChapters) * 100) : 0;
         
         return {
           subject,
-          completed: progress.completed,
-          total: progress.total,
-          percentage,
+          percentage: subjectPercentage,
+          papersProgress,
         };
       });
   }, [subjects]);
@@ -60,14 +66,32 @@ export function SyllabusProgressOverview({ subjects }: SyllabusProgressOverviewP
       <CardContent className="flex-grow pt-4">
         {visibleSubjects.length > 0 ? (
           <ScrollArea className="h-80 pr-4">
-            <div className="space-y-4">
-                {progressData.map(({ subject, percentage }) => (
-                    <div key={subject.id} className="space-y-2">
-                        <div className="flex justify-between items-center text-sm">
-                            <span className="font-semibold text-foreground">{subject.name}</span>
-                            <span className="font-semibold text-foreground">{percentage}%</span>
+            <div className="space-y-6">
+                {progressData.map(({ subject, percentage, papersProgress }) => (
+                    <div key={subject.id}>
+                        {/* Subject Level Progress */}
+                        <div className="space-y-2 mb-3">
+                            <div className="flex justify-between items-center text-sm">
+                                <span className="font-semibold text-foreground">{subject.name}</span>
+                                <span className="font-semibold text-foreground">{percentage}%</span>
+                            </div>
+                            <Progress value={percentage} className="h-2" />
                         </div>
-                        <Progress value={percentage} className="h-2" />
+
+                        {/* Paper Level Progress */}
+                        {papersProgress.length > 0 && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-3 pl-4">
+                                {papersProgress.map(({ paper, completedChapters, totalChapters, percentage: paperPercentage }) => (
+                                    <div key={paper.id} className="space-y-1">
+                                        <div className="flex justify-between items-center text-xs">
+                                            <span className="font-medium text-muted-foreground truncate" title={paper.name}>{paper.name}</span>
+                                            <span className="font-medium text-muted-foreground">{completedChapters} / {totalChapters}</span>
+                                        </div>
+                                        <Progress value={paperPercentage} className="h-1.5" />
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 ))}
             </div>
