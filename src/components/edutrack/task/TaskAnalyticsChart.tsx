@@ -210,10 +210,10 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
     if (active && coordinate && viewBox && payload && payload.length) {
       return (
         <Rectangle
-            fill="hsl(var(--primary) / 0.2)"
+            fill="hsl(var(--primary))"
             x={coordinate.x}
             y={viewBox.y}
-            width={1}
+            width={1.5}
             height={viewBox.height}
         />
       );
@@ -300,7 +300,7 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
         <div className="h-80 w-full">
             <ChartContainer config={chartConfig} className="h-full w-full">
                 <LineChart data={chartData} margin={{ top: 30, right: 20, left: -20, bottom: 20 }}>
-                    <CartesianGrid strokeDasharray="3 3" />
+                    <CartesianGrid stroke="hsl(var(--border) / 0.5)" />
                     <XAxis
                         dataKey={viewType === 'monthly' ? "week" : "date"}
                         tickLine={false}
@@ -353,3 +353,5 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
   );
 }
     
+
+  
