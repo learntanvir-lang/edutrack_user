@@ -7,7 +7,7 @@ import { AppDataContext } from '@/context/AppDataContext';
 import { Plus, Loader2 } from 'lucide-react';
 import { useUser } from '@/firebase';
 import { useRouter } from 'next/navigation';
-import { format, startOfToday, isBefore, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays } from 'date-fns';
+import { format, startOfToday, isBefore, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
 import { TaskList } from '@/components/edutrack/task/TaskList';
 import { TaskDialog } from '@/components/edutrack/task/TaskDialog';
 import { CalendarView } from '@/components/edutrack/task/CalendarView';
@@ -71,47 +71,49 @@ export default function StudyTaskPage() {
   return (
     <>
       <div className="container mx-auto p-4 md:p-8">
-        <Tabs defaultValue="daily" onValueChange={(value) => setActiveView(value as ViewType)}>
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6">
-                <h1 className="text-3xl font-bold text-foreground">
-                    {activeView === 'daily' ? format(selectedDate, "MMMM do, yyyy") : `Your ${activeView.charAt(0).toUpperCase() + activeView.slice(1)} Summary`}
-                </h1>
-                <div className="flex items-center gap-2 mt-4 sm:mt-0">
-                    <Button size="lg" onClick={() => setIsTaskDialogOpen(true)}>
-                        <Plus className="h-4 w-4 mr-2" />
-                        Add Task
-                    </Button>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6">
+            <h1 className="text-3xl font-bold text-foreground">
+                {activeView === 'daily' ? format(selectedDate, "MMMM do, yyyy") : `Your ${activeView.charAt(0).toUpperCase() + activeView.slice(1)} Summary`}
+            </h1>
+            <div className="flex items-center gap-2 mt-4 sm:mt-0">
+                <Button size="lg" onClick={() => setIsTaskDialogOpen(true)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Task
+                </Button>
+                <Tabs value={activeView} onValueChange={(value) => setActiveView(value as ViewType)}>
                     <TabsList>
                         <TabsTrigger value="daily">Daily</TabsTrigger>
                         <TabsTrigger value="weekly">Weekly</TabsTrigger>
                         <TabsTrigger value="monthly">Monthly</TabsTrigger>
                     </TabsList>
-                </div>
+                </Tabs>
             </div>
+        </div>
 
-            <TabsContent value="daily">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    <aside className="lg:col-span-1 space-y-6">
-                        <TaskProgressCard tasks={todaysTasks} />
-                        <CalendarView selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
-                    </aside>
-                    <main className="lg:col-span-2">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <aside className="lg:col-span-1 space-y-6">
+                <TaskProgressCard tasks={todaysTasks} />
+                <CalendarView selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
+            </aside>
+            <main className="lg:col-span-2">
+                 <Tabs value={activeView}>
+                    <TabsContent value="daily">
                         <div className="space-y-8">
                             <OverdueTasks tasks={overdueTasks} />
                             <div className="p-6 bg-card rounded-lg border shadow-sm">
                                 <TaskList tasks={todaysTasks} />
                             </div>
                         </div>
-                    </main>
-                </div>
-            </TabsContent>
-            <TabsContent value="weekly">
-                 <TaskAnalyticsChart tasks={tasks} dateRange={chartDateRange} />
-            </TabsContent>
-            <TabsContent value="monthly">
-                 <TaskAnalyticsChart tasks={tasks} dateRange={chartDateRange} />
-            </TabsContent>
-        </Tabs>
+                    </TabsContent>
+                    <TabsContent value="weekly">
+                        <TaskAnalyticsChart tasks={tasks} dateRange={chartDateRange} />
+                    </TabsContent>
+                    <TabsContent value="monthly">
+                        <TaskAnalyticsChart tasks={tasks} dateRange={chartDateRange} />
+                    </TabsContent>
+                </Tabs>
+            </main>
+        </div>
       </div>
       <TaskDialog
         open={isTaskDialogOpen}
