@@ -2,17 +2,19 @@
 "use client";
 
 import { useMemo, useState, useRef } from 'react';
-import { Line, LineChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, LabelList, Dot } from 'recharts';
+import { Line, LineChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, LabelList, Dot, Rectangle } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartConfig, ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
-import { format, eachDayOfInterval, startOfDay, eachWeekOfInterval, max } from 'date-fns';
+import { format, eachDayOfInterval, eachWeekOfInterval, differenceInCalendarDays } from 'date-fns';
 import type { StudyTask } from '@/lib/types';
 import type { DateRange } from 'react-day-picker';
 import type { ViewType } from '@/app/studytask/page';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { ChevronDown, Download } from 'lucide-react';
+import { ChevronDown, Download, Info } from 'lucide-react';
 import { toPng } from 'html-to-image';
+import { cn } from '@/lib/utils';
+import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 
 interface TaskAnalyticsChartProps {
   tasks: StudyTask[];
@@ -43,8 +45,8 @@ const formatTime = (totalMilliseconds: number, formatType: 'short' | 'long') => 
 const CustomDot = (props: any) => {
     const { cx, cy, stroke, payload } = props;
 
-    if (payload.hours >= 0) {
-        return <Dot cx={cx} cy={cy} r={5} fill="#fff" stroke={stroke} strokeWidth={2} />;
+    if (payload.hours > 0) {
+        return <Dot cx={cx} cy={cy} r={5} fill="hsl(var(--background))" stroke={stroke} strokeWidth={2} />;
     }
 
     return null;
@@ -95,12 +97,25 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
         }, {} as { [key: string]: string[] }),
     };
   }, [tasks]);
+  
+  const CustomTooltipCursor = (props: any) => {
+    const { x, y, width, height } = props;
+    return (
+        <Rectangle
+            fill="hsl(var(--primary) / 0.1)"
+            x={x}
+            y={0}
+            width={width / chartData.length}
+            height={height}
+        />
+    );
+  };
 
   const availableSubcategories = subcategoriesByCategory[selectedCategory] || ['all'];
 
-  const { chartData, totalTime, maxHours } = useMemo(() => {
+  const { chartData, totalTime, maxHours, averageDailyTime } = useMemo(() => {
     if (!dateRange.from || !dateRange.to) {
-        return { chartData: [], totalTime: 0, maxHours: 1 };
+        return { chartData: [], totalTime: 0, maxHours: 1, averageDailyTime: 0 };
     }
 
     const filteredTasks = tasks.filter(task => {
@@ -114,8 +129,8 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
     const tasksByDay: { [key: string]: number } = {};
 
     filteredTasks.forEach(task => {
-        const taskDate = startOfDay(new Date(task.date));
-        if (taskDate >= startOfDay(dateRange.from!) && taskDate <= startOfDay(dateRange.to!)) {
+        const taskDate = new Date(task.date);
+        if (taskDate >= dateRange.from! && taskDate <= dateRange.to!) {
             const dayKey = format(taskDate, 'yyyy-MM-dd');
             if (!tasksByDay[dayKey]) {
                 tasksByDay[dayKey] = 0;
@@ -158,8 +173,8 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
 
     } else { // weekly or daily
         const daysInInterval = eachDayOfInterval({
-            start: startOfDay(dateRange.from),
-            end: startOfDay(dateRange.to),
+            start: dateRange.from,
+            end: dateRange.to,
         });
 
         data = daysInInterval.map(day => {
@@ -172,8 +187,16 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
     }
 
     const maxHoursValue = data.length > 0 ? Math.max(...data.map(d => d.hours)) : 0;
+
+    const daysInPeriod = differenceInCalendarDays(dateRange.to, dateRange.from) + 1;
+    const avgTime = daysInPeriod > 0 ? totalMilliseconds / daysInPeriod : 0;
     
-    return { chartData: data, totalTime: totalMilliseconds, maxHours: Math.max(1, maxHoursValue + 0.5) };
+    return { 
+        chartData: data, 
+        totalTime: totalMilliseconds, 
+        maxHours: Math.ceil(maxHoursValue + 0.5) || 1,
+        averageDailyTime: avgTime,
+    };
     
   }, [tasks, dateRange, viewType, selectedCategory, selectedSubcategory]);
 
@@ -192,6 +215,10 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
       console.error('Failed to download image', err);
     }
   };
+
+  const yAxisTicks = useMemo(() => {
+    return Array.from({ length: Math.ceil(maxHours / 0.5) + 1 }, (_, i) => i * 0.5);
+  }, [maxHours]);
 
   return (
     <Card className="shadow-lg rounded-xl" ref={cardRef}>
@@ -245,26 +272,27 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
       <CardContent>
         <div className="h-80 w-full">
             <ChartContainer config={chartConfig} className="h-full w-full">
-                <LineChart data={chartData} margin={{ top: 20, right: 20, left: -20, bottom: 20 }}>
-                    <CartesianGrid strokeDasharray="3 3" />
+                <LineChart data={chartData} margin={{ top: 30, right: 20, left: -20, bottom: 20 }}>
+                    <CartesianGrid stroke="hsl(var(--border))" strokeDasharray="3 3" />
                     <XAxis
                         dataKey={viewType === 'monthly' ? "week" : "date"}
                         tickLine={false}
                         axisLine={false}
                         tickMargin={10}
-                        tickFormatter={(value) => viewType === 'monthly' ? value : format(new Date(value), 'E')}
+                        tickFormatter={(value) => viewType === 'monthly' ? value : format(new Date(`${value}T00:00:00`), 'E')}
                     />
                     <YAxis
-                        domain={[0, maxHours]}
                         tickLine={false}
                         axisLine={false}
                         tickMargin={10}
-                        tickFormatter={(value) => value === 0 ? '0h' : `${value.toFixed(1)}h`}
+                        domain={[0, maxHours]}
+                        ticks={yAxisTicks}
+                        tickFormatter={(value) => `${Number.isInteger(value) ? value : value.toFixed(1)}h`}
                     />
                     <Tooltip
-                        cursor={false}
+                        cursor={<CustomTooltipCursor />}
                         content={<ChartTooltipContent 
-                            labelFormatter={(label) => viewType === 'monthly' ? label : format(new Date(label), 'PPP')}
+                            labelFormatter={(label) => viewType === 'monthly' ? label : format(new Date(`${label}T00:00:00`), 'PPP')}
                             formatter={(value) => `${formatTime(Number(value) * 3600000, 'long') || '0 minutes'}`}
                             indicator="dot"
                         />}
@@ -286,7 +314,18 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
                 {format(dateRange.from, 'd MMM, yyyy')} - {format(dateRange.to, 'd MMM, yyyy')}
             </div>
         )}
+        {(viewType === 'weekly' || viewType === 'monthly') && (
+          <Alert className="mt-4 bg-primary/5 border-primary/20">
+            <Info className="h-4 w-4" color="hsl(var(--primary))" />
+            <AlertTitle className="text-primary font-bold">Daily Average</AlertTitle>
+            <AlertDescription>
+              You spent an average of <span className="font-bold">{formatTime(averageDailyTime, 'long')}</span> per day during this period.
+            </AlertDescription>
+          </Alert>
+        )}
       </CardContent>
     </Card>
   );
 }
+
+    
