@@ -59,13 +59,14 @@ export function TaskItem({ task }: TaskItemProps) {
       const now = new Date();
       const start = new Date(task.timerStartTime!);
       const newTimeSpent = task.timeSpent + Math.floor((now.getTime() - start.getTime()) / 1000);
+      const { timerStartTime, ...taskWithoutStartTime } = task;
+
       dispatch({
         type: 'UPDATE_TASK',
         payload: {
-          ...task,
+          ...taskWithoutStartTime,
           isTimerRunning: false,
           timeSpent: newTimeSpent,
-          timerStartTime: undefined,
         },
       });
     } else {
