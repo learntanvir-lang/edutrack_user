@@ -81,11 +81,11 @@ export function SyllabusProgressOverview({ subjects }: SyllabusProgressOverviewP
                         {/* Paper Level Progress */}
                         {papersProgress.length > 0 && (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-3 pl-4">
-                                {papersProgress.map(({ paper, completedChapters, totalChapters, percentage: paperPercentage }) => (
+                                {papersProgress.map(({ paper, percentage: paperPercentage }) => (
                                     <div key={paper.id} className="space-y-1">
                                         <div className="flex justify-between items-center text-xs">
                                             <span className="font-medium text-muted-foreground truncate" title={paper.name}>{paper.name}</span>
-                                            <span className="font-medium text-muted-foreground">{completedChapters} / {totalChapters}</span>
+                                            <span className="font-medium text-muted-foreground">{paperPercentage}%</span>
                                         </div>
                                         <Progress value={paperPercentage} className="h-1.5" />
                                     </div>
