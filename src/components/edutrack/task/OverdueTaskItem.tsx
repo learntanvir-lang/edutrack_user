@@ -24,8 +24,8 @@ export function OverdueTaskItem({ task }: OverdueTaskItemProps) {
   return (
     <div className="flex items-center justify-between p-3 rounded-lg bg-red-50 border border-red-200">
       <div>
-        <p className="font-semibold text-red-800">{task.title}</p>
-        <p className="text-sm text-red-600">Overdue by {overdueDuration}</p>
+        <p className="font-semibold text-foreground">{task.title}</p>
+        <p className="text-sm text-muted-foreground">Overdue by {overdueDuration}</p>
       </div>
       <Button
         variant="outline"
