@@ -20,13 +20,14 @@ export function TaskList({ tasks }: TaskListProps) {
   }
 
   const sortedTasks = [...tasks].sort((a, b) => {
-    if (a.isCompleted === b.isCompleted) return 0;
-    return a.isCompleted ? 1 : -1;
+    if (a.isCompleted !== b.isCompleted) {
+      return a.isCompleted ? 1 : -1;
+    }
+    return a.priority - b.priority;
   });
 
   return (
     <div className="space-y-1">
-      <Separator className="mb-4" />
       {sortedTasks.map(task => (
         <TaskItem key={task.id} task={task} />
       ))}

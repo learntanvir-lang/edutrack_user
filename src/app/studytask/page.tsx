@@ -9,7 +9,7 @@ import { useUser } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import { format, startOfToday, isBefore } from 'date-fns';
 import { TaskList } from '@/components/edutrack/task/TaskList';
-import { AddTaskForm } from '@/components/edutrack/task/AddTaskForm';
+import { TaskDialog } from '@/components/edutrack/task/TaskDialog';
 import { CalendarView } from '@/components/edutrack/task/CalendarView';
 import { TaskProgressCard } from '@/components/edutrack/task/TaskProgressCard';
 import { OverdueTasks } from '@/components/edutrack/task/OverdueTasks';
@@ -20,6 +20,7 @@ export default function StudyTaskPage() {
   const router = useRouter();
   
   const [selectedDate, setSelectedDate] = useState<Date>(startOfToday());
+  const [isTaskDialogOpen, setIsTaskDialogOpen] = useState(false);
   
   useEffect(() => {
     if (!isUserLoading) {
@@ -51,34 +52,43 @@ export default function StudyTaskPage() {
   }
 
   return (
-    <div className="container mx-auto p-4 md:p-8">
-       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
-        {/* Left Column */}
-        <aside className="lg:col-span-1 space-y-6">
-          <TaskProgressCard tasks={todaysTasks} />
-          <CalendarView selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
-        </aside>
+    <>
+      <div className="container mx-auto p-4 md:p-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          
+          {/* Left Column */}
+          <aside className="lg:col-span-1 space-y-6">
+            <TaskProgressCard tasks={todaysTasks} />
+            <CalendarView selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
+          </aside>
 
-        {/* Right Column */}
-        <main className="lg:col-span-2">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6">
-                <h1 className="text-3xl font-bold text-foreground">
-                    {format(selectedDate, "MMMM do, yyyy")}
-                </h1>
-                {/* Add Task and View Toggles can go here if needed in future */}
-            </div>
-            
-            <div className="space-y-6">
-                <OverdueTasks tasks={overdueTasks} />
+          {/* Right Column */}
+          <main className="lg:col-span-2">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6">
+                  <h1 className="text-3xl font-bold text-foreground">
+                      {format(selectedDate, "MMMM do, yyyy")}
+                  </h1>
+                  <Button size="lg" onClick={() => setIsTaskDialogOpen(true)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Task
+                  </Button>
+              </div>
+              
+              <div className="space-y-6">
+                  <OverdueTasks tasks={overdueTasks} />
 
-                <div className="p-6 bg-card rounded-lg border shadow-sm">
-                    <AddTaskForm date={selectedDateStr} />
-                    <TaskList tasks={todaysTasks} />
-                </div>
-            </div>
-        </main>
+                  <div className="p-6 bg-card rounded-lg border shadow-sm">
+                      <TaskList tasks={todaysTasks} />
+                  </div>
+              </div>
+          </main>
+        </div>
       </div>
-    </div>
+      <TaskDialog
+        open={isTaskDialogOpen}
+        onOpenChange={setIsTaskDialogOpen}
+        date={selectedDateStr}
+      />
+    </>
   );
 }
