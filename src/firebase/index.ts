@@ -39,16 +39,20 @@ export async function initializeFirebase(): Promise<FirebaseServices> {
 
   const firestore = getFirestore(firebaseApp);
   
+  // Enable offline persistence only once.
   if (!persistenceEnabled) {
       try {
         await enableIndexedDbPersistence(firestore);
-        persistenceEnabled = true;
+        persistenceEnabled = true; // Mark as enabled
+        console.log("Firestore offline persistence enabled.");
       } catch (err: any) {
         if (err.code == 'failed-precondition') {
-            console.warn('Firestore persistence failed. It might be enabled in another tab.');
-            persistenceEnabled = true; // Still mark as "handled"
+            // This can happen if multiple tabs are open.
+            // The feature will still work in the other tab.
+            console.warn('Firestore persistence failed to enable. It might be enabled in another tab.');
+            persistenceEnabled = true; // Still mark as "handled" to avoid retries
         } else if (err.code == 'unimplemented') {
-            console.warn('Firestore persistence is not available in this browser.');
+            console.warn('Firestore persistence is not available in this browser environment.');
         }
       }
   }
