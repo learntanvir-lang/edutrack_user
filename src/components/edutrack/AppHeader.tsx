@@ -16,7 +16,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { signOut } from 'firebase/auth';
-import { LogOut, Sparkles, KeyRound, Notebook, User as UserIcon, LayoutDashboard } from 'lucide-react';
+import { LogOut, Sparkles, KeyRound, Notebook, User as UserIcon, LayoutDashboard, BookCopy, Target } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import { Skeleton } from '../ui/skeleton';
 import { ChangePasswordDialog } from './ChangePasswordDialog';
@@ -49,8 +49,12 @@ export function AppHeader() {
     return displayName.substring(0, 2).toUpperCase();
   };
 
-  const isNotesPage = pathname === '/notes';
-  const isDashboardPage = pathname === '/';
+  const navLinks = [
+      { href: '/', label: 'Dashboard', icon: LayoutDashboard },
+      { href: '/syllabus', label: 'Syllabus', icon: BookCopy },
+      { href: '/exams', label: 'Exams', icon: Target },
+      { href: '/notes', label: 'Notes', icon: Notebook },
+  ];
 
   return (
     <>
@@ -64,34 +68,26 @@ export function AppHeader() {
 
             {user && (
                  <nav className="flex items-center gap-2">
-                    <Button 
-                        asChild 
-                        variant="ghost"
-                        size="sm" 
-                        className={cn(
-                            "font-bold hover:bg-primary/10 hover:text-primary",
-                            isDashboardPage && "text-primary"
-                        )}
-                    >
-                        <Link href="/">
-                            <LayoutDashboard className="mr-2 h-4 w-4" />
-                            Dashboard
-                        </Link>
-                    </Button>
-                    <Button 
-                        asChild 
-                        variant="ghost"
-                        size="sm" 
-                        className={cn(
-                            "font-bold hover:bg-primary/10 hover:text-primary",
-                            isNotesPage && "text-primary"
-                        )}
-                    >
-                        <Link href="/notes">
-                            <Notebook className="mr-2 h-4 w-4" />
-                            Notes
-                        </Link>
-                    </Button>
+                    {navLinks.map(({ href, label, icon: Icon }) => (
+                        <Button
+                            key={href}
+                            asChild
+                            variant="ghost"
+                            size="sm"
+                            className={cn(
+                                "font-bold",
+                                pathname === href
+                                ? 'text-primary'
+                                : 'text-foreground/60',
+                                "hover:bg-primary/10 hover:text-primary"
+                            )}
+                        >
+                            <Link href={href}>
+                                <Icon className="mr-2 h-4 w-4" />
+                                {label}
+                            </Link>
+                        </Button>
+                    ))}
                  </nav>
             )}
           </div>
@@ -101,7 +97,7 @@ export function AppHeader() {
               <Skeleton className="h-8 w-20 rounded-md" />
             ) : user ? (
               <>
-                 <div className="hidden md:flex items-center gap-2 rounded-lg bg-primary/10 px-3 py-1 animate-subtle-pulse">
+                 <div className="hidden md:flex items-center gap-2 rounded-lg bg-primary/10 px-3 py-1">
                     <Sparkles className="h-4 w-4 text-primary/80" />
                     <span className="text-sm font-semibold text-primary">
                       Welcome, {user.displayName || 'User'}

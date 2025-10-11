@@ -1,25 +1,17 @@
 
 "use client";
 
-import { useState, useMemo, useContext, useEffect } from 'react';
+import { useMemo, useContext, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { AppDataContext } from '@/context/AppDataContext';
 import NextExamCard from '@/components/edutrack/exam/NextExamCard';
-import { ExamList } from '@/components/edutrack/exam/ExamList';
-import { SubjectList } from '@/components/edutrack/subject/SubjectList';
-import { PlusCircle, BookOpen, Target, Loader2 } from 'lucide-react';
-import { SubjectDialog } from '@/components/edutrack/subject/SubjectDialog';
+import { Loader2 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { cn } from '@/lib/utils';
 import { useUser } from '@/firebase';
 import { useRouter } from 'next/navigation';
 
-type View = 'subjects' | 'exams' | null;
-
 export default function Home() {
-  const [activeView, setActiveView] = useState<View>(null);
-  const [isSubjectDialogOpen, setIsSubjectDialogOpen] = useState(false);
-  const { exams, subjects } = useContext(AppDataContext);
+  const { exams } = useContext(AppDataContext);
   const { user, isUserLoading } = useUser();
   const router = useRouter();
 
@@ -40,33 +32,6 @@ export default function Home() {
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
     return upcoming[0];
   }, [exams]);
-
-  const renderActiveView = () => {
-    switch (activeView) {
-      case 'subjects':
-        return (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold">Subjects</h2>
-                <Button 
-                  variant="default"
-                  size="sm"
-                  className="transition-all duration-300 bg-primary text-primary-foreground border-2 border-primary hover:bg-transparent hover:text-primary hover:shadow-lg hover:shadow-primary/20"
-                  onClick={() => setIsSubjectDialogOpen(true)}
-                >
-                    <PlusCircle className="mr-2 h-4 w-4" />
-                    Add Subject
-                </Button>
-            </div>
-            <SubjectList />
-          </div>
-        );
-      case 'exams':
-        return <ExamList />;
-      default:
-        return null;
-    }
-  }
 
   if (isUserLoading || !user || !user.emailVerified) {
     return (
@@ -93,43 +58,14 @@ export default function Home() {
               <CardDescription className="text-primary-foreground/80">Add an exam to start tracking.</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button variant="secondary" onClick={() => setActiveView('exams')}>Add Exam</Button>
+              <Button variant="secondary" onClick={() => router.push('/exams')}>Add Exam</Button>
             </CardContent>
           </Card>
         )}
 
-        <div className="grid md:grid-cols-2 gap-4 mt-8">
-            <Card 
-              className={cn("hover:shadow-lg transition-all cursor-pointer", activeView === 'subjects' && 'border-primary ring-2 ring-primary')}
-              onClick={() => setActiveView('subjects')}
-            >
-                <CardHeader className="flex flex-row items-center gap-4">
-                    <BookOpen className="w-8 h-8 text-primary" />
-                    <div>
-                        <CardTitle className="text-xl">Subjects &amp; Syllabus</CardTitle>
-                        <CardDescription>Manage all your subjects, papers, and chapters.</CardDescription>
-                    </div>
-                </CardHeader>
-            </Card>
-            <Card 
-              className={cn("hover:shadow-lg transition-all cursor-pointer", activeView === 'exams' && 'border-primary ring-2 ring-primary')}
-              onClick={() => setActiveView('exams')}
-            >
-                <CardHeader className="flex flex-row items-center gap-4">
-                    <Target className="w-8 h-8 text-primary" />
-                    <div>
-                        <CardTitle className="text-xl">Exams</CardTitle>
-                        <CardDescription>Track all your upcoming and past exams.</CardDescription>
-                    </div>
-                </CardHeader>
-            </Card>
-        </div>
-
         <div className="mt-8">
-          {activeView && renderActiveView()}
+          {/* You can add more dashboard widgets here in the future */}
         </div>
-      
-      <SubjectDialog open={isSubjectDialogOpen} onOpenChange={setIsSubjectDialogOpen} />
     </div>
   );
 }
