@@ -1,5 +1,5 @@
 
-import { Subject, Exam } from './types';
+import { Subject, Exam, Note } from './types';
 import { v4 as uuidv4 } from 'uuid';
 
 const physicsChapter1Id = uuidv4();
@@ -22,7 +22,7 @@ const getPastDate = (days: number, hours: number, minutes: number) => {
     return date.toISOString();
 }
 
-export const initialData: { subjects: Subject[], exams: Exam[] } = {
+export const initialData: { subjects: Subject[], exams: Exam[], notes: Note[] } = {
   subjects: [
     {
       id: subjectPhysicsId,
@@ -113,5 +113,18 @@ export const initialData: { subjects: Subject[], exams: Exam[] } = {
         date: getPastDate(14, 9, 0), // 14 days ago at 9:00 AM
         isCompleted: true
       }
-  ]
+  ],
+  notes: [
+    {
+        id: uuidv4(),
+        title: "Quantum Mechanics Resources",
+        description: "A collection of useful links and videos for understanding the basics of quantum mechanics.",
+        imageUrl: "https://picsum.photos/seed/1/600/400",
+        createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+        links: [
+            { id: uuidv4(), title: "Feynman Lectures on Physics", url: "https://www.feynmanlectures.caltech.edu/" },
+            { id: uuidv4(), title: "Veritasium - The Quantum World", url: "https://www.youtube.com/watch?v=kYAdwS5MFjQ" }
+        ]
+    }
+  ],
 };

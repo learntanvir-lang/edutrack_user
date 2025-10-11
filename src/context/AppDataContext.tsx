@@ -2,7 +2,7 @@
 "use client";
 
 import { createContext, useReducer, useEffect, ReactNode, useContext, useMemo } from "react";
-import { Subject, Exam, Paper, Chapter } from "@/lib/types";
+import { Subject, Exam, Paper, Chapter, Note } from "@/lib/types";
 import { initialData } from "@/lib/data";
 import { v4 as uuidv4 } from 'uuid';
 import { useFirebase, useUser } from "@/firebase";
@@ -22,6 +22,7 @@ import {
 type AppState = {
   subjects: Subject[];
   exams: Exam[];
+  notes: Note[];
 };
 
 type Action =
@@ -41,7 +42,10 @@ type Action =
   | { type: "REORDER_CHAPTERS", payload: { subjectId: string, paperId: string, startIndex: number, endIndex: number } }
   | { type: "ADD_EXAM"; payload: Exam }
   | { type: "UPDATE_EXAM"; payload: Exam }
-  | { type: "DELETE_EXAM"; payload: { id: string } };
+  | { type: "DELETE_EXAM"; payload: { id: string } }
+  | { type: "ADD_NOTE"; payload: Note }
+  | { type: "UPDATE_NOTE"; payload: Note }
+  | { type: "DELETE_NOTE"; payload: { id: string } };
 
 const appReducer = (state: AppState, action: Action): AppState => {
   switch (action.type) {
@@ -139,6 +143,12 @@ const appReducer = (state: AppState, action: Action): AppState => {
       return { ...state, exams: state.exams.map(e => e.id === action.payload.id ? action.payload : e) };
     case "DELETE_EXAM":
       return { ...state, exams: state.exams.filter(e => e.id !== action.payload.id) };
+    case "ADD_NOTE":
+      return { ...state, notes: [...state.notes, action.payload] };
+    case "UPDATE_NOTE":
+      return { ...state, notes: state.notes.map(n => n.id === action.payload.id ? action.payload : n) };
+    case "DELETE_NOTE":
+      return { ...state, notes: state.notes.filter(n => n.id !== action.payload.id) };
     default:
       return state;
   }
@@ -147,11 +157,13 @@ const appReducer = (state: AppState, action: Action): AppState => {
 const initialState: AppState = {
   subjects: [],
   exams: [],
+  notes: [],
 };
 
 export const AppDataContext = createContext<{
   subjects: Subject[];
   exams: Exam[];
+  notes: Note[];
   dispatch: React.Dispatch<Action>;
 }>({
   ...initialState,
@@ -170,16 +182,19 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
         try {
           const subjectsCol = collection(firestore, `users/${user.uid}/subjects`);
           const examsCol = collection(firestore, `users/${user.uid}/exams`);
+          const notesCol = collection(firestore, `users/${user.uid}/notes`);
 
-          const [subjectsSnapshot, examsSnapshot] = await Promise.all([
+          const [subjectsSnapshot, examsSnapshot, notesSnapshot] = await Promise.all([
             getDocs(subjectsCol),
             getDocs(examsCol),
+            getDocs(notesCol),
           ]);
           
           const subjects = subjectsSnapshot.docs.map(doc => doc.data() as Subject);
           const exams = examsSnapshot.docs.map(doc => doc.data() as Exam);
+          const notes = notesSnapshot.docs.map(doc => doc.data() as Note);
 
-          dispatch({ type: "SET_STATE", payload: { subjects, exams } });
+          dispatch({ type: "SET_STATE", payload: { subjects, exams, notes } });
         } catch (error) {
           console.error("Error fetching from Firestore:", error);
           // Fallback to initial data on error
@@ -243,6 +258,14 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
         case "DELETE_EXAM":
           deleteDocumentNonBlocking(doc(firestore, `users/${userId}/exams`, action.payload.id));
           break;
+
+        case "ADD_NOTE":
+        case "UPDATE_NOTE":
+            setDocumentNonBlocking(doc(firestore, `users/${userId}/notes`, action.payload.id), action.payload, { merge: true });
+            break;
+        case "DELETE_NOTE":
+            deleteDocumentNonBlocking(doc(firestore, `users/${userId}/notes`, action.payload.id));
+            break;
       }
     }
 };

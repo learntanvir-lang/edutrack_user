@@ -125,6 +125,34 @@
         "description": { "type": "string" }
       },
       "required": ["id", "url", "description"]
+    },
+    "Note": {
+      "title": "Note",
+      "type": "object",
+      "description": "Represents an important note or resource.",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "imageUrl": { "type": "string", "format": "uri" },
+        "links": {
+          "type": "array",
+          "items": { "$ref": "#/entities/NoteLink" }
+        },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "title", "imageUrl", "createdAt"]
+    },
+    "NoteLink": {
+      "title": "Note Link",
+      "type": "object",
+      "description": "Represents a link within a note.",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "url": { "type": "string", "format": "uri" }
+      },
+      "required": ["id", "title", "url"]
     }
   },
   "auth": {
@@ -144,6 +172,10 @@
     "/users/{userId}/exams": {
         "schema": {"$ref": "#/entities/Exam"},
         "description": "Sub-collection for exams belonging to a user."
+    },
+    "/users/{userId}/notes": {
+        "schema": {"$ref": "#/entities/Note"},
+        "description": "Sub-collection for notes belonging to a user."
     }
   }
 }

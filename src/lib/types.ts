@@ -45,3 +45,18 @@ export interface Exam {
   marksObtained?: number;
   totalMarks?: number;
 }
+
+export interface NoteLink {
+  id: string;
+  title: string;
+  url: string;
+}
+
+export interface Note {
+  id: string;
+  title: string;
+  description: string;
+  imageUrl: string;
+  links: NoteLink[];
+  createdAt: string; // ISO 8601 format
+}
