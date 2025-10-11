@@ -186,7 +186,7 @@ function ChapterAccordionItem({ chapter, subjectId, paperId }: ChapterAccordionI
                             </div>
                             <div className="space-y-2">
                                 {chapter.resourceLinks.map(link => (
-                                     <div key={link.id} className="group/link flex items-center gap-1 rounded-md transition-colors border bg-primary/10 hover:bg-primary/20 hover:border-primary">
+                                     <div key={link.id} className="group/link flex items-center gap-1 rounded-md transition-colors border border-primary/20 bg-primary/10 hover:bg-primary/20 hover:border-primary">
                                         <Button variant="ghost" size="sm" className="w-full justify-start gap-2 flex-grow hover:bg-transparent text-primary" asChild>
                                             <Link href={link.url} target="_blank" rel="noopener noreferrer">
                                                 <ExternalLink className="h-4 w-4 flex-shrink-0" />
