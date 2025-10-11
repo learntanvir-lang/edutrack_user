@@ -6,9 +6,9 @@ import {
   addDoc,
   updateDoc,
   deleteDoc,
-  CollectionReference,
-  DocumentReference,
-  SetOptions,
+  doc,
+  type Firestore,
+  type SetOptions,
 } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import {FirestorePermissionError} from '@/firebase/errors';
@@ -17,13 +17,14 @@ import {FirestorePermissionError} from '@/firebase/errors';
  * Initiates a setDoc operation for a document reference.
  * Does NOT await the write operation internally, but handles errors.
  */
-export function setDocumentNonBlocking(docRef: DocumentReference, data: any, options: SetOptions) {
-  setDoc(docRef, data, options).catch(error => {
+export function setDocumentNonBlocking(firestore: Firestore, collectionPath: string, docId: string, data: any) {
+  const docRef = doc(firestore, collectionPath, docId);
+  setDoc(docRef, data, { merge: true }).catch(error => {
     // This is a Firestore security rule error.
     // Create the rich, contextual error.
     const permissionError = new FirestorePermissionError({
         path: docRef.path,
-        operation: options.merge ? 'update' : 'create',
+        operation: 'write', // Covers both create and update with merge
         requestResourceData: data,
     });
     // Emit the error with the global error emitter.
@@ -32,29 +33,11 @@ export function setDocumentNonBlocking(docRef: DocumentReference, data: any, opt
 }
 
 /**
- * Initiates an addDoc operation for a collection reference.
- * Does NOT await the write operation internally, but handles errors.
- */
-export function addDocumentNonBlocking(colRef: CollectionReference, data: any) {
-  addDoc(colRef, data)
-    .catch(error => {
-      // This is a Firestore security rule error.
-      // Create the rich, contextual error.
-      const permissionError = new FirestorePermissionError({
-          path: colRef.path,
-          operation: 'create',
-          requestResourceData: data,
-      });
-      // Emit the error with the global error emitter.
-      errorEmitter.emit('permission-error', permissionError);
-    });
-}
-
-/**
  * Initiates an updateDoc operation for a document reference.
  * Does NOT await the write operation internally, but handles errors.
  */
-export function updateDocumentNonBlocking(docRef: DocumentReference, data: any) {
+export function updateDocumentNonBlocking(firestore: Firestore, collectionPath: string, docId: string, data: any) {
+  const docRef = doc(firestore, collectionPath, docId);
   updateDoc(docRef, data)
     .catch(error => {
       // This is a Firestore security rule error.
@@ -73,7 +56,8 @@ export function updateDocumentNonBlocking(docRef: DocumentReference, data: any) 
  * Initiates a deleteDoc operation for a document reference.
  * Does NOT await the write operation internally, but handles errors.
  */
-export function deleteDocumentNonBlocking(docRef: DocumentReference) {
+export function deleteDocumentNonBlocking(firestore: Firestore, collectionPath: string, docId: string) {
+  const docRef = doc(firestore, collectionPath, docId);
   deleteDoc(docRef)
     .catch(error => {
       // This is a Firestore security rule error.

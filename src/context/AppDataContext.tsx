@@ -210,65 +210,70 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
 
   }, [user, firestore, isUserLoading]);
 
-  const syncedDispatch = (action: Action) => {
-    // 1. Optimistically update local state
-    dispatch(action);
-
-    // 2. Queue up the non-blocking Firestore operation
-    if (user && firestore) {
-      const userId = user.uid;
-      const newState = appReducer(state, action);
+  const syncedDispatch = useMemo(() => {
+    const originalDispatch = dispatch;
+    
+    return (action: Action) => {
+        // 1. Optimistically update local state
+        originalDispatch(action);
         
-      switch (action.type) {
-        case "ADD_SUBJECT":
-        case "UPDATE_SUBJECT":
-          setDocumentNonBlocking(doc(firestore, `users/${userId}/subjects`, action.payload.id), action.payload, { merge: true });
-          break;
-        case "DUPLICATE_SUBJECT": {
-          const newSubject = newState.subjects.find(s => s.name === `${action.payload.name} (Copy)`);
-          if (newSubject) {
-            setDocumentNonBlocking(doc(firestore, `users/${userId}/subjects`, newSubject.id), newSubject, { merge: true });
-          }
-          break;
-        }
-        case "DELETE_SUBJECT":
-          deleteDocumentNonBlocking(doc(firestore, `users/${userId}/subjects`, action.payload.id));
-          break;
+        // 2. Queue up the non-blocking Firestore operation
+        if (user && firestore) {
+            const userId = user.uid;
+            // Note: We need to get the *new* state after the dispatch to ensure we have the latest data
+            const newState = appReducer(state, action);
+            
+            switch (action.type) {
+                case "ADD_SUBJECT":
+                case "UPDATE_SUBJECT":
+                    setDocumentNonBlocking(firestore, `users/${userId}/subjects`, action.payload.id, action.payload);
+                    break;
+                case "DUPLICATE_SUBJECT": {
+                    const newSubject = newState.subjects.find(s => s.name === `${action.payload.name} (Copy)`);
+                    if (newSubject) {
+                        setDocumentNonBlocking(firestore, `users/${userId}/subjects`, newSubject.id, newSubject);
+                    }
+                    break;
+                }
+                case "DELETE_SUBJECT":
+                    deleteDocumentNonBlocking(firestore, `users/${userId}/subjects`, action.payload.id);
+                    break;
+                
+                case "ADD_PAPER":
+                case "UPDATE_PAPER":
+                case "DUPLICATE_PAPER":
+                case "DELETE_PAPER":
+                case "ADD_CHAPTER":
+                case "UPDATE_CHAPTER":
+                case "DUPLICATE_CHAPTER":
+                case "DELETE_CHAPTER":
+                case "REORDER_CHAPTERS": {
+                    const subjectToUpdate = newState.subjects.find(s => s.id === action.payload.subjectId);
+                    if (subjectToUpdate) {
+                        setDocumentNonBlocking(firestore, `users/${userId}/subjects`, subjectToUpdate.id, subjectToUpdate);
+                    }
+                    break;
+                }
         
-        case "ADD_PAPER":
-        case "UPDATE_PAPER":
-        case "DUPLICATE_PAPER":
-        case "DELETE_PAPER":
-        case "ADD_CHAPTER":
-        case "UPDATE_CHAPTER":
-        case "DUPLICATE_CHAPTER":
-        case "DELETE_CHAPTER":
-        case "REORDER_CHAPTERS": {
-          const subjectToUpdate = newState.subjects.find(s => s.id === action.payload.subjectId);
-          if (subjectToUpdate) {
-            setDocumentNonBlocking(doc(firestore, `users/${userId}/subjects`, subjectToUpdate.id), subjectToUpdate, { merge: true });
-          }
-          break;
+                case "ADD_EXAM":
+                case "UPDATE_EXAM":
+                    setDocumentNonBlocking(firestore, `users/${userId}/exams`, action.payload.id, action.payload);
+                    break;
+                case "DELETE_EXAM":
+                    deleteDocumentNonBlocking(firestore, `users/${userId}/exams`, action.payload.id);
+                    break;
+        
+                case "ADD_NOTE":
+                case "UPDATE_NOTE":
+                    setDocumentNonBlocking(firestore, `users/${userId}/notes`, action.payload.id, action.payload);
+                    break;
+                case "DELETE_NOTE":
+                    deleteDocumentNonBlocking(firestore, `users/${userId}/notes`, action.payload.id);
+                    break;
+            }
         }
-
-        case "ADD_EXAM":
-        case "UPDATE_EXAM":
-          setDocumentNonBlocking(doc(firestore, `users/${userId}/exams`, action.payload.id), action.payload, { merge: true });
-          break;
-        case "DELETE_EXAM":
-          deleteDocumentNonBlocking(doc(firestore, `users/${userId}/exams`, action.payload.id));
-          break;
-
-        case "ADD_NOTE":
-        case "UPDATE_NOTE":
-            setDocumentNonBlocking(doc(firestore, `users/${userId}/notes`, action.payload.id), action.payload, { merge: true });
-            break;
-        case "DELETE_NOTE":
-            deleteDocumentNonBlocking(doc(firestore, `users/${userId}/notes`, action.payload.id));
-            break;
-      }
-    }
-};
+    };
+  }, [state, user, firestore]);
 
   return (
     <AppDataContext.Provider value={{ ...state, dispatch: syncedDispatch }}>
