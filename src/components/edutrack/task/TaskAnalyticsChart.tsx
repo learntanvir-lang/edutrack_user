@@ -211,6 +211,7 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
       return (
         <Rectangle
             fill="hsl(var(--primary))"
+            opacity={1}
             x={coordinate.x}
             y={viewBox.y}
             width={1.5}
@@ -248,7 +249,7 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
   }
 
   return (
-    <Card className="shadow-lg rounded-xl border-2 border-border/50" ref={cardRef}>
+    <Card className="shadow-lg rounded-xl border border-border/50" ref={cardRef}>
       <CardHeader>
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between">
             <div>
@@ -355,3 +356,5 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
     
 
   
+
+    
