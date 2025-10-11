@@ -139,16 +139,18 @@ export function SubjectList() {
               </div>
               <AccordionContent className="p-6 pt-0">
                  <div className="border-t pt-4 space-y-4">
+                    <div className="flex justify-end mb-4">
+                        <Button 
+                            variant="default"
+                            size="sm"
+                            className="transition-all duration-300 bg-primary text-primary-foreground border-2 border-primary hover:bg-transparent hover:text-primary hover:shadow-lg hover:shadow-primary/20"
+                            onClick={() => handleAddPaperClick(subject.id)}
+                        >
+                            <PlusCircle className="mr-2 h-4 w-4" />
+                            Add Paper
+                        </Button>
+                    </div>
                     <PaperList subjectId={subject.id} papers={subject.papers} />
-                    <Button 
-                        variant="default"
-                        size="sm"
-                        className="w-full transition-all duration-300 bg-primary text-primary-foreground border-2 border-primary hover:bg-transparent hover:text-primary hover:shadow-lg hover:shadow-primary/20"
-                        onClick={() => handleAddPaperClick(subject.id)}
-                    >
-                        <PlusCircle className="mr-2 h-4 w-4" />
-                        Add Paper
-                    </Button>
                  </div>
               </AccordionContent>
             </Card>
