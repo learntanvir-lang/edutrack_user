@@ -100,7 +100,7 @@ export function AppHeader() {
               <Skeleton className="h-8 w-20 rounded-md" />
             ) : user ? (
               <>
-                 <div className="hidden md:flex items-center gap-2 rounded-lg bg-primary/10 px-3 py-1">
+                 <div className="hidden md:flex items-center gap-2 rounded-lg bg-primary/10 px-3 py-1 mr-4">
                     <Sparkles className="h-4 w-4 text-primary/80" />
                     <span className="text-sm font-semibold text-primary">
                       Welcome, {user.displayName || 'User'}
