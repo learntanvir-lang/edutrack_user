@@ -91,19 +91,33 @@ export function NoteCard({ note }: NoteCardProps) {
                     {note.links && note.links.length > 0 && (
                         <div className="space-y-2">
                              {note.links.map(link => (
-                                <div key={link.id} className="group/link flex items-center gap-2">
-                                    <Button variant="outline" size="sm" className="w-full justify-start gap-2 flex-grow" asChild>
+                                <div key={link.id} className="group/link flex items-center gap-1 rounded-md transition-colors hover:bg-primary/10">
+                                    <Button variant="ghost" size="sm" className="w-full justify-start gap-2 flex-grow hover:bg-transparent text-foreground/80 hover:text-primary" asChild>
                                         <Link href={link.url} target="_blank" rel="noopener noreferrer">
                                             <LinkIcon className="h-4 w-4 flex-shrink-0" />
                                             <span className="truncate">{link.title}</span>
                                         </Link>
                                     </Button>
-                                    <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover/link:opacity-100 transition-opacity" onClick={() => handleEditLink(link)}>
-                                        <Edit className="h-4 w-4" />
-                                    </Button>
-                                     <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive opacity-0 group-hover/link:opacity-100 transition-opacity" onClick={() => setDeletingLink(link)}>
-                                        <Trash2 className="h-4 w-4" />
-                                    </Button>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0">
+                                                <MoreVertical className="h-4 w-4" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            <DropdownMenuItem onClick={() => handleEditLink(link)}>
+                                                <Edit className="mr-2 h-4 w-4" />
+                                                Edit
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem 
+                                                className="text-destructive focus:text-destructive"
+                                                onClick={() => setDeletingLink(link)}
+                                            >
+                                                <Trash2 className="mr-2 h-4 w-4" />
+                                                Delete
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
                                 </div>
                             ))}
                         </div>
