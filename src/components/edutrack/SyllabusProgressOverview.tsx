@@ -1,7 +1,7 @@
 
 'use client';
 
-import type { Subject, Paper } from '@/lib/types';
+import type { Subject } from '@/lib/types';
 import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -14,43 +14,39 @@ interface SyllabusProgressOverviewProps {
   subjects: Subject[];
 }
 
-interface PaperProgress {
-    paper: Paper;
-    completedChapters: number;
-    totalChapters: number;
-    percentage: number;
-}
-
-interface SubjectProgress {
+interface SubjectOverallProgress {
     subject: Subject;
-    papers: PaperProgress[];
+    completed: number;
+    total: number;
+    percentage: number;
 }
 
 
 export function SyllabusProgressOverview({ subjects }: SyllabusProgressOverviewProps) {
   const router = useRouter();
 
-  const progressData: SubjectProgress[] = useMemo(() => {
+  const progressData: SubjectOverallProgress[] = useMemo(() => {
     return subjects
     .filter(subject => subject.showOnDashboard ?? true)
     .map(subject => {
-      const papersProgress = subject.papers.map(paper => {
-        let totalChapters = paper.chapters.length;
-        let completedChapters = paper.chapters.filter(c => c.isCompleted).length;
-        const percentage = totalChapters > 0 ? Math.round((completedChapters / totalChapters) * 100) : 0;
+        const progress = subject.papers.flatMap(p => p.chapters).flatMap(c => c.progressItems).reduce(
+            (acc, item) => {
+              acc.completed += item.completed;
+              acc.total += item.total;
+              return acc;
+            },
+            { completed: 0, total: 0 }
+        );
+
+        const percentage = progress.total > 0 ? Math.round((progress.completed / progress.total) * 100) : 0;
         
         return {
-          paper,
-          completedChapters,
-          totalChapters,
+          subject,
+          completed: progress.completed,
+          total: progress.total,
           percentage,
         };
       });
-      return {
-        subject,
-        papers: papersProgress
-      };
-    });
   }, [subjects]);
 
   const visibleSubjects = subjects.filter(s => s.showOnDashboard ?? true);
@@ -65,22 +61,13 @@ export function SyllabusProgressOverview({ subjects }: SyllabusProgressOverviewP
         {visibleSubjects.length > 0 ? (
           <ScrollArea className="h-80 pr-4">
             <div className="space-y-4">
-                {progressData.map(({ subject, papers }) => (
-                    <div key={subject.id}>
-                        <h4 className="font-semibold text-foreground mb-2">{subject.name}</h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-3 ml-4">
-                            {papers.length > 0 ? papers.map(({ paper, completedChapters, totalChapters, percentage}) => (
-                                <div key={paper.id} className="space-y-1">
-                                    <div className="flex justify-between items-center text-sm">
-                                        <span className="text-muted-foreground font-medium">{paper.name}</span>
-                                        <span className="font-semibold text-foreground">{percentage}%</span>
-                                    </div>
-                                    <Progress value={percentage} className="h-2" />
-                                </div>
-                            )) : (
-                                <p className="text-xs text-muted-foreground md:col-span-2">No papers in this subject.</p>
-                            )}
+                {progressData.map(({ subject, percentage }) => (
+                    <div key={subject.id} className="space-y-2">
+                        <div className="flex justify-between items-center text-sm">
+                            <span className="font-semibold text-foreground">{subject.name}</span>
+                            <span className="font-semibold text-foreground">{percentage}%</span>
                         </div>
+                        <Progress value={percentage} className="h-2" />
                     </div>
                 ))}
             </div>
