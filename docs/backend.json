@@ -165,10 +165,14 @@
         "properties": {
           "id": { "type": "string" },
           "title": { "type": "string" },
+          "description": { "type": "string" },
           "isCompleted": { "type": "boolean" },
-          "date": { "type": "string", "format": "date", "description": "The date for the task in YYYY-MM-DD format." }
+          "date": { "type": "string", "format": "date", "description": "The date for the task in YYYY-MM-DD format." },
+          "priority": { "type": "number" },
+          "category": { "type": "string" },
+          "subcategory": { "type": "string" }
         },
-        "required": ["id", "title", "isCompleted", "date"]
+        "required": ["id", "title", "isCompleted", "date", "priority", "category"]
     }
   },
   "auth": {

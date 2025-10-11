@@ -28,19 +28,19 @@ import { AppDataContext } from "@/context/AppDataContext";
 import { v4 as uuidv4 } from 'uuid';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Check, ChevronsUpDown } from "lucide-react";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
+import { Command, CommandEmpty, CommandInput, CommandItem, CommandList, CommandGroup } from "@/components/ui/command";
 
 
 const taskSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().optional(),
   date: z.date({ required_error: "Due date is required" }),
-  priority: z.enum(["Low", "Medium", "High"]),
+  priority: z.coerce.number().int().min(1, "Priority must be 1 or greater"),
   category: z.string().min(1, "Category is required"),
   subcategory: z.string().optional(),
 });
@@ -55,14 +55,16 @@ interface TaskDialogProps {
 }
 
 export function TaskDialog({ open, onOpenChange, date, task }: TaskDialogProps) {
-  const { dispatch, subjects, exams } = useContext(AppDataContext);
+  const { dispatch, tasks, subjects, exams } = useContext(AppDataContext);
   const isEditing = !!task;
 
   const categories = useMemo(() => {
-    const subjectNames = subjects.map(s => s.name);
-    const examNames = exams.map(e => e.name);
-    return [...new Set(["General", ...subjectNames, ...examNames])];
-  }, [subjects, exams]);
+    const allCategories = new Set<string>(["General"]);
+    subjects.forEach(s => allCategories.add(s.name));
+    exams.forEach(e => allCategories.add(e.name));
+    tasks.forEach(t => allCategories.add(t.category));
+    return Array.from(allCategories);
+  }, [subjects, exams, tasks]);
 
 
   const form = useForm<TaskFormValues>({
@@ -71,7 +73,7 @@ export function TaskDialog({ open, onOpenChange, date, task }: TaskDialogProps) 
       title: "",
       description: "",
       date: new Date(date),
-      priority: "Medium",
+      priority: 2,
       category: "General",
       subcategory: "",
     },
@@ -93,7 +95,7 @@ export function TaskDialog({ open, onOpenChange, date, task }: TaskDialogProps) 
           title: "",
           description: "",
           date: new Date(date),
-          priority: "Medium",
+          priority: 2,
           category: "General",
           subcategory: "",
         });
@@ -208,19 +210,10 @@ export function TaskDialog({ open, onOpenChange, date, task }: TaskDialogProps) 
                         name="priority"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Priority</FormLabel>
-                                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                    <FormControl>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Select a priority" />
-                                        </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                        <SelectItem value="Low">Low</SelectItem>
-                                        <SelectItem value="Medium">Medium</SelectItem>
-                                        <SelectItem value="High">High</SelectItem>
-                                    </SelectContent>
-                                </Select>
+                                <FormLabel>Priority (1=High)</FormLabel>
+                                <FormControl>
+                                    <Input type="number" min="1" placeholder="e.g., 1" {...field} />
+                                </FormControl>
                                 <FormMessage />
                             </FormItem>
                         )}
@@ -231,18 +224,50 @@ export function TaskDialog({ open, onOpenChange, date, task }: TaskDialogProps) 
                         control={form.control}
                         name="category"
                         render={({ field }) => (
-                            <FormItem>
+                            <FormItem className="flex flex-col">
                                 <FormLabel>Category</FormLabel>
-                                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                    <FormControl>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Select a category" />
-                                        </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                        {categories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
-                                    </SelectContent>
-                                </Select>
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                        <FormControl>
+                                            <Button
+                                                variant="outline"
+                                                role="combobox"
+                                                className={cn(
+                                                    "w-full justify-between",
+                                                    !field.value && "text-muted-foreground"
+                                                )}
+                                            >
+                                                {field.value || "Select or type a category..."}
+                                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                            </Button>
+                                        </FormControl>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                                        <Command>
+                                            <CommandInput 
+                                                placeholder="Search or create category..." 
+                                                onValueChange={(value) => field.onChange(value)}
+                                            />
+                                            <CommandList>
+                                                <CommandEmpty>No category found.</CommandEmpty>
+                                                <CommandGroup>
+                                                    {categories.map((category) => (
+                                                        <CommandItem
+                                                            value={category}
+                                                            key={category}
+                                                            onSelect={() => {
+                                                                form.setValue("category", category);
+                                                            }}
+                                                        >
+                                                            <Check className={cn("mr-2 h-4 w-4", category === field.value ? "opacity-100" : "opacity-0")} />
+                                                            {category}
+                                                        </CommandItem>
+                                                    ))}
+                                                </CommandGroup>
+                                            </CommandList>
+                                        </Command>
+                                    </PopoverContent>
+                                </Popover>
                                 <FormMessage />
                             </FormItem>
                         )}

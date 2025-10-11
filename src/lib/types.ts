@@ -68,7 +68,7 @@ export interface StudyTask {
   description?: string;
   isCompleted: boolean;
   date: string; // YYYY-MM-DD format
-  priority: 'Low' | 'Medium' | 'High';
+  priority: number;
   category: string;
   subcategory?: string;
 }

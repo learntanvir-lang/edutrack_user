@@ -30,18 +30,19 @@ export function TaskItem({ task }: TaskItemProps) {
   const handleDelete = () => {
     dispatch({ type: 'DELETE_TASK', payload: { id: task.id } });
   };
-
-  const priorityColors = {
-    High: "bg-red-500",
-    Medium: "bg-yellow-500",
-    Low: "bg-blue-500",
-  };
+  
+  const getPriorityColor = (priority: number) => {
+    if (priority === 1) return "bg-red-500";
+    if (priority === 2) return "bg-yellow-500";
+    if (priority >= 3) return "bg-blue-500";
+    return "bg-gray-400";
+  }
 
   return (
     <>
     <div className="flex items-center gap-3 p-3 rounded-md bg-muted/50 hover:bg-muted transition-colors group">
       <div 
-        className={cn("w-2 h-10 rounded-l-md", priorityColors[task.priority])}
+        className={cn("w-2 h-10 rounded-l-md", getPriorityColor(task.priority))}
         title={`Priority: ${task.priority}`}
       />
       <Checkbox
