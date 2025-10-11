@@ -101,7 +101,7 @@ export function TaskItem({ task }: TaskItemProps) {
     <div className={cn(
         "flex items-start gap-4 p-4 rounded-lg bg-card border transition-all duration-300",
         task.isCompleted ? "border-green-200" : "border-primary/50",
-        "shadow-lg shadow-primary/10 hover:shadow-xl hover:shadow-primary/20 hover:-translate-y-1"
+        "hover:shadow-xl hover:shadow-primary/20"
       )}>
       <Checkbox
         id={`task-${task.id}`}
