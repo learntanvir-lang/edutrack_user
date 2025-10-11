@@ -206,16 +206,15 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
   };
 
   const CustomTooltipCursor = (props: TooltipProps<number, string>) => {
-    const { active, coordinate, payload, viewBox } = props;
-    if (active && coordinate && viewBox && payload && payload.length) {
+    const { active, coordinate, payload } = props;
+    if (active && coordinate && payload && payload.length) {
       return (
         <Rectangle
             fill="hsl(var(--primary))"
-            opacity={1}
+            opacity={0.2}
             x={coordinate.x}
-            y={viewBox.y}
             width={1.5}
-            height={viewBox.height}
+            height={320}
         />
       );
     }
@@ -227,7 +226,7 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
     try {
       const date = new Date(`${value}T00:00:00`);
       if (isValid(date)) {
-        return format(date, 'E d');
+        return format(date, 'd MMM - E');
       }
     } catch (e) {
       // ignore
