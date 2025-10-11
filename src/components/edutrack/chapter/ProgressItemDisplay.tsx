@@ -56,7 +56,7 @@ export function ProgressItemDisplay({ item, subjectId, paperId, chapterId }: Pro
                 {item.type === 'counter' ? (
                      <div className="flex items-center justify-between gap-4">
                         <p className="text-base font-medium text-foreground flex-shrink-0 flex items-center gap-2">
-                           {Icon && <Icon className="h-4 w-4" />}
+                           {Icon && <Icon className="h-5 w-5 text-primary" />}
                            {item.name}
                         </p>
                         <div className="flex-1 flex items-center gap-2">
