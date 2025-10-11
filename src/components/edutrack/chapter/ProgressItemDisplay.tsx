@@ -53,16 +53,21 @@ export function ProgressItemDisplay({ item, subjectId, paperId, chapterId }: Pro
         <>
             <div className="p-2 pr-10 relative rounded-md bg-muted/50">
                 {item.type === 'counter' ? (
-                     <div className="flex items-center justify-between gap-2">
-                        <p className="text-sm font-semibold text-foreground flex-shrink-0 mr-2">{item.name}</p>
+                     <div className="flex items-center justify-between gap-4">
+                        <p className="text-sm font-semibold text-foreground flex-shrink-0">{item.name}</p>
                         <div className="flex-1 flex items-center gap-2">
-                            <Progress value={progress} className="h-2 w-full max-w-48" />
-                            <span className="text-xs font-mono text-muted-foreground">{item.completed}/{item.total}</span>
+                             <div className="w-full bg-secondary rounded-full h-2.5">
+                                <div
+                                    className="bg-primary h-2.5 rounded-full"
+                                    style={{ width: `${progress}%` }}
+                                ></div>
+                            </div>
                         </div>
                         <div className="flex items-center gap-1">
                             <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => handleCounterChange(-1)}>
                                 <Minus className="h-4 w-4" />
                             </Button>
+                             <span className="text-xs font-mono text-muted-foreground w-12 text-center">{item.completed}/{item.total}</span>
                             <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => handleCounterChange(1)}>
                                 <Plus className="h-4 w-4" />
                             </Button>
