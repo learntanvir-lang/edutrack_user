@@ -246,7 +246,7 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
         <div className="h-80 w-full">
             <ChartContainer config={chartConfig} className="h-full w-full">
                 <LineChart data={chartData} margin={{ top: 20, right: 20, left: -20, bottom: 20 }}>
-                    <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                    <CartesianGrid strokeDasharray="3 3" />
                     <XAxis
                         dataKey={viewType === 'monthly' ? "week" : "date"}
                         tickLine={false}
