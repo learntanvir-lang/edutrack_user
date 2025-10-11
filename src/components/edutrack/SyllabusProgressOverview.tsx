@@ -73,7 +73,7 @@ export function SyllabusProgressOverview({ subjects }: SyllabusProgressOverviewP
                                 <div key={paper.id} className="space-y-1">
                                     <div className="flex justify-between items-center text-sm">
                                         <span className="text-muted-foreground font-medium">{paper.name}</span>
-                                        <span className="font-semibold text-foreground">{completedChapters} / {totalChapters}</span>
+                                        <span className="font-semibold text-foreground">{percentage}%</span>
                                     </div>
                                     <Progress value={percentage} className="h-2" />
                                 </div>
