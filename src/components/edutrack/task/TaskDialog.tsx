@@ -227,51 +227,11 @@ export function TaskDialog({ open, onOpenChange, date, task }: TaskDialogProps) 
                         control={form.control}
                         name="category"
                         render={({ field }) => (
-                            <FormItem className="flex flex-col">
+                            <FormItem>
                                 <FormLabel>Category</FormLabel>
-                                <Popover>
-                                    <PopoverTrigger asChild>
-                                        <FormControl>
-                                            <Button
-                                                variant="outline"
-                                                role="combobox"
-                                                className={cn(
-                                                    "w-full justify-between",
-                                                    !field.value && "text-muted-foreground"
-                                                )}
-                                            >
-                                                {field.value || "Select or type a category..."}
-                                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                            </Button>
-                                        </FormControl>
-                                    </PopoverTrigger>
-                                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-                                        <Command>
-                                            <CommandInput
-                                                placeholder="Search or create category..."
-                                                value={field.value}
-                                                onValueChange={field.onChange}
-                                            />
-                                            <CommandList>
-                                                <CommandEmpty>No category found.</CommandEmpty>
-                                                <CommandGroup>
-                                                    {categories.map((category) => (
-                                                        <CommandItem
-                                                            value={category}
-                                                            key={category}
-                                                            onSelect={() => {
-                                                                form.setValue("category", category, { shouldValidate: true });
-                                                            }}
-                                                        >
-                                                            <Check className={cn("mr-2 h-4 w-4", category === field.value ? "opacity-100" : "opacity-0")} />
-                                                            {category}
-                                                        </CommandItem>
-                                                    ))}
-                                                </CommandGroup>
-                                            </CommandList>
-                                        </Command>
-                                    </PopoverContent>
-                                </Popover>
+                                <FormControl>
+                                    <Input placeholder="e.g., Physics" {...field} />
+                                </FormControl>
                                 <FormMessage />
                             </FormItem>
                         )}
