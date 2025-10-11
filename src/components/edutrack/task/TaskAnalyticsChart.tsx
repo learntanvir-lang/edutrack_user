@@ -313,7 +313,7 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
                         axisLine={false}
                         tickMargin={10}
                         domain={[0, maxHours]}
-                        tickFormatter={(value) => `${value}h`}
+                        tickFormatter={(value) => `${Number(value).toFixed(1)}h`}
                     />
                     <Tooltip
                         cursor={<CustomTooltipCursor />}
