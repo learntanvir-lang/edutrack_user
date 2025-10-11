@@ -186,8 +186,8 @@ function ChapterAccordionItem({ chapter, subjectId, paperId }: ChapterAccordionI
                             </div>
                             <div className="space-y-2">
                                 {chapter.resourceLinks.map(link => (
-                                     <div key={link.id} className="group/link flex items-center gap-1 rounded-md transition-colors border hover:bg-primary/10 hover:border-primary hover:text-primary">
-                                        <Button variant="ghost" size="sm" className="w-full justify-start gap-2 flex-grow hover:bg-transparent text-foreground/80 hover:text-primary" asChild>
+                                     <div key={link.id} className="group/link flex items-center gap-1 rounded-md transition-colors border bg-primary/10 hover:bg-primary/20 hover:border-primary">
+                                        <Button variant="ghost" size="sm" className="w-full justify-start gap-2 flex-grow hover:bg-transparent text-primary" asChild>
                                             <Link href={link.url} target="_blank" rel="noopener noreferrer">
                                                 <ExternalLink className="h-4 w-4 flex-shrink-0" />
                                                 <span className="truncate">{link.description || link.url}</span>
@@ -195,7 +195,7 @@ function ChapterAccordionItem({ chapter, subjectId, paperId }: ChapterAccordionI
                                         </Button>
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0">
+                                                <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0 text-primary">
                                                     <MoreVertical className="h-4 w-4" />
                                                 </Button>
                                             </DropdownMenuTrigger>
