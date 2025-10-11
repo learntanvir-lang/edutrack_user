@@ -24,7 +24,7 @@ export function TaskItem({ task }: TaskItemProps) {
   const [now, setNow] = useState(new Date());
 
   const activeLog = useMemo(() => {
-    if (!task.activeTimeLogId) return null;
+    if (!task.activeTimeLogId || !task.timeLogs) return null;
     return task.timeLogs.find(log => log.id === task.activeTimeLogId);
   }, [task.activeTimeLogId, task.timeLogs]);
 
@@ -43,6 +43,7 @@ export function TaskItem({ task }: TaskItemProps) {
   }, [activeLog]);
 
   const totalTimeSpent = useMemo(() => {
+    if (!task.timeLogs) return 0;
     return task.timeLogs.reduce((acc, log) => {
         if (log.id === task.activeTimeLogId) {
             // This is the currently running log
@@ -94,7 +95,7 @@ export function TaskItem({ task }: TaskItemProps) {
         type: 'UPDATE_TASK',
         payload: {
           ...task,
-          timeLogs: [...task.timeLogs, newLog],
+          timeLogs: [...(task.timeLogs || []), newLog],
           activeTimeLogId: newLog.id,
         },
       });
@@ -103,23 +104,27 @@ export function TaskItem({ task }: TaskItemProps) {
   
   const formatTime = (totalMilliseconds: number) => {
     if (totalMilliseconds < 1000) return '0s';
-    return formatDistanceStrict(0, totalMilliseconds, { unit: 'second' })
-      .replace(' seconds', 's')
-      .replace(' second', 's')
-      .replace(' minutes', 'm')
-      .replace(' minute', 'm')
-      .replace(' hours', 'h')
-      .replace(' hour', 'h');
+
+    const hours = Math.floor(totalMilliseconds / 3600000);
+    const minutes = Math.floor((totalMilliseconds % 3600000) / 60000);
+    const seconds = Math.floor((totalMilliseconds % 60000) / 1000);
+
+    let parts = [];
+    if (hours > 0) parts.push(`${hours}h`);
+    if (minutes > 0) parts.push(`${minutes}m`);
+    if (seconds > 0 && hours === 0) parts.push(`${seconds}s`);
+
+    return parts.join(' ') || '0s';
   };
 
 
   return (
     <>
     <div className={cn(
-        "flex items-start gap-4 p-4 rounded-lg bg-card border transition-shadow duration-300",
+        "flex items-start gap-4 p-4 rounded-lg border-b transition-shadow duration-300",
         task.isCompleted 
             ? "bg-muted/50 border-border" 
-            : "border-primary/20",
+            : "bg-card border-border",
         !task.isCompleted && "hover:shadow-lg hover:shadow-primary/10"
       )}>
       <Checkbox
