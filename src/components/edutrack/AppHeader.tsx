@@ -76,7 +76,7 @@ export function AppHeader() {
                     variant="ghost"
                     size="lg" 
                     className={cn(
-                        "font-bold text-primary transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 hover:ring-2 hover:ring-primary/30",
+                        "font-bold text-primary transition-all duration-300 hover:text-primary hover:shadow-lg hover:shadow-primary/20 hover:ring-2 hover:ring-primary/30",
                         isNotesPage && "bg-primary/10"
                     )}
                 >
