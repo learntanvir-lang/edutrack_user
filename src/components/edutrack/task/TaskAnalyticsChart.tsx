@@ -1,7 +1,8 @@
+
 "use client";
 
 import { useMemo, useState, useRef } from 'react';
-import { Line, LineChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, LabelList, Dot } from 'recharts';
+import { Line, LineChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, LabelList, Dot, Rectangle } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartConfig, ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
 import { format, eachDayOfInterval, eachWeekOfInterval, differenceInCalendarDays } from 'date-fns';
@@ -202,6 +203,19 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
     }
   };
 
+  const CustomTooltipCursor = ({ x, y, width, height }: any) => {
+    if (x === undefined || y === undefined || !chartData.length) return null;
+    return (
+        <Rectangle
+            fill="hsl(var(--primary) / 0.1)"
+            x={x - (width / chartData.length / 2)}
+            y={0}
+            width={width / chartData.length}
+            height={height}
+        />
+    );
+};
+
   return (
     <Card className="shadow-lg rounded-xl" ref={cardRef}>
       <CardHeader>
@@ -255,7 +269,7 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
         <div className="h-80 w-full">
             <ChartContainer config={chartConfig} className="h-full w-full">
                 <LineChart data={chartData} margin={{ top: 30, right: 20, left: -20, bottom: 20 }}>
-                    <CartesianGrid stroke="hsl(var(--border))" />
+                    <CartesianGrid strokeDasharray="3 3" />
                     <XAxis
                         dataKey={viewType === 'monthly' ? "week" : "date"}
                         tickLine={false}
@@ -271,7 +285,7 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
                         tickFormatter={(value) => `${value}h`}
                     />
                     <Tooltip
-                        cursor={{ stroke: "hsl(var(--primary))", strokeWidth: 1.5 }}
+                        cursor={<CustomTooltipCursor />}
                         content={<ChartTooltipContent 
                             labelFormatter={(label) => viewType === 'monthly' ? label : format(new Date(`${label}T00:00:00`), 'PPP')}
                             formatter={(value) => `${formatTime(Number(value) * 3600000, 'long') || '0 minutes'}`}
