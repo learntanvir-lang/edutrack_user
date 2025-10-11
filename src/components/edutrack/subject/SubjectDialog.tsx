@@ -61,6 +61,7 @@ export function SubjectDialog({ open, onOpenChange, subject }: SubjectDialogProp
         code: values.code,
         papers: subject?.papers || [],
         createdAt: subject?.createdAt || new Date().toISOString(),
+        showOnDashboard: subject?.showOnDashboard ?? true,
       },
     });
     onOpenChange(false);

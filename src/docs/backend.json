@@ -1,0 +1,185 @@
+
+{
+  "entities": {
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user in the EduTrack application.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the User entity."
+        },
+        "username": {
+          "type": "string",
+          "description": "The user's username."
+        },
+        "displayName": {
+          "type": "string",
+          "description": "The user's display name."
+        },
+        "email": {
+          "type": "string",
+          "description": "The user's email address.",
+          "format": "email"
+        },
+        "firstName": {
+          "type": "string",
+          "description": "The user's first name."
+        },
+        "lastName": {
+          "type": "string",
+          "description": "The user's last name."
+        }
+      },
+      "required": [
+        "id",
+        "username",
+        "displayName",
+        "email"
+      ]
+    },
+    "Exam": {
+      "title": "Exam",
+      "type": "object",
+      "description": "Represents an exam.",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "subjectIds": { "type": "array", "items": { "type": "string" } },
+        "chapterIds": { "type": "array", "items": { "type": "string" } },
+        "date": { "type": "string", "format": "date-time" },
+        "isCompleted": { "type": "boolean" },
+        "marksObtained": { "type": "number" },
+        "totalMarks": { "type": "number" }
+      },
+      "required": ["id", "name", "date", "isCompleted"]
+    },
+    "Subject": {
+      "title": "Subject",
+      "type": "object",
+      "description": "Represents a subject.",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "code": { "type": "string" },
+        "papers": {
+          "type": "array",
+          "items": { "$ref": "#/entities/Paper" }
+        },
+        "showOnDashboard": {
+            "type": "boolean",
+            "description": "Whether to show the subject on the dashboard progress overview."
+        }
+      },
+      "required": ["id", "name", "papers"]
+    },
+    "Paper": {
+      "title": "Paper",
+      "type": "object",
+      "description": "Represents a paper within a subject.",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "chapters": {
+          "type": "array",
+          "items": { "$ref": "#/entities/Chapter" }
+        }
+      },
+      "required": ["id", "name", "chapters"]
+    },
+    "Chapter": {
+      "title": "Chapter",
+      "type": "object",
+      "description": "Represents a chapter within a paper.",
+      "properties": {
+        "id": { "type": "string" },
+        "number": { "type": "string" },
+        "name": { "type": "string" },
+        "isCompleted": { "type": "boolean" },
+        "progressItems": {
+          "type": "array",
+          "items": { "$ref": "#/entities/ProgressItem" }
+        },
+        "resourceLinks": {
+          "type": "array",
+          "items": { "$ref": "#/entities/ResourceLink" }
+        }
+      },
+      "required": ["id", "name", "isCompleted", "progressItems", "resourceLinks"]
+    },
+    "ProgressItem": {
+      "title": "Progress Item",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "completed": { "type": "number" },
+        "total": { "type": "number" }
+      },
+      "required": ["id", "name", "completed", "total"]
+    },
+    "ResourceLink": {
+      "title": "Resource Link",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "url": { "type": "string", "format": "uri" },
+        "description": { "type": "string" }
+      },
+      "required": ["id", "url", "description"]
+    },
+    "Note": {
+      "title": "Note",
+      "type": "object",
+      "description": "Represents an important note or resource.",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "imageUrl": { "type": "string", "format": "uri" },
+        "links": {
+          "type": "array",
+          "items": { "$ref": "#/entities/NoteLink" }
+        },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "title", "imageUrl", "createdAt"]
+    },
+    "NoteLink": {
+      "title": "Note Link",
+      "type": "object",
+      "description": "Represents a link within a note.",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "url": { "type": "string", "format": "uri" }
+      },
+      "required": ["id", "title", "url"]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password"
+    ]
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "Stores user profile information."
+    },
+    "/users/{userId}/subjects": {
+        "schema": {"$ref": "#/entities/Subject"},
+        "description": "Sub-collection for subjects belonging to a user."
+    },
+    "/users/{userId}/exams": {
+        "schema": {"$ref": "#/entities/Exam"},
+        "description": "Sub-collection for exams belonging to a user."
+    },
+    "/users/{userId}/notes": {
+        "schema": {"$ref": "#/entities/Note"},
+        "description": "Sub-collection for notes belonging to a user."
+    }
+  }
+}

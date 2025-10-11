@@ -33,6 +33,7 @@ export interface Subject {
   code?: string;
   papers: Paper[];
   createdAt: string; // ISO 8601 format
+  showOnDashboard?: boolean;
 }
 
 export interface Exam {

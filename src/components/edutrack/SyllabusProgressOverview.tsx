@@ -29,7 +29,9 @@ export function SyllabusProgressOverview({ subjects }: SyllabusProgressOverviewP
   const router = useRouter();
 
   const progressData: SubjectProgress[] = useMemo(() => {
-    return subjects.map(subject => {
+    return subjects
+    .filter(subject => subject.showOnDashboard ?? true)
+    .map(subject => {
       const papersProgress = subject.papers.map(paper => {
         let totalChapters = paper.chapters.length;
         let completedChapters = paper.chapters.filter(c => c.isCompleted).length;
@@ -47,6 +49,8 @@ export function SyllabusProgressOverview({ subjects }: SyllabusProgressOverviewP
     });
   }, [subjects]);
 
+  const visibleSubjects = subjects.filter(s => s.showOnDashboard ?? true);
+
   return (
     <Card className="h-full flex flex-col transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -54,7 +58,7 @@ export function SyllabusProgressOverview({ subjects }: SyllabusProgressOverviewP
         <BookCopy className="h-5 w-5 text-muted-foreground" />
       </CardHeader>
       <CardContent className="flex-grow pt-4">
-        {subjects.length > 0 ? (
+        {visibleSubjects.length > 0 ? (
           <ScrollArea className="h-80 pr-4">
             <div className="space-y-4">
                 {progressData.map(({ subject, papers }) => (
@@ -76,7 +80,8 @@ export function SyllabusProgressOverview({ subjects }: SyllabusProgressOverviewP
           </ScrollArea>
         ) : (
           <div className="flex h-full flex-col items-center justify-center text-center text-muted-foreground">
-            <p>No subjects added yet.</p>
+            <p>No subjects to show on dashboard.</p>
+            <p className="text-xs">Enable subjects from the Syllabus page.</p>
           </div>
         )}
       </CardContent>

@@ -5,7 +5,7 @@ import { useState, useContext, useMemo } from 'react';
 import { Subject } from '@/lib/types';
 import { AppDataContext } from '@/context/AppDataContext';
 import { Button } from '@/components/ui/button';
-import { MoreHorizontal, Pen, ChevronDown, PlusCircle, Copy, Trash2 } from 'lucide-react';
+import { MoreHorizontal, Pen, ChevronDown, PlusCircle, Copy, Trash2, Eye, EyeOff } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -64,6 +64,13 @@ export function SubjectList() {
     }
     setIsPaperDialogOpen(open);
   }
+  
+  const toggleShowOnDashboard = (subject: Subject) => {
+    dispatch({
+      type: 'UPDATE_SUBJECT',
+      payload: { ...subject, showOnDashboard: !(subject.showOnDashboard ?? true) },
+    });
+  };
 
   if (subjects.length === 0) {
     return (
@@ -87,6 +94,7 @@ export function SubjectList() {
                 { completed: 0, total: 0 }
             );
             const percentage = subjectProgress.total > 0 ? Math.round((subjectProgress.completed / subjectProgress.total) * 100) : 0;
+            const isVisible = subject.showOnDashboard ?? true;
 
             return (
           <AccordionItem key={subject.id} value={subject.id} className="border-none">
@@ -102,6 +110,9 @@ export function SubjectList() {
                    </div>
                 </AccordionTrigger>
                 <div className="flex items-center">
+                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => toggleShowOnDashboard(subject)} title={isVisible ? "Hide from dashboard" : "Show on dashboard"}>
+                        {isVisible ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4 text-muted-foreground" />}
+                    </Button>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="icon" className="h-8 w-8">
