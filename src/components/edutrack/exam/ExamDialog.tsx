@@ -132,9 +132,17 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
       chapterIds: values.chapterIds || [],
       date: combinedDate.toISOString(),
       isCompleted: values.isCompleted,
-      marksObtained: values.isCompleted ? values.marksObtained : undefined,
-      totalMarks: values.isCompleted ? values.totalMarks : undefined,
     };
+    
+    if (values.isCompleted) {
+        if (typeof values.marksObtained === 'number' && !isNaN(values.marksObtained)) {
+            examData.marksObtained = values.marksObtained;
+        }
+        if (typeof values.totalMarks === 'number' && !isNaN(values.totalMarks)) {
+            examData.totalMarks = values.totalMarks;
+        }
+    }
+
 
     dispatch({
       type: isEditing ? "UPDATE_EXAM" : "ADD_EXAM",
@@ -448,9 +456,5 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
     </Dialog>
   );
 }
-
-    
-
-    
 
     
