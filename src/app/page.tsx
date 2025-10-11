@@ -48,7 +48,12 @@ export default function Home() {
           <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold">Subjects</h2>
-                <Button variant="outline" size="sm" onClick={() => setIsSubjectDialogOpen(true)}>
+                <Button 
+                  variant="default"
+                  size="sm"
+                  className="transition-all duration-300 bg-primary text-primary-foreground border-2 border-primary hover:bg-transparent hover:text-primary hover:shadow-lg hover:shadow-primary/20"
+                  onClick={() => setIsSubjectDialogOpen(true)}
+                >
                     <PlusCircle className="mr-2 h-4 w-4" />
                     Add Subject
                 </Button>

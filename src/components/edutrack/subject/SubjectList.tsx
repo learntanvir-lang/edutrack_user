@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useState, useContext, useMemo } from 'react';
@@ -130,7 +129,12 @@ export function SubjectList() {
               <AccordionContent className="p-6 pt-0">
                  <div className="border-t pt-4 space-y-4">
                     <PaperList subjectId={subject.id} papers={subject.papers} />
-                    <Button variant="outline" size="sm" className="w-full" onClick={() => handleAddPaperClick(subject.id)}>
+                    <Button 
+                        variant="default"
+                        size="sm"
+                        className="w-full transition-all duration-300 bg-primary text-primary-foreground border-2 border-primary hover:bg-transparent hover:text-primary hover:shadow-lg hover:shadow-primary/20"
+                        onClick={() => handleAddPaperClick(subject.id)}
+                    >
                         <PlusCircle className="mr-2 h-4 w-4" />
                         Add Paper
                     </Button>

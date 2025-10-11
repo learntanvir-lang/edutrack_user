@@ -33,7 +33,12 @@ export function ExamList() {
   return (
     <div className="space-y-8">
        <div className="flex justify-end">
-            <Button variant="outline" size="sm" onClick={() => setIsExamDialogOpen(true)}>
+            <Button 
+              variant="default"
+              size="sm"
+              className="transition-all duration-300 bg-primary text-primary-foreground border-2 border-primary hover:bg-transparent hover:text-primary hover:shadow-lg hover:shadow-primary/20"
+              onClick={() => setIsExamDialogOpen(true)}
+            >
                 <PlusCircle className="mr-2 h-4 w-4" />
                 Add Exam
             </Button>
