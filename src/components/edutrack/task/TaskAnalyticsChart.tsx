@@ -15,7 +15,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { ChevronDown, Download, Info } from 'lucide-react';
 import { toPng } from 'html-to-image';
 import { cn } from '@/lib/utils';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface TaskAnalyticsChartProps {
   tasks: StudyTask[];
@@ -343,7 +343,7 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
         {(viewType === 'weekly' || viewType === 'monthly') && (
           <Alert className="mt-4 bg-primary/5 border-primary/20">
             <Info className="h-4 w-4" color="hsl(var(--primary))" />
-            <AlertDescription className="font-semibold text-foreground">
+            <AlertDescription className="font-semibold text-foreground flex items-center gap-2">
                 Daily Average - <span className="text-primary">{formatTime(averageDailyTime, 'long')} per day</span>
             </AlertDescription>
           </Alert>
