@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useRef } from 'react';
 import { Line, LineChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, LabelList, Dot } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartConfig, ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
@@ -11,7 +11,8 @@ import type { DateRange } from 'react-day-picker';
 import type { ViewType } from '@/app/studytask/page';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Download } from 'lucide-react';
+import { toPng } from 'html-to-image';
 
 interface TaskAnalyticsChartProps {
   tasks: StudyTask[];
@@ -68,6 +69,7 @@ const CustomLabel = (props: any) => {
 export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalyticsChartProps) {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedSubcategory, setSelectedSubcategory] = useState<string>('all');
+  const cardRef = useRef<HTMLDivElement>(null);
 
   const { categories, subcategoriesByCategory } = useMemo(() => {
     const allCategories = new Set<string>();
@@ -173,8 +175,24 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
     
   }, [tasks, dateRange, viewType, selectedCategory, selectedSubcategory]);
 
+  const handleDownload = async () => {
+    if (cardRef.current === null) {
+      return;
+    }
+
+    try {
+      const dataUrl = await toPng(cardRef.current, { cacheBust: true, backgroundColor: 'white' });
+      const link = document.createElement('a');
+      link.download = `task-analytics-${viewType}-${format(new Date(), 'yyyy-MM-dd')}.png`;
+      link.href = dataUrl;
+      link.click();
+    } catch (err) {
+      console.error('Failed to download image', err);
+    }
+  };
+
   return (
-    <Card className="shadow-lg rounded-xl">
+    <Card className="shadow-lg rounded-xl" ref={cardRef}>
       <CardHeader>
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between">
             <div>
@@ -215,6 +233,10 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
                         ))}
                     </DropdownMenuContent>
                 </DropdownMenu>
+                <Button variant="outline" size="icon" onClick={handleDownload}>
+                    <Download className="h-4 w-4" />
+                    <span className="sr-only">Download chart</span>
+                </Button>
             </div>
         </div>
       </CardHeader>
