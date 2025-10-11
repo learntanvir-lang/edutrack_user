@@ -120,7 +120,7 @@ export function TaskItem({ task }: TaskItemProps) {
         let parts = [];
         if (hours > 0) parts.push(`${hours}h`);
         if (minutes > 0) parts.push(`${minutes}m`);
-        if (seconds > 0 && hours === 0) parts.push(`${seconds}s`);
+        if (seconds > 0 && hours === 0 && minutes === 0) parts.push(`${seconds}s`);
 
         return parts.join(' ') || '0s';
   };
@@ -131,9 +131,8 @@ export function TaskItem({ task }: TaskItemProps) {
         "flex items-start gap-4 p-4 rounded-lg border transition-all duration-300",
         task.isCompleted 
             ? "bg-muted/30 border-dashed" 
-            : "bg-card",
-        !task.isCompleted && "hover:shadow-lg",
-        isOverdue && "border-red-500/50 hover:shadow-red-500/10"
+            : "bg-card hover:shadow-lg",
+        isOverdue && "border-red-500/50 shadow-red-500/10 hover:shadow-red-500/20"
       )}>
       <Checkbox
         id={`task-${task.id}`}
