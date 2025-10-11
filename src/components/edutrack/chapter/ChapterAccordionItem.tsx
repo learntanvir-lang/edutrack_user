@@ -149,7 +149,7 @@ function ChapterAccordionItem({ chapter, subjectId, paperId }: ChapterAccordionI
                                     <Activity className="w-4 h-4" />
                                     <span>Progress Trackers</span>
                                 </div>
-                                <Button variant="default" size="sm" onClick={() => setIsProgressItemDialogOpen(true)} className="transition-all duration-300 bg-primary text-primary-foreground border-2 border-primary hover:bg-transparent hover:text-primary hover:shadow-lg hover:shadow-primary/20">
+                                <Button variant="default" size="sm" onClick={() => setIsProgressItemDialogOpen(true)} className="font-bold transition-all duration-300 bg-primary text-primary-foreground border-2 border-primary hover:bg-transparent hover:text-primary hover:shadow-lg hover:shadow-primary/20">
                                     <PlusCircle className="mr-2 h-4 w-4" />
                                     Add Tracker
                                 </Button>
@@ -179,7 +179,7 @@ function ChapterAccordionItem({ chapter, subjectId, paperId }: ChapterAccordionI
                                     <LinkIcon className="w-4 h-4" />
                                     <span>Resources</span>
                                 </div>
-                                <Button variant="default" size="sm" onClick={handleAddLink} className="transition-all duration-300 bg-primary text-primary-foreground border-2 border-primary hover:bg-transparent hover:text-primary hover:shadow-lg hover:shadow-primary/20">
+                                <Button variant="default" size="sm" onClick={handleAddLink} className="font-bold transition-all duration-300 bg-primary text-primary-foreground border-2 border-primary hover:bg-transparent hover:text-primary hover:shadow-lg hover:shadow-primary/20">
                                     <PlusCircle className="mr-2 h-4 w-4" />
                                     Add Resource
                                 </Button>
@@ -187,7 +187,7 @@ function ChapterAccordionItem({ chapter, subjectId, paperId }: ChapterAccordionI
                             <div className="space-y-2">
                                 {chapter.resourceLinks.map(link => (
                                      <div key={link.id} className="group/link flex items-center gap-1 rounded-md transition-colors border bg-primary/10 hover:bg-primary/20 border-border hover:border-primary">
-                                        <Button variant="ghost" size="sm" className="w-full justify-start gap-2 flex-grow text-primary hover:bg-transparent" asChild>
+                                        <Button variant="ghost" size="sm" className="w-full justify-start gap-2 flex-grow text-primary hover:bg-transparent hover:text-primary" asChild>
                                             <Link href={link.url} target="_blank" rel="noopener noreferrer">
                                                 <ExternalLink className="h-4 w-4 flex-shrink-0" />
                                                 <span className="truncate">{link.description || link.url}</span>

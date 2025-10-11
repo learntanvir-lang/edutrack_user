@@ -108,7 +108,7 @@ export function NoteCard({ note }: NoteCardProps) {
                         <div className="space-y-2">
                              {note.links.map(link => (
                                 <div key={link.id} className="group/link flex items-center gap-1 rounded-md transition-colors border bg-primary/10 hover:bg-primary/20 border-border hover:border-primary">
-                                    <Button variant="ghost" size="sm" className="w-full justify-start gap-2 flex-grow hover:bg-transparent text-primary hover:text-primary" asChild>
+                                    <Button variant="ghost" size="sm" className="w-full justify-start gap-2 flex-grow text-primary hover:bg-transparent hover:text-primary" asChild>
                                         <Link href={link.url} target="_blank" rel="noopener noreferrer">
                                             <ExternalLink className="h-4 w-4 flex-shrink-0" />
                                             <span className="truncate">{link.title}</span>
@@ -142,7 +142,7 @@ export function NoteCard({ note }: NoteCardProps) {
                 <CardFooter className="border-t p-2">
                     <Button 
                         variant="default" 
-                        className="w-full transition-all duration-300 bg-primary text-primary-foreground border-2 border-primary hover:bg-transparent hover:text-primary hover:shadow-lg hover:shadow-primary/20 text-base font-semibold"
+                        className="w-full transition-all duration-300 bg-primary text-primary-foreground border-2 border-primary hover:bg-transparent hover:text-primary hover:shadow-lg hover:shadow-primary/20 text-base font-bold"
                         onClick={handleAddLink}
                     >
                         <PlusCircle className="mr-2 h-4 w-4" />

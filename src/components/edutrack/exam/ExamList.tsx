@@ -36,7 +36,7 @@ export function ExamList() {
             <Button 
               variant="default"
               size="sm"
-              className="transition-all duration-300 bg-primary text-primary-foreground border-2 border-primary hover:bg-transparent hover:text-primary hover:shadow-lg hover:shadow-primary/20"
+              className="font-bold transition-all duration-300 bg-primary text-primary-foreground border-2 border-primary hover:bg-transparent hover:text-primary hover:shadow-lg hover:shadow-primary/20"
               onClick={() => setIsExamDialogOpen(true)}
             >
                 <PlusCircle className="mr-2 h-4 w-4" />
