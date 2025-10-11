@@ -2,7 +2,7 @@
 "use client";
 
 import { createContext, useReducer, useEffect, ReactNode, useContext, useMemo } from "react";
-import { Subject, Exam, Paper, Chapter, Note, StudyTask } from "@/lib/types";
+import { Subject, Exam, Paper, Chapter, Note, StudyTask, TimeLog } from "@/lib/types";
 import { initialData } from "@/lib/data";
 import { v4 as uuidv4 } from 'uuid';
 import { useFirebase, useUser } from "@/firebase";
@@ -49,7 +49,10 @@ type Action =
   | { type: "DELETE_NOTE"; payload: { id: string } }
   | { type: "ADD_TASK"; payload: StudyTask }
   | { type: "UPDATE_TASK"; payload: StudyTask }
-  | { type: "DELETE_TASK"; payload: { id: string } };
+  | { type: "DELETE_TASK"; payload: { id: string } }
+  | { type: "ADD_TIME_LOG"; payload: { taskId: string; log: TimeLog } }
+  | { type: "UPDATE_TIME_LOG"; payload: { taskId: string; log: TimeLog } }
+  | { type: "DELETE_TIME_LOG"; payload: { taskId: string; logId: string } };
 
 
 const appReducer = (state: AppState, action: Action): AppState => {
@@ -160,6 +163,36 @@ const appReducer = (state: AppState, action: Action): AppState => {
       return { ...state, tasks: state.tasks.map(t => t.id === action.payload.id ? action.payload : t) };
     case "DELETE_TASK":
       return { ...state, tasks: state.tasks.filter(t => t.id !== action.payload.id) };
+    case "ADD_TIME_LOG": {
+        return {
+            ...state,
+            tasks: state.tasks.map(task =>
+                task.id === action.payload.taskId
+                    ? { ...task, timeLogs: [...(task.timeLogs || []), action.payload.log] }
+                    : task
+            )
+        };
+    }
+    case "UPDATE_TIME_LOG": {
+        return {
+            ...state,
+            tasks: state.tasks.map(task =>
+                task.id === action.payload.taskId
+                    ? { ...task, timeLogs: (task.timeLogs || []).map(log => log.id === action.payload.log.id ? action.payload.log : log) }
+                    : task
+            )
+        };
+    }
+    case "DELETE_TIME_LOG": {
+        return {
+            ...state,
+            tasks: state.tasks.map(task =>
+                task.id === action.payload.taskId
+                    ? { ...task, timeLogs: (task.timeLogs || []).filter(log => log.id !== action.payload.logId) }
+                    : task
+            )
+        };
+    }
     default:
       return state;
   }
@@ -299,6 +332,16 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
                 case "DELETE_TASK":
                     deleteDocumentNonBlocking(firestore, `users/${userId}/tasks`, action.payload.id);
                     break;
+                
+                case "ADD_TIME_LOG":
+                case "UPDATE_TIME_LOG":
+                case "DELETE_TIME_LOG": {
+                    const taskToUpdate = newState.tasks.find(t => t.id === action.payload.taskId);
+                    if (taskToUpdate) {
+                         setDocumentNonBlocking(firestore, `users/${userId}/tasks`, taskToUpdate.id, taskToUpdate);
+                    }
+                    break;
+                }
             }
         } else {
              localStorage.setItem('appData', JSON.stringify(newState));
@@ -312,3 +355,4 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
     </AppDataContext.Provider>
   );
 };
+

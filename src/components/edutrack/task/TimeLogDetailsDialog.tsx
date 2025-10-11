@@ -1,18 +1,24 @@
 
 "use client";
 
+import { useState } from "react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { StudyTask, TimeLog } from "@/lib/types";
 import { format, formatDistanceStrict } from "date-fns";
-import { Clock, Calendar } from "lucide-react";
+import { Clock, PlusCircle, MoreVertical, Edit, Trash2 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { TimeLogEntryDialog } from "./TimeLogEntryDialog";
+import { DeleteConfirmationDialog } from "../DeleteConfirmationDialog";
 
 interface TimeLogDetailsDialogProps {
   open: boolean;
@@ -21,24 +27,26 @@ interface TimeLogDetailsDialogProps {
 }
 
 export function TimeLogDetailsDialog({ open, onOpenChange, task }: TimeLogDetailsDialogProps) {
-    
-    const formatLogEntry = (log: TimeLog) => {
-        const start = new Date(log.startTime);
-        const end = log.endTime ? new Date(log.endTime) : new Date();
-
-        const formattedStart = format(start, "d MMM, yyyy h:mm a");
-        const formattedEnd = log.endTime ? format(end, "h:mm a") : "now";
-
-        const duration = formatDistanceStrict(end, start);
-        
-        return `${formattedStart} - ${formattedEnd} (${duration})`;
-    };
+    const [isEntryDialogOpen, setIsEntryDialogOpen] = useState(false);
+    const [editingLog, setEditingLog] = useState<TimeLog | undefined>(undefined);
+    const [deletingLog, setDeletingLog] = useState<TimeLog | null>(null);
 
     const sortedLogs = [...(task.timeLogs || [])].sort((a,b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
+    
+    const handleAddLog = () => {
+        setEditingLog(undefined);
+        setIsEntryDialogOpen(true);
+    };
+
+    const handleEditLog = (log: TimeLog) => {
+        setEditingLog(log);
+        setIsEntryDialogOpen(true);
+    };
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[80vh] flex flex-col">
+      <DialogContent className="max-h-[80vh] w-full max-w-2xl flex flex-col">
         <DialogHeader>
           <DialogTitle>Time Log Details</DialogTitle>
           <DialogDescription>
@@ -48,31 +56,87 @@ export function TimeLogDetailsDialog({ open, onOpenChange, task }: TimeLogDetail
         <div className="flex-grow overflow-hidden -mx-6 px-6">
             <ScrollArea className="h-full pr-6 -mr-6">
                 {sortedLogs.length > 0 ? (
-                <div className="space-y-4">
-                    {sortedLogs.map((log, index) => (
-                    <div key={log.id} className="text-sm">
-                        <div className="flex items-center gap-3 text-foreground">
-                            <Clock className="h-4 w-4 text-primary flex-shrink-0" />
-                            <span className="font-mono">{formatLogEntry(log)}</span>
-                        </div>
-                        {log.id === task.activeTimeLogId && (
-                           <div className="pl-7 text-xs text-green-600 font-semibold animate-pulse">
-                                Session in progress...
-                            </div>
-                        )}
-                    </div>
-                    ))}
-                </div>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Date</TableHead>
+                            <TableHead>Time</TableHead>
+                            <TableHead>Duration</TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {sortedLogs.map((log) => {
+                            const start = new Date(log.startTime);
+                            const end = log.endTime ? new Date(log.endTime) : new Date();
+                            const duration = log.endTime ? formatDistanceStrict(end, start) : 'In progress';
+
+                            return (
+                                <TableRow key={log.id}>
+                                    <TableCell>{format(start, 'd MMM, yyyy')}</TableCell>
+                                    <TableCell className="font-mono">{format(start, 'h:mm a')} - {log.endTime ? format(end, 'h:mm a') : 'now'}</TableCell>
+                                    <TableCell className="font-mono">{duration}</TableCell>
+                                    <TableCell className="text-right">
+                                         <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button variant="ghost" size="icon" className="h-8 w-8">
+                                                    <MoreVertical className="h-4 w-4" />
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end">
+                                                <DropdownMenuItem onClick={() => handleEditLog(log)}>
+                                                    <Edit className="mr-2 h-4 w-4" /> Edit
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => setDeletingLog(log)} className="text-destructive">
+                                                    <Trash2 className="mr-2 h-4 w-4" /> Delete
+                                                </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </TableCell>
+                                </TableRow>
+                            )
+                        })}
+                    </TableBody>
+                </Table>
                 ) : (
-                <div className="flex flex-col items-center justify-center text-center text-muted-foreground py-10">
+                <div className="flex flex-col items-center justify-center text-center text-muted-foreground py-10 h-full">
                     <Clock className="h-10 w-10 mb-4" />
                     <h3 className="font-semibold text-lg">No Time Logs</h3>
-                    <p className="text-sm">Start the timer on this task to begin logging your sessions.</p>
+                    <p className="text-sm">Start the timer or add a record to log your sessions.</p>
                 </div>
                 )}
             </ScrollArea>
         </div>
+        <DialogFooter className="pt-4 border-t">
+            <Button variant="outline" onClick={handleAddLog}>
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Add Record
+            </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
+
+    <TimeLogEntryDialog 
+        open={isEntryDialogOpen}
+        onOpenChange={setIsEntryDialogOpen}
+        task={task}
+        log={editingLog}
+    />
+
+    {deletingLog && (
+        <DeleteConfirmationDialog 
+            open={!!deletingLog}
+            onOpenChange={() => setDeletingLog(null)}
+            onConfirm={() => {
+                // Dispatch delete action here
+                console.log("Delete log", deletingLog.id);
+                setDeletingLog(null);
+            }}
+            itemName="this time log"
+            itemType="entry"
+        />
+    )}
+    </>
   );
 }
+
