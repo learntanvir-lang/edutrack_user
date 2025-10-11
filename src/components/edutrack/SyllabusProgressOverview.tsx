@@ -75,7 +75,7 @@ export function SyllabusProgressOverview({ subjects }: SyllabusProgressOverviewP
                                         <span className="text-muted-foreground font-medium">{paper.name}</span>
                                         <span className="font-semibold text-foreground">{completedChapters} / {totalChapters}</span>
                                     </div>
-                                    <Progress value={percentage} />
+                                    <Progress value={percentage} className="h-2" />
                                 </div>
                             )) : (
                                 <p className="text-xs text-muted-foreground md:col-span-2">No papers in this subject.</p>
