@@ -35,7 +35,7 @@ export function ChapterList({ chapters, subjectId, paperId }: ChapterListProps) 
   }
 
   return (
-      <div className="w-full space-y-2">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {sortedChapters.map((chapter) => (
             <div key={chapter.id}>
               <ChapterAccordionItem 
