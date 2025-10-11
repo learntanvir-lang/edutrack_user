@@ -17,14 +17,16 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { signOut } from 'firebase/auth';
 import { LogOut, Sparkles, KeyRound, Notebook } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { Skeleton } from '../ui/skeleton';
 import { ChangePasswordDialog } from './ChangePasswordDialog';
+import { cn } from '@/lib/utils';
 
 export function AppHeader() {
   const { user, isUserLoading } = useUser();
   const auth = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
 
   const handleSignOut = async () => {
@@ -42,6 +44,8 @@ export function AppHeader() {
     if (!displayName) return 'U';
     return displayName.substring(0, 2).toUpperCase();
   };
+
+  const isNotesPage = pathname === '/notes';
 
   return (
     <>
@@ -67,7 +71,15 @@ export function AppHeader() {
               <Skeleton className="h-8 w-20 rounded-md" />
             ) : user ? (
               <>
-                <Button asChild variant="secondary" size="default" className="font-bold">
+                <Button 
+                    asChild 
+                    variant="ghost" 
+                    size="lg" 
+                    className={cn(
+                        "font-bold text-primary hover:bg-primary/5",
+                        isNotesPage && "bg-primary/10"
+                    )}
+                >
                     <Link href="/notes">
                         <Notebook className="mr-2 h-4 w-4" />
                         Notes
