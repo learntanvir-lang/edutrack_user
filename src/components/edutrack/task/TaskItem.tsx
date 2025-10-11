@@ -10,9 +10,11 @@ import { Trash2, Edit, Play, Square, MoreVertical, Calendar, Flag, Tag, Clock } 
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { TaskDialog } from './TaskDialog';
-import { format, formatDistanceStrict } from 'date-fns';
+import { format } from 'date-fns';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { v4 as uuidv4 } from 'uuid';
+import { TimeLogDetailsDialog } from './TimeLogDetailsDialog';
+
 
 interface TaskItemProps {
   task: StudyTask;
@@ -21,6 +23,7 @@ interface TaskItemProps {
 export function TaskItem({ task }: TaskItemProps) {
   const { dispatch } = useContext(AppDataContext);
   const [isEditing, setIsEditing] = useState(false);
+  const [isTimeLogOpen, setIsTimeLogOpen] = useState(false);
   const [now, setNow] = useState(new Date());
 
   const activeLog = useMemo(() => {
@@ -72,7 +75,7 @@ export function TaskItem({ task }: TaskItemProps) {
     if (task.activeTimeLogId) {
       // Stop timer
       const now = new Date().toISOString();
-      const updatedLogs = task.timeLogs.map(log => 
+      const updatedLogs = (task.timeLogs || []).map(log => 
         log.id === task.activeTimeLogId ? { ...log, endTime: now } : log
       );
 
@@ -102,30 +105,30 @@ export function TaskItem({ task }: TaskItemProps) {
     }
   };
   
-  const formatTime = (totalMilliseconds: number) => {
-    if (totalMilliseconds < 1000) return '0s';
+    const formatTime = (totalMilliseconds: number) => {
+        if (totalMilliseconds < 1000) return '0s';
 
-    const hours = Math.floor(totalMilliseconds / 3600000);
-    const minutes = Math.floor((totalMilliseconds % 3600000) / 60000);
-    const seconds = Math.floor((totalMilliseconds % 60000) / 1000);
+        const hours = Math.floor(totalMilliseconds / 3600000);
+        const minutes = Math.floor((totalMilliseconds % 3600000) / 60000);
+        const seconds = Math.floor((totalMilliseconds % 60000) / 1000);
 
-    let parts = [];
-    if (hours > 0) parts.push(`${hours}h`);
-    if (minutes > 0) parts.push(`${minutes}m`);
-    if (seconds > 0 && hours === 0) parts.push(`${seconds}s`);
+        let parts = [];
+        if (hours > 0) parts.push(`${hours}h`);
+        if (minutes > 0) parts.push(`${minutes}m`);
+        if (seconds > 0 && hours === 0 && minutes < 5) parts.push(`${seconds}s`);
 
-    return parts.join(' ') || '0s';
+        return parts.join(' ') || '0s';
   };
 
 
   return (
     <>
     <div className={cn(
-        "flex items-start gap-4 p-4 rounded-lg border-b transition-shadow duration-300",
+        "flex items-start gap-4 p-4 rounded-lg border transition-shadow duration-300",
         task.isCompleted 
             ? "bg-muted/50 border-border" 
-            : "bg-card border-border",
-        !task.isCompleted && "hover:shadow-lg hover:shadow-primary/10"
+            : "bg-card border-primary/50",
+         !task.isCompleted && "hover:shadow-lg hover:shadow-primary/20"
       )}>
       <Checkbox
         id={`task-${task.id}`}
@@ -168,10 +171,13 @@ export function TaskItem({ task }: TaskItemProps) {
                 {task.category}
             </Badge>
             {task.subcategory && <Badge variant="secondary" className={cn("flex items-center gap-1.5", task.isCompleted && "bg-muted text-muted-foreground")}>{task.subcategory}</Badge>}
-            <Badge variant="outline" className={cn("flex items-center gap-1.5 font-mono", task.isCompleted && "border-muted-foreground/50")}>
-                <Clock className="h-3 w-3" />
-                {formatTime(totalTimeSpent)}
-            </Badge>
+            
+            <button onClick={() => setIsTimeLogOpen(true)} className="disabled:opacity-50" disabled={!task.timeLogs || task.timeLogs.length === 0}>
+                <Badge variant="outline" className={cn("flex items-center gap-1.5 font-mono cursor-pointer transition-colors", task.isCompleted ? "border-muted-foreground/50" : "hover:bg-primary/10 hover:border-primary/50")}>
+                    <Clock className="h-3 w-3" />
+                    {formatTime(totalTimeSpent)}
+                </Badge>
+            </button>
         </div>
       </div>
       
@@ -216,6 +222,11 @@ export function TaskItem({ task }: TaskItemProps) {
         onOpenChange={setIsEditing}
         task={task}
         date={task.date}
+    />
+    <TimeLogDetailsDialog
+        open={isTimeLogOpen}
+        onOpenChange={setIsTimeLogOpen}
+        task={task}
     />
     </>
   );
