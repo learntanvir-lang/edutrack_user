@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useContext, memo } from "react";
@@ -148,11 +147,6 @@ function ChapterAccordionItem({ chapter, subjectId, paperId }: ChapterAccordionI
                                     </div>
                                 </div>
                             )}
-
-                             <Button variant="outline" size="sm" className="w-full mt-4" onClick={() => setIsEditingChapter(true)}>
-                                <Edit className="mr-2 h-4 w-4" />
-                                Edit Chapter Details
-                            </Button>
                         </div>
                     </AccordionContent>
                 </div>
