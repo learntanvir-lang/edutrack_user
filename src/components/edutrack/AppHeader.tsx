@@ -16,10 +16,11 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { signOut } from 'firebase/auth';
-import { LogOut, Sparkles, KeyRound, Notebook } from 'lucide-react';
+import { LogOut, Sparkles, KeyRound, Notebook, User as UserIcon } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import { Skeleton } from '../ui/skeleton';
 import { ChangePasswordDialog } from './ChangePasswordDialog';
+import { EditProfileDialog } from './EditProfileDialog';
 import { cn } from '@/lib/utils';
 
 export function AppHeader() {
@@ -28,6 +29,7 @@ export function AppHeader() {
   const router = useRouter();
   const pathname = usePathname();
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
+  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
 
   const handleSignOut = async () => {
     try {
@@ -102,10 +104,15 @@ export function AppHeader() {
                       </div>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => setIsEditProfileOpen(true)}>
+                      <UserIcon className="mr-2 h-4 w-4" />
+                      <span>Edit Profile</span>
+                    </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setIsChangePasswordOpen(true)}>
                       <KeyRound className="mr-2 h-4 w-4" />
                       <span>Change Password</span>
                     </DropdownMenuItem>
+                    <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleSignOut}>
                       <LogOut className="mr-2 h-4 w-4" />
                       <span>Log out</span>
@@ -122,6 +129,7 @@ export function AppHeader() {
         </div>
       </header>
       {user && <ChangePasswordDialog open={isChangePasswordOpen} onOpenChange={setIsChangePasswordOpen} />}
+      {user && <EditProfileDialog open={isEditProfileOpen} onOpenChange={setIsEditProfileOpen} />}
     </>
   );
 }

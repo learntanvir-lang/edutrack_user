@@ -97,7 +97,7 @@ export function ChangePasswordDialog({ open, onOpenChange }: ChangePasswordDialo
       const firebaseError = error as FirebaseError;
       let description = "An unexpected error occurred. Please try again.";
 
-      if (firebaseError.code === 'auth/wrong-password') {
+      if (firebaseError.code === 'auth/wrong-password' || firebaseError.code === 'auth/invalid-credential') {
         description = "The current password you entered is incorrect.";
         form.setError('currentPassword', { type: 'manual', message: description });
       } else if (firebaseError.code === 'auth/weak-password') {
