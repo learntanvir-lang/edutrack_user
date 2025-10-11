@@ -11,57 +11,34 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { Plus } from 'lucide-react';
-
-const taskSchema = z.object({
-  title: z.string().min(1, "Task title cannot be empty."),
-});
-type TaskFormValues = z.infer<typeof taskSchema>;
+import { TaskDialog } from './TaskDialog';
 
 interface AddTaskFormProps {
   date: string; // YYYY-MM-DD
 }
 
 export function AddTaskForm({ date }: AddTaskFormProps) {
-  const { dispatch } = useContext(AppDataContext);
-
-  const form = useForm<TaskFormValues>({
-    resolver: zodResolver(taskSchema),
-    defaultValues: { title: "" },
-  });
-
-  const onSubmit = (values: TaskFormValues) => {
-    dispatch({
-      type: "ADD_TASK",
-      payload: {
-        id: uuidv4(),
-        title: values.title,
-        date: date,
-        isCompleted: false,
-      },
-    });
-    form.reset();
-  };
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="flex items-start gap-2 mb-6">
-        <FormField
-          control={form.control}
-          name="title"
-          render={({ field }) => (
-            <FormItem className="flex-1">
-              <FormControl>
-                <Input placeholder="Add a new task for this day..." {...field} className="h-11" />
-              </FormControl>
-              <FormMessage className="mt-1"/>
-            </FormItem>
-          )}
+    <>
+      <div className="flex items-start gap-2 mb-6">
+        <Input 
+            placeholder="Add a new task for this day..." 
+            className="h-11 flex-1"
+            onFocus={() => setIsDialogOpen(true)}
+            readOnly
         />
-        <Button type="submit" size="lg">
+        <Button size="lg" onClick={() => setIsDialogOpen(true)}>
           <Plus className="h-4 w-4 mr-2" />
           Add Task
         </Button>
-      </form>
-    </Form>
+      </div>
+      <TaskDialog 
+        open={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        date={date}
+      />
+    </>
   );
 }

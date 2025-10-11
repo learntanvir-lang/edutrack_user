@@ -157,6 +157,22 @@
         "url": { "type": "string", "format": "uri" }
       },
       "required": ["id", "title", "url"]
+    },
+    "StudyTask": {
+        "title": "Study Task",
+        "type": "object",
+        "description": "Represents a single task in the daily study plan.",
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "description": { "type": "string" },
+          "isCompleted": { "type": "boolean" },
+          "date": { "type": "string", "format": "date", "description": "The date for the task in YYYY-MM-DD format." },
+          "priority": { "type": "string", "enum": ["Low", "Medium", "High"] },
+          "category": { "type": "string" },
+          "subcategory": { "type": "string" }
+        },
+        "required": ["id", "title", "isCompleted", "date", "priority", "category"]
     }
   },
   "auth": {
@@ -180,6 +196,10 @@
     "/users/{userId}/notes": {
         "schema": {"$ref": "#/entities/Note"},
         "description": "Sub-collection for notes belonging to a user."
+    },
+    "/users/{userId}/tasks": {
+        "schema": {"$ref": "#/entities/StudyTask"},
+        "description": "Sub-collection for daily study tasks for a user."
     }
   }
 }

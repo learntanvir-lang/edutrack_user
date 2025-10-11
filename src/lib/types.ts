@@ -65,6 +65,10 @@ export interface Note {
 export interface StudyTask {
   id: string;
   title: string;
+  description?: string;
   isCompleted: boolean;
   date: string; // YYYY-MM-DD format
+  priority: 'Low' | 'Medium' | 'High';
+  category: string;
+  subcategory?: string;
 }

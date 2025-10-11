@@ -218,7 +218,13 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
         }
       } else {
         // Not logged in or Firestore not ready, use initial/empty data
-        dispatch({ type: "SET_STATE", payload: initialState });
+        // Check if there's local data before falling back to initialData
+        const localData = localStorage.getItem('appData');
+        if (localData) {
+          dispatch({ type: "SET_STATE", payload: JSON.parse(localData) });
+        } else {
+          dispatch({ type: "SET_STATE", payload: initialData });
+        }
       }
     };
     
@@ -234,10 +240,9 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
         originalDispatch(action);
         
         // 2. Queue up the non-blocking Firestore operation
+        const newState = appReducer(state, action);
         if (user && firestore) {
             const userId = user.uid;
-            // Note: We need to get the *new* state after the dispatch to ensure we have the latest data
-            const newState = appReducer(state, action);
             
             switch (action.type) {
                 case "ADD_SUBJECT":
@@ -295,6 +300,8 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
                     deleteDocumentNonBlocking(firestore, `users/${userId}/tasks`, action.payload.id);
                     break;
             }
+        } else {
+             localStorage.setItem('appData', JSON.stringify(newState));
         }
     };
   }, [state, user, firestore]);
