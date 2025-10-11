@@ -17,6 +17,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { TaskAnalyticsChart } from '@/components/edutrack/task/TaskAnalyticsChart';
+import { useInView } from '@/hooks/useInView';
 
 export default function Home() {
   const { subjects, exams, tasks } = useContext(AppDataContext);
@@ -27,6 +28,11 @@ export default function Home() {
     from: addDays(new Date(), -6),
     to: new Date(),
   });
+
+  const [nextExamRef, isNextExamInView] = useInView({ triggerOnce: true, threshold: 0.1 });
+  const [syllabusRef, isSyllabusInView] = useInView({ triggerOnce: true, threshold: 0.1 });
+  const [examOverviewRef, isExamOverviewInView] = useInView({ triggerOnce: true, threshold: 0.1 });
+  const [analyticsRef, isAnalyticsInView] = useInView({ triggerOnce: true, threshold: 0.1 });
 
   useEffect(() => {
     if (!isUserLoading) {
@@ -60,7 +66,7 @@ export default function Home() {
           Dashboard
         </h1>
         
-        <div className="animate-fade-in-from-bottom">
+        <div ref={nextExamRef} className={cn("transition-all duration-700 opacity-0", isNextExamInView && "animate-fade-in-from-bottom opacity-100")}>
           {nextExam ? (
             <NextExamCard
               exam={nextExam}
@@ -79,15 +85,15 @@ export default function Home() {
         </div>
 
         <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div className="animate-fade-in-from-left" style={{ animationDelay: '0.2s' }}>
+          <div ref={syllabusRef} className={cn("transition-all duration-700 opacity-0", isSyllabusInView && "animate-fade-in-from-left opacity-100")}>
             <SyllabusProgressOverview subjects={subjects} />
           </div>
-          <div className="animate-fade-in-from-right" style={{ animationDelay: '0.2s' }}>
+          <div ref={examOverviewRef} className={cn("transition-all duration-700 opacity-0", isExamOverviewInView && "animate-fade-in-from-right opacity-100")}>
             <ExamOverview exams={exams} />
           </div>
         </div>
 
-        <div className="mt-8 animate-fade-in-from-bottom" style={{ animationDelay: '0.4s' }}>
+        <div ref={analyticsRef} className={cn("mt-8 transition-all duration-700 opacity-0", isAnalyticsInView && "animate-fade-in-from-bottom opacity-100")}>
             <Card>
                 <CardHeader>
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
