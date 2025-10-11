@@ -3,6 +3,7 @@
 
 import { StudyTask } from "@/lib/types";
 import { TaskItem } from "./TaskItem";
+import { Separator } from "@/components/ui/separator";
 
 interface TaskListProps {
   tasks: StudyTask[];
@@ -11,8 +12,9 @@ interface TaskListProps {
 export function TaskList({ tasks }: TaskListProps) {
   if (tasks.length === 0) {
     return (
-      <div className="text-center text-muted-foreground py-8">
-        <p>No tasks for today. Add one to get started!</p>
+      <div className="text-center text-muted-foreground py-16">
+        <h3 className="font-semibold text-lg">No tasks for this day</h3>
+        <p className="text-sm">Enjoy your free time!</p>
       </div>
     );
   }
@@ -23,7 +25,8 @@ export function TaskList({ tasks }: TaskListProps) {
   });
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-1">
+      <Separator className="mb-4" />
       {sortedTasks.map(task => (
         <TaskItem key={task.id} task={task} />
       ))}

@@ -1,24 +1,26 @@
 
 "use client";
 
-import { useState, useContext, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useContext } from 'react';
 import { Button } from '@/components/ui/button';
 import { AppDataContext } from '@/context/AppDataContext';
-import { PlusCircle, Loader2 } from 'lucide-react';
+import { Plus, Loader2 } from 'lucide-react';
 import { useUser } from '@/firebase';
 import { useRouter } from 'next/navigation';
-import { format } from 'date-fns';
+import { format, startOfToday, isBefore } from 'date-fns';
 import { TaskList } from '@/components/edutrack/task/TaskList';
 import { AddTaskForm } from '@/components/edutrack/task/AddTaskForm';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { CalendarView } from '@/components/edutrack/task/CalendarView';
+import { TaskProgressCard } from '@/components/edutrack/task/TaskProgressCard';
+import { OverdueTasks } from '@/components/edutrack/task/OverdueTasks';
 
 export default function StudyTaskPage() {
-  const { tasks, dispatch } = useContext(AppDataContext);
+  const { tasks } = useContext(AppDataContext);
   const { user, isUserLoading } = useUser();
   const router = useRouter();
-
-  const today = format(new Date(), 'yyyy-MM-dd');
-
+  
+  const [selectedDate, setSelectedDate] = useState<Date>(startOfToday());
+  
   useEffect(() => {
     if (!isUserLoading) {
       if (!user) {
@@ -29,9 +31,16 @@ export default function StudyTaskPage() {
     }
   }, [user, isUserLoading, router]);
 
-  const todaysTasks = useMemo(() => {
-    return tasks.filter(task => task.date === today);
-  }, [tasks, today]);
+  const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
+
+  const { todaysTasks, overdueTasks } = useMemo(() => {
+    const today = startOfToday();
+    const allTasks = tasks;
+    const todaysTasks = allTasks.filter(task => format(new Date(task.date), 'yyyy-MM-dd') === selectedDateStr);
+    const overdueTasks = allTasks.filter(task => isBefore(new Date(task.date), today) && !task.isCompleted);
+    return { todaysTasks, overdueTasks };
+  }, [tasks, selectedDateStr]);
+
 
   if (isUserLoading || !user || !user.emailVerified) {
     return (
@@ -43,24 +52,32 @@ export default function StudyTaskPage() {
 
   return (
     <div className="container mx-auto p-4 md:p-8">
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold text-foreground">
-          Today's Study Tasks
-        </h1>
-      </div>
-      
-      <div className="max-w-2xl mx-auto">
-        <Card>
-            <CardHeader>
-                <CardTitle>
-                    {format(new Date(), "eeee, MMMM do")}
-                </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-                <AddTaskForm date={today} />
-                <TaskList tasks={todaysTasks} />
-            </CardContent>
-        </Card>
+       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        {/* Left Column */}
+        <aside className="lg:col-span-1 space-y-6">
+          <TaskProgressCard tasks={todaysTasks} />
+          <CalendarView selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
+        </aside>
+
+        {/* Right Column */}
+        <main className="lg:col-span-2">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6">
+                <h1 className="text-3xl font-bold text-foreground">
+                    {format(selectedDate, "MMMM do, yyyy")}
+                </h1>
+                {/* Add Task and View Toggles can go here if needed in future */}
+            </div>
+            
+            <div className="space-y-6">
+                <OverdueTasks tasks={overdueTasks} />
+
+                <div className="p-6 bg-card rounded-lg border shadow-sm">
+                    <AddTaskForm date={selectedDateStr} />
+                    <TaskList tasks={todaysTasks} />
+                </div>
+            </div>
+        </main>
       </div>
     </div>
   );

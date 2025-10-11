@@ -44,22 +44,22 @@ export function AddTaskForm({ date }: AddTaskFormProps) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="flex items-start gap-2">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="flex items-start gap-2 mb-6">
         <FormField
           control={form.control}
           name="title"
           render={({ field }) => (
             <FormItem className="flex-1">
               <FormControl>
-                <Input placeholder="Add a new task..." {...field} />
+                <Input placeholder="Add a new task for this day..." {...field} className="h-11" />
               </FormControl>
               <FormMessage className="mt-1"/>
             </FormItem>
           )}
         />
-        <Button type="submit" size="icon">
-          <Plus className="h-4 w-4" />
-          <span className="sr-only">Add Task</span>
+        <Button type="submit" size="lg">
+          <Plus className="h-4 w-4 mr-2" />
+          Add Task
         </Button>
       </form>
     </Form>
