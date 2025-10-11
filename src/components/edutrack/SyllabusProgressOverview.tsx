@@ -4,7 +4,6 @@
 import type { Subject, Paper } from '@/lib/types';
 import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { BookCopy } from 'lucide-react';
@@ -18,7 +17,6 @@ interface PaperProgress {
     paper: Paper;
     completedChapters: number;
     totalChapters: number;
-    percentage: number;
 }
 
 interface SubjectProgress {
@@ -35,14 +33,11 @@ export function SyllabusProgressOverview({ subjects }: SyllabusProgressOverviewP
       const papersProgress = subject.papers.map(paper => {
         let totalChapters = paper.chapters.length;
         let completedChapters = paper.chapters.filter(c => c.isCompleted).length;
-
-        const percentage = totalChapters > 0 ? Math.round((completedChapters / totalChapters) * 100) : 0;
         
         return {
           paper,
           completedChapters,
           totalChapters,
-          percentage
         };
       });
       return {
@@ -61,19 +56,15 @@ export function SyllabusProgressOverview({ subjects }: SyllabusProgressOverviewP
       <CardContent className="flex-grow pt-4">
         {subjects.length > 0 ? (
           <ScrollArea className="h-80 pr-4">
-            <div className="space-y-6">
+            <div className="space-y-4">
                 {progressData.map(({ subject, papers }) => (
                     <div key={subject.id}>
                         <h4 className="font-semibold text-foreground mb-2">{subject.name}</h4>
-                        <div className="space-y-3 ml-2 pl-4 border-l">
-                            {papers.length > 0 ? papers.map(({ paper, percentage, completedChapters, totalChapters}) => (
-                                <div key={paper.id}>
-                                    <div className="flex justify-between items-center mb-1">
-                                        <span className="text-sm font-medium text-muted-foreground">{paper.name}</span>
-                                        <span className="text-xs font-semibold text-primary">{percentage}%</span>
-                                    </div>
-                                    <Progress value={percentage} />
-                                    <p className="text-xs text-muted-foreground mt-1 text-right">{completedChapters} / {totalChapters} Chapters</p>
+                        <div className="space-y-2 ml-4">
+                            {papers.length > 0 ? papers.map(({ paper, completedChapters, totalChapters}) => (
+                                <div key={paper.id} className="flex justify-between items-center">
+                                    <span className="text-sm text-muted-foreground">{paper.name}</span>
+                                    <span className="text-sm font-semibold text-foreground">{completedChapters} / {totalChapters} Chapters</span>
                                 </div>
                             )) : (
                                 <p className="text-xs text-muted-foreground">No papers in this subject.</p>
