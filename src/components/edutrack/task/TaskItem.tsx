@@ -128,7 +128,7 @@ export function TaskItem({ task }: TaskItemProps) {
   return (
     <>
     <div className={cn(
-        "flex items-start gap-4 p-4 mb-4 rounded-lg border transition-all duration-300",
+        "flex items-start gap-4 p-4 rounded-lg border transition-all duration-300",
         task.isCompleted 
             ? "bg-muted/30 border-dashed" 
             : "bg-card hover:shadow-lg",
@@ -162,11 +162,11 @@ export function TaskItem({ task }: TaskItemProps) {
         </div>
         
         <div className="flex flex-wrap items-center gap-2">
-            <Badge variant="outline" className={cn("flex items-center gap-1.5", task.isCompleted && "border-muted-foreground/50 text-muted-foreground")}>
+            <Badge variant="outline" className={cn("flex items-center gap-1.5 border-primary", task.isCompleted && "border-muted-foreground/50 text-muted-foreground")}>
                 <Calendar className="h-3 w-3" />
                 {format(new Date(task.date), 'MMM dd')}
             </Badge>
-            <Badge variant="outline" className={cn("flex items-center gap-1.5", task.isCompleted && "border-muted-foreground/50 text-muted-foreground")}>
+            <Badge variant="outline" className={cn("flex items-center gap-1.5 border-primary", task.isCompleted && "border-muted-foreground/50 text-muted-foreground")}>
                 <Flag className="h-3 w-3" />
                 Priority: {task.priority}
             </Badge>
@@ -177,7 +177,7 @@ export function TaskItem({ task }: TaskItemProps) {
             {task.subcategory && <Badge variant="secondary" className={cn("flex items-center gap-1.5", task.isCompleted && "bg-muted text-muted-foreground")}>{task.subcategory}</Badge>}
             
             <button onClick={() => setIsTimeLogOpen(true)} className="disabled:opacity-50" disabled={!task.timeLogs || task.timeLogs.length === 0}>
-                <Badge variant="outline" className={cn("flex items-center gap-1.5 font-mono cursor-pointer transition-colors", task.isCompleted ? "border-muted-foreground/50 text-muted-foreground" : "hover:bg-primary/10 hover:border-primary/50")}>
+                <Badge variant="outline" className={cn("flex items-center gap-1.5 font-mono cursor-pointer transition-colors border-primary", task.isCompleted ? "border-muted-foreground/50 text-muted-foreground" : "hover:bg-primary/10")}>
                     <Clock className="h-3 w-3" />
                     {formatTime(totalTimeSpent)}
                 </Badge>
