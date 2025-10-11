@@ -40,7 +40,7 @@ export function NoteCard({ note }: NoteCardProps) {
                     <div className="absolute top-2 right-2">
                          <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full bg-black/30 text-white/80 backdrop-blur-sm hover:bg-black/50 hover:text-white">
+                                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full bg-primary/80 text-primary-foreground backdrop-blur-sm hover:bg-primary hover:text-primary-foreground">
                                 <MoreVertical className="h-4 w-4" />
                                 </Button>
                             </DropdownMenuTrigger>
