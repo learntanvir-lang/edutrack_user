@@ -100,8 +100,9 @@ export function TaskItem({ task }: TaskItemProps) {
     <>
     <div className={cn(
         "flex items-start gap-4 p-4 rounded-lg bg-card border transition-all duration-300",
-        task.isCompleted ? "border-green-200" : "border-primary/50",
-        "hover:shadow-xl hover:shadow-primary/20"
+        task.isCompleted 
+            ? "bg-muted/50 border-border" 
+            : "border-primary/50 shadow-sm hover:shadow-lg hover:shadow-primary/10"
       )}>
       <Checkbox
         id={`task-${task.id}`}
@@ -131,20 +132,20 @@ export function TaskItem({ task }: TaskItemProps) {
         </div>
         
         <div className="flex flex-wrap items-center gap-2">
-            <Badge variant="outline" className="flex items-center gap-1.5">
+            <Badge variant="outline" className={cn("flex items-center gap-1.5", task.isCompleted && "border-muted-foreground/50")}>
                 <Calendar className="h-3 w-3" />
                 {format(new Date(task.date), 'MMM dd')}
             </Badge>
-            <Badge variant="outline" className="flex items-center gap-1.5">
+            <Badge variant="outline" className={cn("flex items-center gap-1.5", task.isCompleted && "border-muted-foreground/50")}>
                 <Flag className="h-3 w-3" />
                 Priority: {task.priority}
             </Badge>
-             <Badge variant="secondary" className="flex items-center gap-1.5">
+             <Badge variant="secondary" className={cn("flex items-center gap-1.5", task.isCompleted && "bg-muted text-muted-foreground")}>
                 <Tag className="h-3 w-3" />
                 {task.category}
             </Badge>
-            {task.subcategory && <Badge variant="secondary" className="flex items-center gap-1.5">{task.subcategory}</Badge>}
-            <Badge variant="outline" className="flex items-center gap-1.5 font-mono">
+            {task.subcategory && <Badge variant="secondary" className={cn("flex items-center gap-1.5", task.isCompleted && "bg-muted text-muted-foreground")}>{task.subcategory}</Badge>}
+            <Badge variant="outline" className={cn("flex items-center gap-1.5 font-mono", task.isCompleted && "border-muted-foreground/50")}>
                 <Clock className="h-3 w-3" />
                 {formatTime(elapsedTime)}
             </Badge>
@@ -152,15 +153,17 @@ export function TaskItem({ task }: TaskItemProps) {
       </div>
       
       <div className="flex items-center gap-1">
-        <Button
-            variant={task.isTimerRunning ? 'destructive' : 'outline'}
-            size="icon"
-            className="h-8 w-8 text-foreground"
-            onClick={handleTimerToggle}
-        >
-            {task.isTimerRunning ? <Square className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-            <span className="sr-only">{task.isTimerRunning ? 'Stop timer' : 'Start timer'}</span>
-        </Button>
+        {!task.isCompleted && (
+            <Button
+                variant={task.isTimerRunning ? 'destructive' : 'outline'}
+                size="icon"
+                className="h-8 w-8 text-foreground"
+                onClick={handleTimerToggle}
+            >
+                {task.isTimerRunning ? <Square className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+                <span className="sr-only">{task.isTimerRunning ? 'Stop timer' : 'Start timer'}</span>
+            </Button>
+        )}
          <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
