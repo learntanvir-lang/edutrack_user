@@ -22,15 +22,16 @@ export function OverdueTaskItem({ task }: OverdueTaskItemProps) {
   const overdueDuration = formatDistanceToNowStrict(new Date(task.date), { addSuffix: true });
 
   return (
-    <div className="flex items-center justify-between p-3 rounded-lg bg-background border">
+    <div className="flex items-center justify-between p-3 rounded-lg bg-red-50 border border-red-200">
       <div>
-        <p className="font-semibold text-foreground">{task.title}</p>
-        <p className="text-sm text-muted-foreground">Overdue by {overdueDuration}</p>
+        <p className="font-semibold text-red-800">{task.title}</p>
+        <p className="text-sm text-red-600">Overdue by {overdueDuration}</p>
       </div>
       <Button
         variant="outline"
         size="sm"
         onClick={handleMoveToToday}
+        className="bg-white text-red-700 border-red-300 hover:bg-red-50"
       >
         <Calendar className="mr-2 h-4 w-4" />
         Continue Today
