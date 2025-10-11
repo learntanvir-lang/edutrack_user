@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useState, useContext, memo } from "react";
+import { useState, useContext, memo, useMemo } from "react";
 import { Chapter } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal, Pen, Copy, Trash2, Link as LinkIcon, ExternalLink, Activity, PlusCircle } from "lucide-react";
