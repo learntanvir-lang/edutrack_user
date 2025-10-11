@@ -44,7 +44,7 @@ const CustomDot = (props: any) => {
     const { cx, cy, stroke, payload } = props;
 
     if (payload.hours >= 0) {
-        return <Dot cx={cx} cy={cy} r={5} fill={stroke} strokeWidth={2} />;
+        return <Dot cx={cx} cy={cy} r={5} fill="#fff" stroke={stroke} strokeWidth={2} />;
     }
 
     return null;
@@ -246,7 +246,7 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
         <div className="h-80 w-full">
             <ChartContainer config={chartConfig} className="h-full w-full">
                 <LineChart data={chartData} margin={{ top: 20, right: 20, left: -20, bottom: 20 }}>
-                    <CartesianGrid vertical={false} stroke="hsl(var(--border))" />
+                    <CartesianGrid vertical={false} strokeDasharray="3 3" />
                     <XAxis
                         dataKey={viewType === 'monthly' ? "week" : "date"}
                         tickLine={false}
@@ -259,10 +259,10 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
                         tickLine={false}
                         axisLine={false}
                         tickMargin={10}
-                        tickFormatter={(value) => `${value}h`}
+                        tickFormatter={(value) => value === 0 ? '0h' : `${value.toFixed(1)}h`}
                     />
                     <Tooltip
-                        cursor={{ strokeDasharray: '3 3' }}
+                        cursor={false}
                         content={<ChartTooltipContent 
                             labelFormatter={(label) => viewType === 'monthly' ? label : format(new Date(label), 'PPP')}
                             formatter={(value) => `${formatTime(Number(value) * 3600000, 'long') || '0 minutes'}`}
