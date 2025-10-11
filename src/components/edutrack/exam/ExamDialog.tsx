@@ -141,9 +141,8 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
       payload: examData,
     });
     
-
-    onOpenChange(false);
     form.reset();
+    onOpenChange(false);
   };
   
   const handleDialogChange = (isOpen: boolean) => {
@@ -449,6 +448,8 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
     </Dialog>
   );
 }
+
+    
 
     
 
