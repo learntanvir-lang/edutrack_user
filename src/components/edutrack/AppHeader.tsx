@@ -73,10 +73,10 @@ export function AppHeader() {
               <>
                 <Button 
                     asChild 
-                    variant="ghost" 
+                    variant="ghost"
                     size="lg" 
                     className={cn(
-                        "font-bold text-primary hover:bg-primary/5",
+                        "font-bold text-primary hover:bg-primary/10",
                         isNotesPage && "bg-primary/10"
                     )}
                 >
