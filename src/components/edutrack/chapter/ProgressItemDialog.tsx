@@ -28,10 +28,12 @@ import { AppDataContext } from "@/context/AppDataContext";
 import { v4 as uuidv4 } from 'uuid';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { IconPicker, type IconName } from './IconPicker';
 
 const progressItemSchema = z.object({
   name: z.string().min(1, "Tracker name is required"),
   type: z.enum(["todo", "counter"]),
+  icon: z.string().optional(),
   total: z.coerce.number().min(1, "Must be at least 1").optional(),
 });
 
@@ -55,6 +57,7 @@ export function ProgressItemDialog({ open, onOpenChange, subjectId, paperId, cha
     defaultValues: {
       name: "",
       type: "counter",
+      icon: undefined,
       total: 10,
     },
   });
@@ -66,12 +69,14 @@ export function ProgressItemDialog({ open, onOpenChange, subjectId, paperId, cha
       form.reset({
         name: progressItem.name,
         type: progressItem.type,
+        icon: progressItem.icon,
         total: progressItem.total,
       });
     } else if (!isEditing && open) {
       form.reset({
         name: "",
         type: "counter",
+        icon: undefined,
         total: 10,
       });
     }
@@ -82,6 +87,7 @@ export function ProgressItemDialog({ open, onOpenChange, subjectId, paperId, cha
       id: progressItem?.id || uuidv4(),
       name: values.name,
       type: values.type,
+      icon: values.type === 'counter' ? values.icon : undefined,
       completed: progressItem?.completed || 0,
       total: values.type === 'counter' ? values.total || 0 : (values.type === 'todo' ? 1 : 0),
     };
@@ -147,19 +153,34 @@ export function ProgressItemDialog({ open, onOpenChange, subjectId, paperId, cha
                 />
 
                 {watchType === "counter" && (
-                    <FormField
-                        control={form.control}
-                        name="total"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Total Count</FormLabel>
-                                <FormControl>
-                                <Input type="number" placeholder="e.g., 50" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
+                    <>
+                        <FormField
+                            control={form.control}
+                            name="total"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Total Count</FormLabel>
+                                    <FormControl>
+                                    <Input type="number" placeholder="e.g., 50" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                         <FormField
+                            control={form.control}
+                            name="icon"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Icon (Optional)</FormLabel>
+                                    <FormControl>
+                                       <IconPicker value={field.value as IconName} onChange={field.onChange} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </>
                 )}
               </form>
             </Form>

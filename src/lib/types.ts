@@ -16,6 +16,7 @@ export interface ProgressItem {
   id: string;
   name: string;
   type: 'todo' | 'counter';
+  icon?: string;
   completed: number;
   total: number;
 }

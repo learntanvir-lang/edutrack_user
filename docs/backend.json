@@ -125,15 +125,12 @@
       "properties": {
         "id": { "type": "string" },
         "name": { "type": "string" },
-        "type": { "type": "string", "enum": ["counter", "todolist"] },
+        "type": { "type": "string", "enum": ["counter", "todo"] },
+        "icon": { "type": "string", "description": "The name of the lucide-react icon to display." },
         "completed": { "type": "number" },
-        "total": { "type": "number" },
-        "todos": {
-            "type": "array",
-            "items": { "$ref": "#/entities/TodoItem" }
-        }
+        "total": { "type": "number" }
       },
-      "required": ["id", "name", "type", "completed", "total", "todos"]
+      "required": ["id", "name", "type", "completed", "total"]
     },
     "ResourceLink": {
       "title": "Resource Link",

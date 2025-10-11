@@ -11,6 +11,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { ProgressItemDialog } from './ProgressItemDialog';
 import { DeleteConfirmationDialog } from '../DeleteConfirmationDialog';
 import { cn } from '@/lib/utils';
+import { getIcon, IconName } from './IconPicker';
 
 interface ProgressItemDisplayProps {
     item: ProgressItem;
@@ -23,6 +24,7 @@ export function ProgressItemDisplay({ item, subjectId, paperId, chapterId }: Pro
     const { dispatch } = useContext(AppDataContext);
     const [isEditing, setIsEditing] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
+    const Icon = getIcon(item.icon as IconName);
 
     const handleCounterChange = (increment: number) => {
         const newCompleted = Math.max(0, Math.min(item.total, item.completed + increment));
@@ -53,7 +55,10 @@ export function ProgressItemDisplay({ item, subjectId, paperId, chapterId }: Pro
             <div className="p-2 pr-10 relative rounded-md bg-muted/50">
                 {item.type === 'counter' ? (
                      <div className="flex items-center justify-between gap-4">
-                        <p className="text-base font-medium text-foreground flex-shrink-0">{item.name}</p>
+                        <p className="text-base font-medium text-foreground flex-shrink-0 flex items-center gap-2">
+                           {Icon && <Icon className="h-4 w-4" />}
+                           {item.name}
+                        </p>
                         <div className="flex-1 flex items-center gap-2">
                              <div className="w-full bg-secondary rounded-full h-2.5">
                                 <div
