@@ -84,7 +84,7 @@ export function SubjectList() {
   return (
     <>
       <Accordion type="multiple" className="w-full space-y-4">
-        {sortedSubjects.map(subject => {
+        {sortedSubjects.map((subject, index) => {
             const subjectProgress = subject.papers.flatMap(p => p.chapters).flatMap(c => c.progressItems).reduce(
                 (acc, item) => {
                   acc.completed += item.completed;
@@ -97,7 +97,12 @@ export function SubjectList() {
             const isVisible = subject.showOnDashboard ?? true;
 
             return (
-          <AccordionItem key={subject.id} value={subject.id} className="border-none">
+          <AccordionItem 
+            key={subject.id} 
+            value={subject.id} 
+            className="border-none animate-fade-in-from-bottom"
+            style={{ animationDelay: `${index * 0.1}s` }}
+          >
             <Card className="shadow-sm">
               <div className="flex items-center justify-between p-4">
                 <AccordionTrigger className="p-0 hover:no-underline flex-1 group">
