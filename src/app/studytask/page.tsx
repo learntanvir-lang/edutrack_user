@@ -49,16 +49,16 @@ export default function StudyTaskPage() {
   }, [tasks, selectedDateStr]);
   
   const chartDateRange = useMemo((): DateRange => {
-    const today = new Date();
+    const date = selectedDate || new Date();
     switch (activeView) {
         case 'weekly':
-            return { from: startOfWeek(today), to: endOfWeek(today) };
+            return { from: startOfWeek(date, { weekStartsOn: 6 }), to: endOfWeek(date, { weekStartsOn: 6 }) };
         case 'monthly':
-            return { from: startOfMonth(today), to: endOfMonth(today) };
+            return { from: startOfMonth(date), to: endOfMonth(date) };
         default:
-             return { from: startOfWeek(today), to: endOfWeek(today) };
+             return { from: startOfWeek(date, { weekStartsOn: 6 }), to: endOfWeek(date, { weekStartsOn: 6 }) };
     }
-  }, [activeView]);
+  }, [activeView, selectedDate]);
 
   if (isUserLoading || !user || !user.emailVerified) {
     return (
