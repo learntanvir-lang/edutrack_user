@@ -125,11 +125,6 @@ export function TaskAnalyticsChart({ tasks, dateRange }: TaskAnalyticsChartProps
                 <CardTitle className="text-xl font-bold">Time Summary</CardTitle>
                 <CardDescription className="text-3xl font-bold text-primary">{formatTime(totalTime, 'long')}</CardDescription>
             </div>
-            <div className="flex items-center gap-2 mt-4 sm:mt-0">
-                <Button variant="outline"><ListFilter className="mr-2 h-4 w-4"/> Category</Button>
-                <Button variant="outline"><ListFilter className="mr-2 h-4 w-4"/> Sub-Category</Button>
-                <Button variant="outline"><Download className="mr-2 h-4 w-4"/> Download</Button>
-            </div>
         </div>
       </CardHeader>
       <CardContent>
