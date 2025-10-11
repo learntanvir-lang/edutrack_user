@@ -17,7 +17,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { TaskAnalyticsChart } from '@/components/edutrack/task/TaskAnalyticsChart';
 import type { DateRange } from 'react-day-picker';
 
-type ViewType = 'daily' | 'weekly' | 'monthly';
+export type ViewType = 'daily' | 'weekly' | 'monthly';
 
 export default function StudyTaskPage() {
   const { tasks } = useContext(AppDataContext);
@@ -79,7 +79,7 @@ export default function StudyTaskPage() {
             <main className="lg:col-span-2">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6">
                     <h1 className="text-3xl font-bold text-foreground">
-                        {activeView === 'daily' ? format(selectedDate, "MMMM do, yyyy") : `Your ${activeView.charAt(0).toUpperCase() + activeView.slice(1)} Summary`}
+                        {format(selectedDate, "MMMM do, yyyy")}
                     </h1>
                     <div className="flex items-center gap-2 mt-4 sm:mt-0">
                         <Button size="lg" onClick={() => setIsTaskDialogOpen(true)}>
@@ -106,10 +106,10 @@ export default function StudyTaskPage() {
                         </div>
                     </TabsContent>
                     <TabsContent value="weekly">
-                        <TaskAnalyticsChart tasks={tasks} dateRange={chartDateRange} />
+                        <TaskAnalyticsChart tasks={tasks} dateRange={chartDateRange} viewType={activeView} />
                     </TabsContent>
                     <TabsContent value="monthly">
-                        <TaskAnalyticsChart tasks={tasks} dateRange={chartDateRange} />
+                        <TaskAnalyticsChart tasks={tasks} dateRange={chartDateRange} viewType={activeView} />
                     </TabsContent>
                 </Tabs>
             </main>

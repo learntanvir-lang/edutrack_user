@@ -8,12 +8,12 @@ import { ChartConfig, ChartContainer, ChartTooltipContent } from '@/components/u
 import { format, eachDayOfInterval, startOfDay } from 'date-fns';
 import type { StudyTask } from '@/lib/types';
 import type { DateRange } from 'react-day-picker';
-import { Button } from '@/components/ui/button';
-import { Download, ListFilter } from 'lucide-react';
+import type { ViewType } from '@/app/studytask/page';
 
 interface TaskAnalyticsChartProps {
   tasks: StudyTask[];
   dateRange: DateRange;
+  viewType: ViewType;
 }
 
 const chartConfig = {
@@ -30,8 +30,8 @@ const formatTime = (totalMilliseconds: number, formatType: 'short' | 'long') => 
     const minutes = Math.floor((totalMilliseconds % 3600000) / 60000);
     
     let parts = [];
-    if (hours > 0) parts.push(`${hours}h`);
-    if (minutes > 0) parts.push(`${minutes}m`);
+    if (hours > 0) parts.push(formatType === 'long' ? `${hours} hours` : `${hours}h`);
+    if (minutes > 0) parts.push(formatType === 'long' ? `${minutes} minutes` : `${minutes}m`);
 
     return parts.join(' ');
 };
@@ -60,7 +60,7 @@ const CustomLabel = (props: any) => {
 };
 
 
-export function TaskAnalyticsChart({ tasks, dateRange }: TaskAnalyticsChartProps) {
+export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalyticsChartProps) {
 
   const { chartData, totalTime } = useMemo(() => {
     if (!dateRange.from || !dateRange.to) {
@@ -122,7 +122,7 @@ export function TaskAnalyticsChart({ tasks, dateRange }: TaskAnalyticsChartProps
       <CardHeader>
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between">
             <div>
-                <CardTitle className="text-xl font-bold">Time Summary</CardTitle>
+                <CardTitle className="text-xl font-bold">{viewType.charAt(0).toUpperCase() + viewType.slice(1)} Time Summary</CardTitle>
                 <CardDescription className="text-3xl font-bold text-primary">{formatTime(totalTime, 'long')}</CardDescription>
             </div>
         </div>
@@ -137,7 +137,7 @@ export function TaskAnalyticsChart({ tasks, dateRange }: TaskAnalyticsChartProps
                         tickLine={false}
                         axisLine={false}
                         tickMargin={10}
-                        tickFormatter={(value) => format(new Date(value), 'E')}
+                        tickFormatter={(value) => format(new Date(value), viewType === 'monthly' ? 'd' : 'E')}
                     />
                     <YAxis
                         tickLine={false}
