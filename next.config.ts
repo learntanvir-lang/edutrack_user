@@ -36,7 +36,7 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'tsmsportz.com',
+        hostname: 'i.ibb.co',
         port: '',
         pathname: '/**',
       },
