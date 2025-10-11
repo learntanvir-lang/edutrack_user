@@ -16,15 +16,15 @@ export function OverdueTasks({ tasks }: OverdueTasksProps) {
     }
 
     return (
-        <Accordion type="single" collapsible defaultValue="overdue-tasks" className="w-full">
+        <Accordion type="single" collapsible className="w-full">
             <AccordionItem value="overdue-tasks" className="border-none">
-                <AccordionTrigger className="p-0 hover:no-underline [&[data-state=open]>div]:rounded-b-none">
-                   <div className="flex items-center justify-between w-full p-3 rounded-lg bg-red-100/50 border border-red-200 text-red-700 transition-all">
-                     <div className="flex items-center gap-2 font-semibold">
-                        <AlertCircle className="h-5 w-5" />
+                <AccordionTrigger className="p-0 hover:no-underline [&[data-state=open]>div]:rounded-b-none group">
+                   <div className="flex items-center justify-between w-full p-3 rounded-lg bg-red-100 border border-red-200 text-red-700 transition-all">
+                     <div className="flex items-center gap-2 font-semibold text-foreground">
+                        <AlertCircle className="h-5 w-5 text-red-600" />
                         <span>{tasks.length} Overdue Task(s)</span>
                      </div>
-                     <ChevronDown className="h-5 w-5 transition-transform duration-200" />
+                     <ChevronDown className="h-5 w-5 transition-transform duration-200 group-data-[state=open]:rotate-180" />
                    </div>
                 </AccordionTrigger>
                 <AccordionContent className="bg-card border-x border-b border-border/70 rounded-b-lg -mt-2 p-4">
