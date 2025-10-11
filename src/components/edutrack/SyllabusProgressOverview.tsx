@@ -1,38 +1,55 @@
 
 'use client';
 
-import type { Subject } from '@/lib/types';
+import type { Subject, Paper } from '@/lib/types';
 import { useMemo } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
-import { BookCopy, CheckCircle2 } from 'lucide-react';
+import { BookCopy } from 'lucide-react';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface SyllabusProgressOverviewProps {
   subjects: Subject[];
 }
 
+interface PaperProgress {
+    paper: Paper;
+    completedChapters: number;
+    totalChapters: number;
+    percentage: number;
+}
+
+interface SubjectProgress {
+    subject: Subject;
+    papers: PaperProgress[];
+}
+
+
 export function SyllabusProgressOverview({ subjects }: SyllabusProgressOverviewProps) {
   const router = useRouter();
 
-  const progress = useMemo(() => {
-    let totalChapters = 0;
-    let completedChapters = 0;
+  const progressData: SubjectProgress[] = useMemo(() => {
+    return subjects.map(subject => {
+      const papersProgress = subject.papers.map(paper => {
+        let totalChapters = paper.chapters.length;
+        let completedChapters = paper.chapters.filter(c => c.isCompleted).length;
 
-    subjects.forEach(subject => {
-      subject.papers.forEach(paper => {
-        totalChapters += paper.chapters.length;
-        paper.chapters.forEach(chapter => {
-          if (chapter.isCompleted) {
-            completedChapters++;
-          }
-        });
+        const percentage = totalChapters > 0 ? Math.round((completedChapters / totalChapters) * 100) : 0;
+        
+        return {
+          paper,
+          completedChapters,
+          totalChapters,
+          percentage
+        };
       });
+      return {
+        subject,
+        papers: papersProgress
+      };
     });
-
-    const percentage = totalChapters > 0 ? Math.round((completedChapters / totalChapters) * 100) : 0;
-    return { totalChapters, completedChapters, percentage };
   }, [subjects]);
 
   return (
@@ -41,30 +58,40 @@ export function SyllabusProgressOverview({ subjects }: SyllabusProgressOverviewP
         <CardTitle className="text-lg font-bold">Syllabus Progress</CardTitle>
         <BookCopy className="h-5 w-5 text-muted-foreground" />
       </CardHeader>
-      <CardContent className="flex-grow">
-        {progress.totalChapters > 0 ? (
-          <>
-            <div className="text-3xl font-bold text-primary">{progress.percentage}%</div>
-            <p className="text-xs text-muted-foreground">
-              {progress.completedChapters} out of {progress.totalChapters} chapters completed
-            </p>
-            <Progress value={progress.percentage} className="mt-4" />
-             {progress.percentage === 100 && (
-                <div className="mt-4 flex items-center gap-2 text-green-600">
-                    <CheckCircle2 className="h-5 w-5" />
-                    <p className="font-semibold">All chapters completed. Great job!</p>
-                </div>
-            )}
-          </>
+      <CardContent className="flex-grow pt-4">
+        {subjects.length > 0 ? (
+          <ScrollArea className="h-80 pr-4">
+            <div className="space-y-6">
+                {progressData.map(({ subject, papers }) => (
+                    <div key={subject.id}>
+                        <h4 className="font-semibold text-foreground mb-2">{subject.name}</h4>
+                        <div className="space-y-3 ml-2 pl-4 border-l">
+                            {papers.length > 0 ? papers.map(({ paper, percentage, completedChapters, totalChapters}) => (
+                                <div key={paper.id}>
+                                    <div className="flex justify-between items-center mb-1">
+                                        <span className="text-sm font-medium text-muted-foreground">{paper.name}</span>
+                                        <span className="text-xs font-semibold text-primary">{percentage}%</span>
+                                    </div>
+                                    <Progress value={percentage} />
+                                    <p className="text-xs text-muted-foreground mt-1 text-right">{completedChapters} / {totalChapters} Chapters</p>
+                                </div>
+                            )) : (
+                                <p className="text-xs text-muted-foreground">No papers in this subject.</p>
+                            )}
+                        </div>
+                    </div>
+                ))}
+            </div>
+          </ScrollArea>
         ) : (
-          <div className="flex flex-col items-center justify-center text-center h-full text-muted-foreground">
-            <p>No subjects or chapters added yet.</p>
+          <div className="flex h-full flex-col items-center justify-center text-center text-muted-foreground">
+            <p>No subjects added yet.</p>
           </div>
         )}
       </CardContent>
       <CardFooter>
         <Button variant="outline" size="sm" className="w-full" onClick={() => router.push('/syllabus')}>
-          View Syllabus
+          View Full Syllabus
         </Button>
       </CardFooter>
     </Card>
