@@ -34,7 +34,7 @@ import {
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { FirebaseError } from 'firebase/app';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, getDocs, collection, query, where } from 'firebase/firestore';
 
 
 const loginSchema = z.object({
@@ -118,66 +118,90 @@ export default function LoginPage() {
         .finally(() => setLoading(false));
   };
 
-  const onSignupSubmit = (values: SignupFormValues) => {
+  const onSignupSubmit = async (values: SignupFormValues) => {
     setLoading(true);
+    
+    if (!firestore) {
+        setLoading(false);
+        toast({ variant: 'destructive', title: 'Error', description: 'Database service is not available.' });
+        return;
+    }
 
-    createUserWithEmailAndPassword(auth, values.email, values.password)
-      .then(userCredential => {
+    try {
+        // 1. Check for username uniqueness
+        const usersRef = collection(firestore, "users");
+        const q = query(usersRef, where("username", "==", values.username));
+        const querySnapshot = await getDocs(q);
+
+        if (!querySnapshot.empty) {
+            signupForm.setError("username", {
+                type: "manual",
+                message: "This username is already taken. Please choose another one.",
+            });
+            setLoading(false);
+            return;
+        }
+
+        // 2. Create user with email and password
+        const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
         const user = userCredential.user;
         
         // --- Chain background tasks ---
 
-        // 1. Update profile
-        updateProfile(user, { displayName: values.username })
-          .then(() => {
-            // 2. Create user document in Firestore
-            if (firestore) {
-              const userDocRef = doc(firestore, "users", user.uid);
-              // This is a non-blocking write
-              setDoc(userDocRef, {
-                id: user.uid,
-                username: values.username,
-                displayName: values.username,
-                email: user.email,
-              }, { merge: true }).catch(dbError => {
-                  console.error("Failed to create user document:", dbError);
-                  // Optional: Implement retry logic or notify user of data sync issue
-              });
-            }
-          })
-          .catch(profileError => {
-              console.error("Failed to update user profile:", profileError);
-          });
+        // 3. Update profile
+        updateProfile(user, { displayName: values.username }).catch(profileError => {
+            console.error("Failed to update user profile:", profileError);
+        });
 
-        // 3. Send verification email
+        // 4. Create user document in Firestore
+        const userDocRef = doc(firestore, "users", user.uid);
+        setDoc(userDocRef, {
+            id: user.uid,
+            username: values.username,
+            displayName: values.username,
+            email: user.email,
+        }, { merge: true }).catch(dbError => {
+            console.error("Failed to create user document:", dbError);
+            // Optional: Implement retry logic or notify user of data sync issue
+        });
+        
+        // 5. Send verification email
         const actionCodeSettings: ActionCodeSettings = {
-          url: `${window.location.origin}/`,
-          handleCodeInApp: true,
+            url: `${window.location.origin}/`,
+            handleCodeInApp: true,
         };
         sendEmailVerification(user, actionCodeSettings)
-          .then(() => {
-            toast({
-              title: 'Account Created!',
-              description: 'A verification email has been sent. Please verify to continue.',
+            .then(() => {
+                toast({
+                    title: 'Account Created!',
+                    description: 'A verification email has been sent. Please verify to continue.',
+                });
+            })
+            .catch(emailError => {
+                console.error("Failed to send verification email:", emailError);
+                toast({
+                    variant: 'destructive',
+                    title: 'Could Not Send Verification',
+                    description: 'Your account was created, but we failed to send a verification email. Please try resending it from the next page.',
+                });
             });
-          })
-          .catch(emailError => {
-            console.error("Failed to send verification email:", emailError);
-            toast({
-                variant: 'destructive',
-                title: 'Could Not Send Verification',
-                description: 'Your account was created, but we failed to send a verification email. Please try resending it from the next page.',
-            });
-          });
 
         // --- Navigate immediately ---
         router.push('/verify-email');
-        
-      })
-      .catch(handleAuthError)
-      .finally(() => {
-          // We don't set loading to false here because we've already navigated away
-      });
+
+    } catch (error) {
+        if (error instanceof FirebaseError) {
+            handleAuthError(error);
+        } else {
+            console.error("An unexpected error occurred during signup:", error);
+            toast({
+                variant: 'destructive',
+                title: 'Sign Up Failed',
+                description: 'An unexpected error occurred. Please try again.',
+            });
+            setLoading(false);
+        }
+    }
   };
 
 

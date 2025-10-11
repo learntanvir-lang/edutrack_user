@@ -161,12 +161,12 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
               )}
             />
              <div className="space-y-2">
-                <p className="text-sm font-medium text-foreground">Email</p>
-                <p className="text-sm text-muted-foreground">{user?.email}</p>
+                <FormLabel>Email</FormLabel>
+                <Input value={user?.email || ''} disabled />
             </div>
             <div className="space-y-2">
-                <p className="text-sm font-medium text-foreground">User ID</p>
-                <p className="text-sm text-muted-foreground">{user?.uid}</p>
+                <FormLabel>User ID</FormLabel>
+                <Input value={user?.uid || ''} disabled />
             </div>
             <DialogFooter>
               <Button type="submit" disabled={loading}>
