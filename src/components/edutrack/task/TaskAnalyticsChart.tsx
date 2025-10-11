@@ -42,7 +42,7 @@ const formatTime = (totalMilliseconds: number, formatType: 'short' | 'long') => 
 const CustomDot = (props: any) => {
     const { cx, cy, stroke, payload } = props;
 
-    if (payload.hours > 0) {
+    if (payload.hours >= 0) {
         return <Dot cx={cx} cy={cy} r={5} fill={stroke} strokeWidth={2} />;
     }
 
@@ -50,8 +50,16 @@ const CustomDot = (props: any) => {
 };
 
 const CustomLabel = (props: any) => {
-    const { x, y, value, index } = props;
-    if (value === 0) return null;
+    const { x, y, value } = props;
+    if (value === 0) {
+        return (
+            <text x={x} y={y} dy={-15} fill="hsl(var(--foreground))" fontSize={14} fontWeight="bold" textAnchor="middle">
+                0m
+            </text>
+        );
+    }
+    if (!value) return null;
+
 
     const timeString = formatTime(value * 3600000, 'short');
     
@@ -158,7 +166,7 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
   }, [tasks, dateRange, viewType, selectedCategory, selectedSubcategory]);
 
 
-    if (chartData.every(d => d.hours === 0)) {
+    if (chartData.every(d => d.hours === 0) && selectedCategory === 'all' && selectedSubcategory === 'all') {
         return (
             <div className="flex h-[450px] w-full items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/30 bg-card p-12 text-center shadow-sm">
                 <div>
@@ -250,7 +258,7 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
             </ChartContainer>
         </div>
         {dateRange.from && dateRange.to && (
-            <div className="text-center font-semibold text-muted-foreground mt-4">
+            <div className="text-center font-semibold text-primary mt-4">
                 {format(dateRange.from, 'd MMM, yyyy')} - {format(dateRange.to, 'd MMM, yyyy')}
             </div>
         )}
