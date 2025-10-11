@@ -1,6 +1,6 @@
 
 
-"use client";
+'use client';
 
 import { useMemo, useState, useRef } from 'react';
 import { Line, LineChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, LabelList, Dot, Rectangle, TooltipProps } from 'recharts';
@@ -252,7 +252,7 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
       <CardHeader>
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between">
             <div>
-                <CardTitle className="text-xl font-bold">{viewType.charAt(0).toUpperCase() + viewType.slice(1)} Time Summary</CardTitle>
+                <CardTitle className="text-xl font-bold mb-2">{viewType.charAt(0).toUpperCase() + viewType.slice(1)} Time Summary</CardTitle>
                 <CardDescription className="text-3xl font-bold text-primary">{formatTime(totalTime, 'long')}</CardDescription>
             </div>
             <div className="flex items-center gap-2 mt-4 sm:mt-0">
