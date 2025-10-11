@@ -81,10 +81,10 @@ export default function StudyTaskPage() {
                     Add Task
                 </Button>
                 <Tabs value={activeView} onValueChange={(value) => setActiveView(value as ViewType)}>
-                    <TabsList>
-                        <TabsTrigger value="daily">Daily</TabsTrigger>
-                        <TabsTrigger value="weekly">Weekly</TabsTrigger>
-                        <TabsTrigger value="monthly">Monthly</TabsTrigger>
+                    <TabsList className="bg-primary/10 rounded-lg">
+                        <TabsTrigger value="daily" className="text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-md rounded-md">Daily</TabsTrigger>
+                        <TabsTrigger value="weekly" className="text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-md rounded-md">Weekly</TabsTrigger>
+                        <TabsTrigger value="monthly" className="text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-md rounded-md">Monthly</TabsTrigger>
                     </TabsList>
                 </Tabs>
             </div>
