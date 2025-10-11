@@ -192,7 +192,7 @@ export function TaskItem({ task }: TaskItemProps) {
       <div className="flex items-center gap-1">
         {!task.isCompleted && (
             <Button
-                variant={task.activeTimeLogId ? 'destructive' : 'outline'}
+                variant={task.activeTimeLogId ? 'default' : 'outline'}
                 size="icon"
                 className="h-8 w-8 text-foreground"
                 onClick={handleTimerToggle}
