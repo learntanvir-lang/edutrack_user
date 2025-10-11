@@ -17,6 +17,7 @@ import {
   setDocumentNonBlocking,
   deleteDocumentNonBlocking
 } from "@/firebase/non-blocking-updates";
+import { format } from "date-fns";
 
 
 type AppState = {
@@ -50,6 +51,7 @@ type Action =
   | { type: "ADD_TASK"; payload: StudyTask }
   | { type: "UPDATE_TASK"; payload: StudyTask }
   | { type: "DELETE_TASK"; payload: { id: string } }
+  | { type: "DUPLICATE_TASK_TO_TODAY", payload: { id: string } }
   | { type: "ADD_TIME_LOG"; payload: { taskId: string; log: TimeLog } }
   | { type: "UPDATE_TIME_LOG"; payload: { taskId: string; log: TimeLog } }
   | { type: "DELETE_TIME_LOG"; payload: { taskId: string; logId: string } };
@@ -159,10 +161,35 @@ const appReducer = (state: AppState, action: Action): AppState => {
       return { ...state, notes: state.notes.filter(n => n.id !== action.payload.id) };
     case "ADD_TASK":
       return { ...state, tasks: [...state.tasks, action.payload] };
-    case "UPDATE_TASK":
-      return { ...state, tasks: state.tasks.map(t => t.id === action.payload.id ? action.payload : t) };
+    case "UPDATE_TASK": {
+      const updatedTask = action.payload;
+      let tasks = state.tasks.map(t => t.id === updatedTask.id ? updatedTask : t);
+      
+      // If the updated task was completed and has an originalId, complete the original task too
+      if (updatedTask.isCompleted && updatedTask.originalId) {
+        tasks = tasks.map(t => t.id === updatedTask.originalId ? { ...t, isCompleted: true } : t);
+      }
+      
+      return { ...state, tasks };
+    }
     case "DELETE_TASK":
       return { ...state, tasks: state.tasks.filter(t => t.id !== action.payload.id) };
+    case "DUPLICATE_TASK_TO_TODAY": {
+      const taskToDuplicate = state.tasks.find(t => t.id === action.payload.id);
+      if (!taskToDuplicate) return state;
+
+      const newTask: StudyTask = {
+        ...taskToDuplicate,
+        id: uuidv4(),
+        date: format(new Date(), "yyyy-MM-dd"),
+        isCompleted: false, // New task is not completed
+        timeLogs: [], // Reset time logs
+        activeTimeLogId: null,
+        originalId: taskToDuplicate.id // Link back to the original task
+      };
+
+      return { ...state, tasks: [...state.tasks, newTask] };
+    }
     case "ADD_TIME_LOG": {
         return {
             ...state,
@@ -328,10 +355,23 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
                 case "ADD_TASK":
                 case "UPDATE_TASK":
                     setDocumentNonBlocking(firestore, `users/${userId}/tasks`, action.payload.id, action.payload);
+                    if (action.payload.isCompleted && action.payload.originalId) {
+                      const originalTask = newState.tasks.find(t => t.id === action.payload.originalId);
+                      if (originalTask) {
+                        setDocumentNonBlocking(firestore, `users/${userId}/tasks`, originalTask.id, originalTask);
+                      }
+                    }
                     break;
                 case "DELETE_TASK":
                     deleteDocumentNonBlocking(firestore, `users/${userId}/tasks`, action.payload.id);
                     break;
+                case "DUPLICATE_TASK_TO_TODAY": {
+                    const newTask = newState.tasks.find(t => t.originalId === action.payload.id);
+                     if (newTask) {
+                        setDocumentNonBlocking(firestore, `users/${userId}/tasks`, newTask.id, newTask);
+                    }
+                    break;
+                }
                 
                 case "ADD_TIME_LOG":
                 case "UPDATE_TIME_LOG":
@@ -355,4 +395,3 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
     </AppDataContext.Provider>
   );
 };
-

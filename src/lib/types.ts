@@ -80,4 +80,5 @@ export interface StudyTask {
   subcategory?: string;
   timeLogs: TimeLog[];
   activeTimeLogId?: string | null;
+  originalId?: string; // To link a duplicated task to its original
 }

@@ -6,11 +6,11 @@ import { StudyTask, TimeLog } from "@/lib/types";
 import { AppDataContext } from '@/context/AppDataContext';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
-import { Trash2, Edit, Play, Square, MoreVertical, Calendar, Flag, Tag, Clock } from 'lucide-react';
+import { Trash2, Edit, Play, Square, MoreVertical, Calendar, Flag, Tag, Clock, CornerDownRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { TaskDialog } from './TaskDialog';
-import { format } from 'date-fns';
+import { format, isBefore, startOfToday } from 'date-fns';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { v4 as uuidv4 } from 'uuid';
 import { TimeLogDetailsDialog } from './TimeLogDetailsDialog';
@@ -71,6 +71,10 @@ export function TaskItem({ task }: TaskItemProps) {
     dispatch({ type: 'DELETE_TASK', payload: { id: task.id } });
   };
   
+  const handleMoveToToday = () => {
+    dispatch({ type: 'DUPLICATE_TASK_TO_TODAY', payload: { id: task.id } });
+  };
+  
   const handleTimerToggle = () => {
     if (task.activeTimeLogId) {
       // Stop timer
@@ -111,15 +115,16 @@ export function TaskItem({ task }: TaskItemProps) {
         const hours = Math.floor(totalMilliseconds / 3600000);
         const minutes = Math.floor((totalMilliseconds % 3600000) / 60000);
         const seconds = Math.floor((totalMilliseconds % 60000) / 1000);
-
+        
         let parts = [];
         if (hours > 0) parts.push(`${hours}h`);
         if (minutes > 0) parts.push(`${minutes}m`);
-        if (seconds > 0 && hours === 0 && minutes < 5) parts.push(`${seconds}s`);
+        if (seconds > 0 && hours === 0) parts.push(`${seconds}s`);
 
         return parts.join(' ') || '0s';
   };
 
+  const isOverdue = isBefore(new Date(task.date), startOfToday()) && !task.isCompleted;
 
   return (
     <>
@@ -127,8 +132,8 @@ export function TaskItem({ task }: TaskItemProps) {
         "flex items-start gap-4 p-4 rounded-lg border transition-shadow duration-300",
         task.isCompleted 
             ? "bg-muted/50 border-border" 
-            : "bg-card border-primary/50",
-         !task.isCompleted && "hover:shadow-lg hover:shadow-primary/20"
+            : "bg-card border-primary/20",
+         !task.isCompleted && "hover:shadow-md hover:shadow-primary/10"
       )}>
       <Checkbox
         id={`task-${task.id}`}
@@ -182,6 +187,18 @@ export function TaskItem({ task }: TaskItemProps) {
       </div>
       
       <div className="flex items-center gap-1">
+        {isOverdue && (
+            <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8 text-foreground"
+                onClick={handleMoveToToday}
+                title="Move to Today"
+            >
+                <CornerDownRight className="h-4 w-4" />
+                <span className="sr-only">Move to Today</span>
+            </Button>
+        )}
         {!task.isCompleted && (
             <Button
                 variant={task.activeTimeLogId ? 'destructive' : 'outline'}
