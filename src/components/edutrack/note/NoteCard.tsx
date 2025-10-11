@@ -3,16 +3,14 @@
 
 import { useState, useContext } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { Note } from '@/lib/types';
 import { AppDataContext } from '@/context/AppDataContext';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { MoreVertical, Pen, Trash2, Link as LinkIcon } from 'lucide-react';
 import { NoteDialog } from './NoteDialog';
 import { DeleteConfirmationDialog } from '../DeleteConfirmationDialog';
-import { cn } from '@/lib/utils';
 
 interface NoteCardProps {
     note: Note;
@@ -32,11 +30,11 @@ export function NoteCard({ note }: NoteCardProps) {
         <>
             <Card className="flex flex-col overflow-hidden rounded-lg shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-1 bg-card border-border/50 group">
                 <div className="relative aspect-video w-full overflow-hidden">
-                    <Image
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
                         src={note.imageUrl}
                         alt={note.title}
-                        fill
-                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                        className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
                     <div className="absolute top-2 right-2">
