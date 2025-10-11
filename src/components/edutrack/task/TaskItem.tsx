@@ -194,7 +194,7 @@ export function TaskItem({ task }: TaskItemProps) {
             <Button
                 variant={task.activeTimeLogId ? 'default' : 'outline'}
                 size="icon"
-                className="h-8 w-8 text-foreground"
+                className="h-8 w-8"
                 onClick={handleTimerToggle}
             >
                 {task.activeTimeLogId ? <Square className="h-4 w-4" /> : <Play className="h-4 w-4" />}
