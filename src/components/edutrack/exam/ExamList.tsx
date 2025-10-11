@@ -42,8 +42,12 @@ export function ExamList() {
             <div>
               <h2 className="text-2xl font-semibold mb-4">Upcoming</h2>
               <MasonryGrid>
-                {upcomingExams.map(exam => (
-                  <div key={exam.id} className="break-inside-avoid">
+                {upcomingExams.map((exam, index) => (
+                  <div 
+                    key={exam.id} 
+                    className="break-inside-avoid animate-fade-in-from-bottom"
+                    style={{ animationDelay: `${index * 0.1}s` }}
+                  >
                     <ExamItem 
                       exam={exam} 
                     />
@@ -58,8 +62,12 @@ export function ExamList() {
               {upcomingExams.length > 0 && <Separator className="my-8" />}
               <h2 className="text-2xl font-semibold mb-4">Past</h2>
               <MasonryGrid>
-                {pastExams.map(exam => (
-                   <div key={exam.id} className="break-inside-avoid">
+                {pastExams.map((exam, index) => (
+                   <div 
+                    key={exam.id} 
+                    className="break-inside-avoid animate-fade-in-from-bottom"
+                    style={{ animationDelay: `${index * 0.1}s` }}
+                   >
                     <ExamItem 
                       exam={exam} 
                     />
