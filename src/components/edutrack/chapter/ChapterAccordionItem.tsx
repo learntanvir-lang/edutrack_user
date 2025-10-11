@@ -100,7 +100,7 @@ function ChapterAccordionItem({ chapter, subjectId, paperId }: ChapterAccordionI
 
     return (
         <>
-            <div className="border-none bg-card rounded-lg shadow-sm">
+            <div className="border-none bg-card rounded-lg shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
                 <div className="flex items-center justify-between w-full p-3">
                     <div className="flex items-center gap-3 flex-1">
                         <div className="flex-1 flex items-center gap-3">
@@ -266,3 +266,5 @@ function ChapterAccordionItem({ chapter, subjectId, paperId }: ChapterAccordionI
     );
 }
 export default memo(ChapterAccordionItem);
+
+    
