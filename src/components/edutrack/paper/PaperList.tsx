@@ -81,8 +81,8 @@ export function PaperList({ papers, subjectId }: PaperListProps) {
             const percentage = paperProgress.total > 0 ? Math.round((paperProgress.completed / paperProgress.total) * 100) : 0;
             
             return (
-          <AccordionItem key={paper.id} value={paper.id} className="border-none">
-            <Card className="shadow-sm bg-muted/30">
+          <AccordionItem key={paper.id} value={paper.id} className="border-none group/paper">
+            <Card className="shadow-sm bg-muted/30 transition-all duration-300 group-data-[state=closed]/paper:hover:shadow-lg group-data-[state=closed]/paper:hover:-translate-y-1">
               <div className="flex items-center justify-between p-4">
                 <AccordionTrigger className="p-0 hover:no-underline flex-1 group">
                    <div className="flex items-center gap-4">

@@ -100,10 +100,10 @@ export function SubjectList() {
           <AccordionItem 
             key={subject.id} 
             value={subject.id} 
-            className="border-none animate-fade-in-from-bottom"
+            className="border-none animate-fade-in-from-bottom group/subject"
             style={{ animationDelay: `${index * 0.1}s` }}
           >
-            <Card className="shadow-sm">
+            <Card className="shadow-sm transition-all duration-300 group-data-[state=closed]/subject:hover:shadow-lg group-data-[state=closed]/subject:hover:-translate-y-1">
               <div className="flex items-center justify-between p-4">
                 <AccordionTrigger className="p-0 hover:no-underline flex-1 group">
                    <div className="flex items-center gap-4">
