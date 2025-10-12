@@ -24,6 +24,7 @@ import { LinkDialog } from "../note/LinkDialog";
 import { v4 as uuidv4 } from "uuid";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
+import { getIcon, IconName } from "../IconPicker";
 
 
 interface ChapterAccordionItemProps {
@@ -77,7 +78,7 @@ function ChapterAccordionItem({ chapter, subjectId, paperId }: ChapterAccordionI
         setIsLinkDialogOpen(true);
     };
     
-    const handleSaveLink = (linkData: { description: string; url: string }) => {
+    const handleSaveLink = (linkData: { description: string; url: string; icon?: string }) => {
         const chapterPayload = { ...chapter };
         if (editingLink) {
             chapterPayload.resourceLinks = chapter.resourceLinks.map(l => l.id === editingLink.id ? { ...l, ...linkData } : l);
@@ -185,11 +186,13 @@ function ChapterAccordionItem({ chapter, subjectId, paperId }: ChapterAccordionI
                                 </Button>
                             </div>
                             <div className="space-y-2">
-                                {chapter.resourceLinks.map(link => (
+                                {chapter.resourceLinks.map(link => {
+                                    const Icon = getIcon(link.icon as IconName);
+                                    return (
                                      <div key={link.id} className="group/link flex items-center gap-1 rounded-md transition-colors border bg-primary/10 hover:bg-primary/20 border-border hover:border-primary">
                                         <Button variant="ghost" size="sm" className="w-full justify-start gap-2 flex-grow text-primary hover:bg-transparent hover:text-primary" asChild>
                                             <Link href={link.url} target="_blank" rel="noopener noreferrer">
-                                                <ExternalLink className="h-4 w-4 flex-shrink-0" />
+                                                {Icon ? <Icon className="h-4 w-4 flex-shrink-0" /> : <ExternalLink className="h-4 w-4 flex-shrink-0" />}
                                                 <span className="truncate">{link.description || link.url}</span>
                                             </Link>
                                         </Button>
@@ -214,7 +217,7 @@ function ChapterAccordionItem({ chapter, subjectId, paperId }: ChapterAccordionI
                                             </DropdownMenuContent>
                                         </DropdownMenu>
                                     </div>
-                                ))}
+                                )})}
                                 {chapter.resourceLinks.length === 0 && (
                                      <p className="text-sm text-center text-muted-foreground py-4">No resources added.</p>
                                 )}

@@ -24,10 +24,12 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ResourceLink } from "@/lib/types";
 import { useEffect } from "react";
+import { IconPicker, type IconName } from "../IconPicker";
 
 const linkSchema = z.object({
   description: z.string().min(1, "Link title is required"),
   url: z.string().url("Must be a valid URL"),
+  icon: z.string().optional(),
 });
 
 type LinkFormValues = z.infer<typeof linkSchema>;
@@ -48,6 +50,7 @@ export function LinkDialog({ open, onOpenChange, onSave, link, itemType = 'Link'
     defaultValues: {
       description: "",
       url: "",
+      icon: undefined,
     },
   });
 
@@ -56,6 +59,7 @@ export function LinkDialog({ open, onOpenChange, onSave, link, itemType = 'Link'
       form.reset({
         description: link?.description || "",
         url: link?.url || "",
+        icon: link?.icon,
       });
     }
   }, [link, open, form]);
@@ -109,6 +113,19 @@ export function LinkDialog({ open, onOpenChange, onSave, link, itemType = 'Link'
                   </FormItem>
                 )}
               />
+              <FormField
+                control={form.control}
+                name="icon"
+                render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Icon (Optional)</FormLabel>
+                        <FormControl>
+                           <IconPicker value={field.value as IconName} onChange={field.onChange} />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                )}
+            />
           </form>
         </Form>
         <DialogFooter>

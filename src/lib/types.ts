@@ -4,6 +4,7 @@ export interface ResourceLink {
   id: string;
   url: string;
   description: string;
+  icon?: string;
 }
 
 export interface TodoItem {
@@ -60,6 +61,7 @@ export interface NoteLink {
   id: string;
   title: string;
   url: string;
+  icon?: string;
 }
 
 export interface Note {

@@ -13,6 +13,7 @@ import { NoteDialog } from './NoteDialog';
 import { DeleteConfirmationDialog } from '../DeleteConfirmationDialog';
 import { LinkDialog } from './LinkDialog';
 import { v4 as uuidv4 } from 'uuid';
+import { getIcon, IconName } from '../IconPicker';
 
 interface NoteCardProps {
     note: Note;
@@ -41,8 +42,13 @@ function NoteCard({ note }: NoteCardProps) {
         setIsLinkDialogOpen(true);
     };
     
-    const handleSaveLink = (linkData: { description: string, url: string }) => {
-        const linkToSave = { id: editingLink?.id || uuidv4(), title: linkData.description, url: linkData.url };
+    const handleSaveLink = (linkData: { description: string, url: string, icon?: string }) => {
+        const linkToSave: NoteLink = { 
+            id: editingLink?.id || uuidv4(), 
+            title: linkData.description, 
+            url: linkData.url, 
+            icon: linkData.icon 
+        };
         
         let updatedLinks: NoteLink[];
         if (editingLink) {
@@ -106,11 +112,13 @@ function NoteCard({ note }: NoteCardProps) {
                 <CardContent className="flex-grow space-y-3">
                     {note.links && note.links.length > 0 && (
                         <div className="space-y-2">
-                             {note.links.map(link => (
+                             {note.links.map(link => {
+                                const Icon = getIcon(link.icon as IconName);
+                                return (
                                 <div key={link.id} className="group/link flex items-center gap-1 rounded-md transition-colors border bg-primary/10 hover:bg-primary/20 border-border hover:border-primary">
                                     <Button variant="ghost" size="sm" className="w-full justify-start gap-2 flex-grow text-primary hover:bg-transparent hover:text-primary" asChild>
                                         <Link href={link.url} target="_blank" rel="noopener noreferrer">
-                                            <ExternalLink className="h-4 w-4 flex-shrink-0" />
+                                            {Icon ? <Icon className="h-4 w-4 flex-shrink-0" /> : <ExternalLink className="h-4 w-4 flex-shrink-0" />}
                                             <span className="truncate">{link.title}</span>
                                         </Link>
                                     </Button>
@@ -135,7 +143,7 @@ function NoteCard({ note }: NoteCardProps) {
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                 </div>
-                            ))}
+                            )})}
                         </div>
                     )}
                 </CardContent>
