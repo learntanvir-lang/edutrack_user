@@ -94,7 +94,7 @@ export default function Home() {
         </div>
 
         <div ref={analyticsRef} className={cn("mt-8 transition-all duration-700 opacity-0", isAnalyticsInView && "animate-fade-in-from-bottom opacity-100")}>
-            <Card>
+            <Card className="transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
                 <CardHeader>
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                         <div>
