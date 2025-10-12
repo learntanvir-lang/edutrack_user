@@ -95,11 +95,11 @@ function NoteCard({ note }: NoteCardProps) {
                             <DropdownMenuContent align="end">
                                 <DropdownMenuItem onClick={() => setIsEditDialogOpen(true)}>
                                 <Pen className="mr-2 h-4 w-4" />
-                                Edit Note Details
+                                Edit Resource Details
                                 </DropdownMenuItem>
                                 <DropdownMenuItem onClick={handleDuplicateNote}>
                                     <Copy className="mr-2 h-4 w-4" />
-                                    Duplicate Note
+                                    Duplicate Resource
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem
@@ -107,7 +107,7 @@ function NoteCard({ note }: NoteCardProps) {
                                 onClick={() => setIsDeleteDialogOpen(true)}
                                 >
                                 <Trash2 className="mr-2 h-4 w-4" />
-                                Delete Note
+                                Delete Resource
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
@@ -184,7 +184,7 @@ function NoteCard({ note }: NoteCardProps) {
                 onOpenChange={setIsDeleteDialogOpen}
                 onConfirm={handleDeleteNote}
                 itemName={note.title}
-                itemType="note"
+                itemType="resource"
             />
              {deletingLink && (
                  <DeleteConfirmationDialog
