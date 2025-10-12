@@ -49,14 +49,14 @@ export default function NotesPage() {
                 className="font-bold transition-all duration-300 bg-primary text-primary-foreground border-2 border-primary hover:bg-transparent hover:text-primary hover:shadow-lg hover:shadow-primary/20"
                 onClick={() => setIsNoteDialogOpen(true)}>
                 <PlusCircle className="mr-2 h-4 w-4" />
-                Add Note
+                Add Resource
             </Button>
         </div>
 
         {notes.length === 0 ? (
             <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/30 bg-card p-12 text-center shadow-sm mt-8">
                 <h3 className="text-lg font-semibold text-muted-foreground">No notes yet</h3>
-                <p className="mt-1 text-sm text-muted-foreground">Click "Add Note" to create your first note.</p>
+                <p className="mt-1 text-sm text-muted-foreground">Click "Add Resource" to create your first note.</p>
             </div>
         ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
