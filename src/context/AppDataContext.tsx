@@ -48,6 +48,7 @@ type Action =
   | { type: "DELETE_EXAM"; payload: { id: string } }
   | { type: "ADD_NOTE"; payload: Note }
   | { type: "UPDATE_NOTE"; payload: Note }
+  | { type: "DUPLICATE_NOTE"; payload: Note }
   | { type: "DELETE_NOTE"; payload: { id: string } }
   | { type: "ADD_TASK"; payload: StudyTask }
   | { type: "UPDATE_TASK"; payload: StudyTask }
@@ -282,6 +283,17 @@ const appReducer = (state: AppState, action: Action): AppState => {
       return { ...state, notes: [...state.notes, action.payload] };
     case "UPDATE_NOTE":
       return { ...state, notes: state.notes.map(n => n.id === action.payload.id ? action.payload : n) };
+    case "DUPLICATE_NOTE": {
+        const note = action.payload;
+        const newNote: Note = {
+            ...note,
+            id: uuidv4(),
+            title: `${note.title} (Copy)`,
+            createdAt: new Date().toISOString(),
+            links: note.links.map(link => ({...link, id: uuidv4()})),
+        };
+        return { ...state, notes: [...state.notes, newNote] };
+    }
     case "DELETE_NOTE":
       return { ...state, notes: state.notes.filter(n => n.id !== action.payload.id) };
     case "ADD_TASK":
@@ -500,6 +512,13 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
                 case "UPDATE_NOTE":
                     setDocumentNonBlocking(firestore, `users/${userId}/notes`, action.payload.id, action.payload);
                     break;
+                case "DUPLICATE_NOTE": {
+                    const newNote = newState.notes.find(n => n.title === `${action.payload.title} (Copy)`);
+                    if (newNote) {
+                        setDocumentNonBlocking(firestore, `users/${userId}/notes`, newNote.id, newNote);
+                    }
+                    break;
+                }
                 case "DELETE_NOTE":
                     deleteDocumentNonBlocking(firestore, `users/${userId}/notes`, action.payload.id);
                     break;

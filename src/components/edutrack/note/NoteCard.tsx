@@ -8,7 +8,7 @@ import { AppDataContext } from '@/context/AppDataContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { MoreVertical, Pen, Trash2, Link as LinkIcon, PlusCircle, Edit, ExternalLink } from 'lucide-react';
+import { MoreVertical, Pen, Trash2, Link as LinkIcon, PlusCircle, Edit, ExternalLink, Copy } from 'lucide-react';
 import { NoteDialog } from './NoteDialog';
 import { DeleteConfirmationDialog } from '../DeleteConfirmationDialog';
 import { LinkDialog } from './LinkDialog';
@@ -30,6 +30,10 @@ function NoteCard({ note }: NoteCardProps) {
     const handleDeleteNote = () => {
         dispatch({ type: "DELETE_NOTE", payload: { id: note.id } });
         setIsDeleteDialogOpen(false);
+    };
+
+    const handleDuplicateNote = () => {
+        dispatch({ type: "DUPLICATE_NOTE", payload: note });
     };
 
     const handleAddLink = () => {
@@ -92,6 +96,10 @@ function NoteCard({ note }: NoteCardProps) {
                                 <DropdownMenuItem onClick={() => setIsEditDialogOpen(true)}>
                                 <Pen className="mr-2 h-4 w-4" />
                                 Edit Note Details
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={handleDuplicateNote}>
+                                    <Copy className="mr-2 h-4 w-4" />
+                                    Duplicate Note
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem
