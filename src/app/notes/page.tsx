@@ -27,7 +27,7 @@ export default function NotesPage() {
   }, [user, isUserLoading, router]);
 
   const sortedNotes = useMemo(() => {
-    return [...notes].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    return [...notes].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
   }, [notes]);
   
   if (isUserLoading || !user || !user.emailVerified) {
