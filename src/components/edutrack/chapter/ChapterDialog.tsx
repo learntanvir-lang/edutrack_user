@@ -117,7 +117,7 @@ export function ChapterDialog({ open, onOpenChange, subjectId, paperId, chapter 
         <div className="flex-grow overflow-hidden">
         <ScrollArea className="h-full pr-6 -mr-6">
             <Form {...form}>
-              <form id="chapter-form" className="space-y-6">
+              <form id="chapter-form" className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
                     control={form.control}

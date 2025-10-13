@@ -116,7 +116,7 @@ export function ProgressItemDialog({ open, onOpenChange, subjectId, paperId, cha
         <div className="flex-grow overflow-hidden">
           <ScrollArea className="h-full pr-6 -mr-6">
             <Form {...form}>
-              <form id="progress-item-form" className="space-y-6">
+              <form id="progress-item-form" className="space-y-4">
                 <FormField
                   control={form.control}
                   name="name"

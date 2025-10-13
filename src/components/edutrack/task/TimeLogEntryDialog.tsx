@@ -206,4 +206,3 @@ export function TimeLogEntryDialog({ open, onOpenChange, task, log }: TimeLogEnt
         </Dialog>
     );
 }
-

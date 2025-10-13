@@ -376,7 +376,7 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
                   <FormItem>
                     <FormLabel>Exam Time</FormLabel>
                     <FormControl>
-                      <Input type="time" {...field} />
+                      <Input type="time" {...field} value={field.value || ""} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -456,5 +456,3 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
     </Dialog>
   );
 }
-
-    

@@ -24,7 +24,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { StudyTask } from "@/lib/types";
 import { useContext, useEffect, useMemo, useState } from "react";
-import { AppDataContext } from "@/context/AppDataContext";
+import { AppDataContext } from '@/context/AppDataContext';
 import { v4 as uuidv4 } from 'uuid';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
@@ -82,14 +82,14 @@ export function TaskDialog({ open, onOpenChange, date, task }: TaskDialogProps) 
       if (isEditing && task) {
         form.reset({
           title: task.title,
-          description: task.description,
+          description: task.description || "",
           date: new Date(task.date),
-          startTime: task.startTime,
-          endTime: task.endTime,
-          color: task.color,
-          icon: task.icon,
+          startTime: task.startTime || "",
+          endTime: task.endTime || "",
+          color: task.color || "",
+          icon: task.icon || "",
           category: task.category,
-          subcategory: task.subcategory,
+          subcategory: task.subcategory || "",
         });
       } else {
         form.reset({
@@ -224,7 +224,7 @@ export function TaskDialog({ open, onOpenChange, date, task }: TaskDialogProps) 
                         <FormItem>
                           <FormLabel>Start Time (Optional)</FormLabel>
                           <FormControl>
-                            <Input type="time" {...field} />
+                            <Input type="time" {...field} value={field.value || ""} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -237,7 +237,7 @@ export function TaskDialog({ open, onOpenChange, date, task }: TaskDialogProps) 
                         <FormItem>
                           <FormLabel>End Time (Optional)</FormLabel>
                           <FormControl>
-                            <Input type="time" {...field} />
+                            <Input type="time" {...field} value={field.value || ""} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -265,7 +265,7 @@ export function TaskDialog({ open, onOpenChange, date, task }: TaskDialogProps) 
                         <FormItem>
                             <FormLabel>Subcategory (Optional)</FormLabel>
                             <FormControl>
-                            <Input placeholder="e.g., Practice Problems" {...field} />
+                            <Input placeholder="e.g., Practice Problems" {...field} value={field.value || ""} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -281,7 +281,7 @@ export function TaskDialog({ open, onOpenChange, date, task }: TaskDialogProps) 
                                 <FormItem>
                                     <FormLabel>Color</FormLabel>
                                     <FormControl>
-                                        <ColorPicker value={field.value} onChange={field.onChange} />
+                                        <ColorPicker value={field.value || ""} onChange={field.onChange} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
