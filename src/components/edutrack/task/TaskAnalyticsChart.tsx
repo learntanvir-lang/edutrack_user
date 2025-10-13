@@ -394,3 +394,4 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
 
     
 
+    
