@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { AppHeader } from '@/components/edutrack/AppHeader';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { BottomNavBar } from '@/components/edutrack/BottomNavBar';
+import { ScrollToTopButton } from '@/components/ui/ScrollToTopButton';
 
 export const metadata: Metadata = {
   title: 'EduTrack - Student Exam & Syllabus Tracker',
@@ -54,6 +55,7 @@ export default function RootLayout({
                 </div>
               </footer>
               <BottomNavBar />
+              <ScrollToTopButton />
             </div>
             <Toaster />
           </AppDataProvider>
