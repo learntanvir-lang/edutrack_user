@@ -24,15 +24,10 @@ export async function initializeFirebase(): Promise<FirebaseServices> {
   
   let firebaseApp: FirebaseApp;
   if (!getApps().length) {
-    try {
-      // Attempt to initialize via Firebase App Hosting environment variables
-      firebaseApp = initializeApp({});
-    } catch (e) {
-      if (process.env.NODE_ENV === "production") {
-        console.warn('Automatic initialization failed. Falling back to firebase config object.', e);
-      }
-      firebaseApp = initializeApp(firebaseConfig);
-    }
+    // When running locally, initialize with the config object.
+    // In a deployed App Hosting environment, this object will be empty and
+    // the SDK will automatically use the reserved environment variables.
+    firebaseApp = initializeApp(firebaseConfig);
   } else {
     firebaseApp = getApp();
   }
