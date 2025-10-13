@@ -4,7 +4,7 @@
 import { firebaseConfig } from '@/firebase/config';
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import { getAuth, Auth } from 'firebase/auth';
-import { getFirestore, enableIndexedDbPersistence, Firestore } from 'firebase/firestore'
+import { getFirestore, enableIndexedDbPersistence, Firestore, initializeFirestore } from 'firebase/firestore'
 
 export interface FirebaseServices {
     firebaseApp: FirebaseApp;
@@ -26,7 +26,7 @@ export async function initializeFirebase(): Promise<FirebaseServices> {
   if (!getApps().length) {
     try {
       // Attempt to initialize via Firebase App Hosting environment variables
-      firebaseApp = initializeApp();
+      firebaseApp = initializeApp({});
     } catch (e) {
       if (process.env.NODE_ENV === "production") {
         console.warn('Automatic initialization failed. Falling back to firebase config object.', e);
@@ -37,7 +37,10 @@ export async function initializeFirebase(): Promise<FirebaseServices> {
     firebaseApp = getApp();
   }
 
-  const firestore = getFirestore(firebaseApp);
+  // Use initializeFirestore to allow for settings.
+  const firestore = initializeFirestore(firebaseApp, {
+      // Firestore settings can go here if needed in the future
+  });
   
   // Enable offline persistence only once.
   if (!persistenceEnabled) {

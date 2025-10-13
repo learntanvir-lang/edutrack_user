@@ -20,7 +20,7 @@ import { TaskAnalyticsChart } from '@/components/edutrack/task/TaskAnalyticsChar
 import { useInView } from '@/hooks/useInView';
 
 export default function Home() {
-  const { subjects, exams, tasks } = useContext(AppDataContext);
+  const { subjects, exams, tasks, dispatch } = useContext(AppDataContext);
   const { user, isUserLoading } = useUser();
   const router = useRouter();
 
@@ -35,12 +35,11 @@ export default function Home() {
   const [analyticsRef, isAnalyticsInView] = useInView({ triggerOnce: true, threshold: 0.1 });
 
   useEffect(() => {
-    if (!isUserLoading) {
-      if (!user) {
+    if (!isUserLoading && !user && navigator.onLine) {
+        // If not loading, not logged in, and online, redirect to login
         router.push('/login');
-      } else if (!user.emailVerified) {
+    } else if (user && !user.emailVerified) {
         router.push('/verify-email');
-      }
     }
   }, [user, isUserLoading, router]);
   
@@ -52,12 +51,24 @@ export default function Home() {
     return upcoming[0];
   }, [exams]);
 
-  if (isUserLoading || !user || !user.emailVerified) {
+  if (isUserLoading) {
     return (
       <div className="flex min-h-[calc(100vh-theme(spacing.14))] items-center justify-center">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
       </div>
     );
+  }
+  
+  if (!user && !navigator.onLine) {
+    // Potentially show a limited offline view or a "You are offline" message
+    // For now, we continue to render the dashboard with local data
+  } else if (!user) {
+    // This case is now handled by the useEffect redirect, but we can keep a loader for safety
+    return (
+        <div className="flex min-h-[calc(100vh-theme(spacing.14))] items-center justify-center">
+          <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        </div>
+      );
   }
 
   return (

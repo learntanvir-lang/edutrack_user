@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { createContext, useReducer, useEffect, ReactNode, useContext, useMemo } from "react";
@@ -13,6 +12,7 @@ import {
   getDocs,
   setDoc,
   deleteDoc,
+  getDocsFromCache,
 } from "firebase/firestore";
 import {
   setDocumentNonBlocking,
@@ -412,31 +412,28 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
   const { firestore, user, isUserLoading } = useFirebase();
 
   useEffect(() => {
-    if (isUserLoading) return; 
-
     const loadData = async () => {
       if (user && firestore) {
         try {
+          // Online: Fetch from server, which will be up-to-date due to persistence
           const subjectsCol = collection(firestore, `users/${user.uid}/subjects`);
           const examsCol = collection(firestore, `users/${user.uid}/exams`);
           const notesCol = collection(firestore, `users/${user.uid}/notes`);
           const tasksCol = collection(firestore, `users/${user.uid}/tasks`);
-          const settingsDoc = doc(firestore, `users/${user.uid}/settings`, 'user-settings');
-
-
+          
           const [subjectsSnapshot, examsSnapshot, notesSnapshot, tasksSnapshot, settingsSnapshot] = await Promise.all([
             getDocs(subjectsCol),
             getDocs(examsCol),
             getDocs(notesCol),
             getDocs(tasksCol),
-            getDocs(collection(firestore, `users/${user.uid}/settings`)), // getDocs for collection
+            getDocs(collection(firestore, `users/${user.uid}/settings`)),
           ]);
-          
+
           const subjects = subjectsSnapshot.docs.map(doc => doc.data() as Subject);
           const exams = examsSnapshot.docs.map(doc => doc.data() as Exam);
           const notes = notesSnapshot.docs.map(doc => doc.data() as Note);
           const tasks = tasksSnapshot.docs.map(doc => doc.data() as StudyTask);
-
+          
           let settings: UserSettings;
           if (settingsSnapshot.empty || !settingsSnapshot.docs[0].exists()) {
              settings = initialState.settings;
@@ -445,19 +442,50 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
              settings = settingsSnapshot.docs[0].data() as UserSettings;
           }
 
-          dispatch({ type: "SET_STATE", payload: { subjects, exams, notes, tasks, settings } });
+          const onlineState = { subjects, exams, notes, tasks, settings };
+          dispatch({ type: "SET_STATE", payload: onlineState });
+          localStorage.setItem(`appData-${user.uid}`, JSON.stringify(onlineState));
+
         } catch (error) {
-          console.error("Error fetching from Firestore:", error);
-          // On error, clear the state instead of loading initial data
-          dispatch({ type: "SET_STATE", payload: initialState });
+          console.error("Error fetching from Firestore server, trying cache:", error);
+          // Fallback to cache if server is unreachable
+          try {
+            const subjectsCol = collection(firestore, `users/${user.uid}/subjects`);
+            const examsCol = collection(firestore, `users/${user.uid}/exams`);
+            const notesCol = collection(firestore, `users/${user.uid}/notes`);
+            const tasksCol = collection(firestore, `users/${user.uid}/tasks`);
+
+            const [subjectsSnapshot, examsSnapshot, notesSnapshot, tasksSnapshot, settingsSnapshot] = await Promise.all([
+                getDocsFromCache(subjectsCol),
+                getDocsFromCache(examsCol),
+                getDocsFromCache(notesCol),
+                getDocsFromCache(tasksCol),
+                getDocsFromCache(collection(firestore, `users/${user.uid}/settings`)),
+            ]);
+
+            const subjects = subjectsSnapshot.docs.map(doc => doc.data() as Subject);
+            const exams = examsSnapshot.docs.map(doc => doc.data() as Exam);
+            const notes = notesSnapshot.docs.map(doc => doc.data() as Note);
+            const tasks = tasksSnapshot.docs.map(doc => doc.data() as StudyTask);
+            const settings = settingsSnapshot.docs[0]?.data() as UserSettings || initialState.settings;
+            
+            const cachedState = { subjects, exams, notes, tasks, settings };
+            dispatch({ type: "SET_STATE", payload: cachedState });
+
+          } catch (cacheError) {
+              console.error("Error fetching from Firestore cache:", cacheError);
+              dispatch({ type: "SET_STATE", payload: initialState });
+          }
         }
-      } else {
-        // Not logged in or Firestore not ready, use initial/empty data
-        // Check if there's local data before falling back to initialData
-        const localData = localStorage.getItem('appData');
+      } else if (!isUserLoading && !user) {
+        // Not logged in: check for last user's data in localStorage
+        const lastUserId = localStorage.getItem('lastUserId');
+        const localData = lastUserId ? localStorage.getItem(`appData-${lastUserId}`) : null;
+
         if (localData) {
           dispatch({ type: "SET_STATE", payload: JSON.parse(localData) });
         } else {
+          // Fallback to initial sample data if nothing else is available
           dispatch({ type: "SET_STATE", payload: initialData });
         }
       }
@@ -466,6 +494,12 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
     loadData();
 
   }, [user, firestore, isUserLoading]);
+  
+  useEffect(() => {
+    if (user) {
+        localStorage.setItem('lastUserId', user.uid);
+    }
+  }, [user]);
 
   const syncedDispatch = useMemo(() => {
     const originalDispatch = dispatch;
@@ -474,9 +508,11 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
         // 1. Optimistically update local state
         originalDispatch(action);
         
-        // 2. Queue up the non-blocking Firestore operation
         const newState = appReducer(state, action);
+
+        // 2. Queue up the Firestore/localStorage operation
         if (user && firestore) {
+            localStorage.setItem(`appData-${user.uid}`, JSON.stringify(newState));
             const userId = user.uid;
             
             switch (action.type) {
@@ -591,8 +627,6 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
                     break;
                 }
             }
-        } else {
-             localStorage.setItem('appData', JSON.stringify(newState));
         }
     };
   }, [state, user, firestore]);

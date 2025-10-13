@@ -98,6 +98,10 @@ export default function LoginPage() {
         title = 'Weak Password';
         description = 'The password must be at least 6 characters long.';
         break;
+      case 'auth/network-request-failed':
+        title = 'Network Error';
+        description = 'Could not connect to the server. Please check your internet connection and try again.';
+        break;
       default:
         break;
     }
