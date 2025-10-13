@@ -12,10 +12,9 @@ import type { DateRange } from 'react-day-picker';
 import type { ViewType } from '@/app/studytask/page';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { ChevronDown, Download, Info, Calendar, BarChart2 } from 'lucide-react';
-import { toPng } from 'html-to-image';
+import { ChevronDown, Info, Calendar, BarChart2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Alert } from '@/components/ui/alert';
 
 interface TaskAnalyticsChartProps {
   tasks: StudyTask[];
@@ -109,7 +108,6 @@ const CustomXAxisTick = (props: any) => {
 export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalyticsChartProps) {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedSubcategory, setSelectedSubcategory] = useState<string>('all');
-  const cardRef = useRef<HTMLDivElement>(null);
 
   const { categories, subcategoriesByCategory } = useMemo(() => {
     const allCategories = new Set<string>();
@@ -225,22 +223,6 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
     
   }, [tasks, dateRange, viewType, selectedCategory, selectedSubcategory]);
 
-  const handleDownload = async () => {
-    if (cardRef.current === null) {
-      return;
-    }
-
-    try {
-      const dataUrl = await toPng(cardRef.current, { cacheBust: true, backgroundColor: 'white', skipFonts: true });
-      const link = document.createElement('a');
-      link.download = `task-analytics-${viewType}-${format(new Date(), 'yyyy-MM-dd')}.png`;
-      link.href = dataUrl;
-      link.click();
-    } catch (err) {
-      console.error('Failed to download image', err);
-    }
-  };
-
   const CustomTooltipCursor = (props: TooltipProps<number, string>) => {
     const { active, coordinate, payload } = props;
     if (active && coordinate && payload && payload.length) {
@@ -271,7 +253,7 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
   }
 
   return (
-    <Card className="shadow-lg rounded-xl border border-border/50" ref={cardRef}>
+    <Card className="shadow-lg rounded-xl border border-border/50">
       <CardHeader>
         <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
             <div className="grid gap-2 flex-1">
@@ -312,10 +294,6 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
                         ))}
                     </DropdownMenuContent>
                 </DropdownMenu>
-                <Button variant="outline" size="icon" onClick={handleDownload}>
-                    <Download className="h-4 w-4" />
-                    <span className="sr-only">Download chart</span>
-                </Button>
             </div>
         </div>
       </CardHeader>
@@ -369,7 +347,7 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
           <Alert className="mt-4 bg-primary/5 border-primary/20">
             <div className='flex items-start gap-3'>
                 <Info className="h-4 w-4 mt-1 flex-shrink-0" color="hsl(var(--primary))" />
-                <div className="grid gap-2 font-semibold text-foreground">
+                <div className="grid font-semibold text-foreground">
                     <div className="grid grid-cols-[auto_1fr_auto] items-center gap-x-4">
                         <Calendar className="h-4 w-4 text-muted-foreground" />
                         <span className="text-left">Daily Average:</span>
