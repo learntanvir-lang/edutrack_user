@@ -2,19 +2,20 @@
 
 'use client';
 
-import { useMemo, useState, useRef } from 'react';
+import { useMemo, useState, useRef, useContext } from 'react';
 import { Line, LineChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, LabelList, Dot, Rectangle, TooltipProps } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartConfig, ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
-import { format, eachDayOfInterval, eachWeekOfInterval, differenceInCalendarDays, isValid } from 'date-fns';
+import { format, eachDayOfInterval, eachWeekOfInterval, differenceInCalendarDays, isValid, differenceInCalendarWeeks } from 'date-fns';
 import type { StudyTask } from '@/lib/types';
 import type { DateRange } from 'react-day-picker';
 import type { ViewType } from '@/app/studytask/page';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { ChevronDown, Info, Calendar, BarChart2 } from 'lucide-react';
+import { ChevronDown, Info, Calendar, BarChart2, Target, CalendarClock, TrendingUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Alert } from '@/components/ui/alert';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AppDataContext } from '@/context/AppDataContext';
 
 interface TaskAnalyticsChartProps {
   tasks: StudyTask[];
@@ -108,6 +109,7 @@ const CustomXAxisTick = (props: any) => {
 export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalyticsChartProps) {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedSubcategory, setSelectedSubcategory] = useState<string>('all');
+  const { settings } = useContext(AppDataContext);
 
   const { categories, subcategoriesByCategory } = useMemo(() => {
     const allCategories = new Set<string>();
@@ -136,9 +138,9 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
   
   const availableSubcategories = subcategoriesByCategory[selectedCategory] || ['all'];
 
-  const { chartData, totalTime, maxHours, averageDailyTime } = useMemo(() => {
+  const { chartData, totalTime, maxHours, averageDailyTime, averageWeeklyTime } = useMemo(() => {
     if (!dateRange.from || !dateRange.to || !isValid(dateRange.from) || !isValid(dateRange.to)) {
-        return { chartData: [], totalTime: 0, maxHours: 1, averageDailyTime: 0 };
+        return { chartData: [], totalTime: 0, maxHours: 1, averageDailyTime: 0, averageWeeklyTime: 0 };
     }
 
     const filteredTasks = tasks.filter(task => {
@@ -213,12 +215,15 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
 
     const daysInPeriod = differenceInCalendarDays(dateRange.to, dateRange.from) + 1;
     const avgTime = daysInPeriod > 0 ? totalMilliseconds / daysInPeriod : 0;
+    const weeksInPeriod = differenceInCalendarWeeks(dateRange.to, dateRange.from, { weekStartsOn: 6 }) + 1;
+    const avgWeeklyTime = weeksInPeriod > 0 ? totalMilliseconds / weeksInPeriod : 0;
     
     return { 
         chartData: data, 
         totalTime: totalMilliseconds, 
         maxHours: Math.ceil(maxHoursValue + 0.5) || 1,
         averageDailyTime: avgTime,
+        averageWeeklyTime: avgWeeklyTime,
     };
     
   }, [tasks, dateRange, viewType, selectedCategory, selectedSubcategory]);
@@ -344,23 +349,47 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
             </div>
         )}
         {(viewType === 'weekly' || viewType === 'monthly') && (
-          <Alert className="mt-4 bg-primary/5 border-primary/20">
-            <div className='flex items-start gap-3'>
-                <Info className="h-4 w-4 mt-1 flex-shrink-0" color="hsl(var(--primary))" />
-                <div className="grid font-semibold text-foreground">
-                    <div className="grid grid-cols-[auto_1fr_auto] items-center gap-x-4">
-                        <Calendar className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-left">Daily Average:</span>
-                        <span className="text-primary text-right">{formatTime(averageDailyTime, 'long')}</span>
+            <Alert className="mt-4 bg-primary/5 border-primary/20">
+                <AlertDescription className="grid grid-cols-1 divide-y divide-primary/10">
+                    <div className="grid grid-cols-[auto_1fr] items-center gap-x-3 py-2">
+                        <CalendarClock className="h-5 w-5 text-primary" />
+                        <div className="flex justify-between items-center">
+                            <span className="font-semibold text-foreground">Daily Average</span>
+                            <span className="font-bold text-primary">{formatTime(averageDailyTime, 'short')}</span>
+                        </div>
                     </div>
-                    <div className="grid grid-cols-[auto_1fr_auto] items-center gap-x-4">
-                        <BarChart2 className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-left">Total Time:</span>
-                        <span className="text-primary text-right">{formatTime(totalTime, 'long')}</span>
+                    
+                    {viewType === 'weekly' && (
+                        <div className="grid grid-cols-[auto_1fr] items-center gap-x-3 py-2">
+                            <Target className="h-5 w-5 text-primary" />
+                            <div className="flex justify-between items-center">
+                                <span className="font-semibold text-foreground">Weekly Target</span>
+                                <span className="font-bold text-primary">{settings.weeklyStudyGoal}h</span>
+                            </div>
+                        </div>
+                    )}
+                    
+                    {viewType === 'monthly' && (
+                         <div className="grid grid-cols-[auto_1fr] items-center gap-x-3 py-2">
+                            <TrendingUp className="h-5 w-5 text-primary" />
+                            <div className="flex justify-between items-center">
+                                <span className="font-semibold text-foreground">Weekly Average</span>
+                                <span className="font-bold text-primary">{formatTime(averageWeeklyTime, 'short')}</span>
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="grid grid-cols-[auto_1fr] items-center gap-x-3 py-2">
+                        <BarChart2 className="h-5 w-5 text-primary" />
+                        <div className="flex justify-between items-center">
+                            <span className="font-semibold text-foreground">
+                                {viewType === 'weekly' ? 'Weekly Total' : 'Monthly Total'}
+                            </span>
+                            <span className="font-bold text-primary">{formatTime(totalTime, 'short')}</span>
+                        </div>
                     </div>
-                </div>
-            </div>
-          </Alert>
+                </AlertDescription>
+            </Alert>
         )}
       </CardContent>
     </Card>
