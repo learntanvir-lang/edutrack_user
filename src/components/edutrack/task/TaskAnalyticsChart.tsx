@@ -12,7 +12,7 @@ import type { DateRange } from 'react-day-picker';
 import type { ViewType } from '@/app/studytask/page';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { ChevronDown, Download, Info } from 'lucide-react';
+import { ChevronDown, Download, Info, Calendar, BarChart2 } from 'lucide-react';
 import { toPng } from 'html-to-image';
 import { cn } from '@/lib/utils';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -368,10 +368,15 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
         {(viewType === 'weekly' || viewType === 'monthly') && (
           <Alert className="mt-4 bg-primary/5 border-primary/20">
             <Info className="h-4 w-4" color="hsl(var(--primary))" />
-            <AlertDescription className="font-semibold text-foreground flex items-center justify-center flex-wrap gap-x-4 gap-y-1">
-                <span>Daily Average: <span className="text-primary">{formatTime(averageDailyTime, 'long')} per day</span></span>
-                <span className="hidden sm:inline text-muted-foreground/50">|</span>
-                <span>Total Time: <span className="text-primary">{formatTime(totalTime, 'long')}</span></span>
+            <AlertDescription className="font-semibold text-foreground flex flex-col items-center justify-center gap-2">
+                <span className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    Daily Average: <span className="text-primary">{formatTime(averageDailyTime, 'long')} per day</span>
+                </span>
+                <span className="flex items-center gap-2">
+                    <BarChart2 className="h-4 w-4 text-muted-foreground" />
+                    Total Time: <span className="text-primary">{formatTime(totalTime, 'long')}</span>
+                </span>
             </AlertDescription>
           </Alert>
         )}
