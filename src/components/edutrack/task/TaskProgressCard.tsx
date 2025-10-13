@@ -47,7 +47,7 @@ export function TaskProgressCard({ tasks }: TaskProgressCardProps) {
     };
     
     return (
-        <Card>
+        <Card className="transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
             <CardHeader>
                 <CardTitle className="text-lg">Today's Progress</CardTitle>
             </CardHeader>

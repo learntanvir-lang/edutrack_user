@@ -12,7 +12,7 @@ interface CalendarViewProps {
 
 export function CalendarView({ selectedDate, setSelectedDate }: CalendarViewProps) {
     return (
-        <Card>
+        <Card className="transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
             <CardContent className="p-2">
                  <Calendar
                     mode="single"
