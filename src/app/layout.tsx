@@ -13,6 +13,7 @@ export const metadata: Metadata = {
   description: 'A modern way to track your exams, subjects, and study progress.',
   manifest: '/manifest.json',
   icons: {
+    icon: '/favicon.svg',
     apple: '/icons/icon-192x192.png',
   },
 };
