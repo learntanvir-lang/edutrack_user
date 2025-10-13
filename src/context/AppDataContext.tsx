@@ -3,7 +3,7 @@
 "use client";
 
 import { createContext, useReducer, useEffect, ReactNode, useContext, useMemo } from "react";
-import { Subject, Exam, Paper, Chapter, Note, StudyTask, TimeLog, ProgressItem, TodoItem } from "@/lib/types";
+import { Subject, Exam, Paper, Chapter, Note, StudyTask, TimeLog, ProgressItem, TodoItem, UserSettings } from "@/lib/types";
 import { initialData } from "@/lib/data";
 import { v4 as uuidv4 } from 'uuid';
 import { useFirebase, useUser } from "@/firebase";
@@ -26,6 +26,7 @@ type AppState = {
   exams: Exam[];
   notes: Note[];
   tasks: StudyTask[];
+  settings: UserSettings;
 };
 
 type Action =
@@ -60,7 +61,8 @@ type Action =
   | { type: "ADD_PROGRESS_ITEM"; payload: { subjectId: string, paperId: string, chapterId: string, progressItem: ProgressItem } }
   | { type: "UPDATE_PROGRESS_ITEM"; payload: { subjectId: string, paperId: string, chapterId: string, progressItem: ProgressItem } }
   | { type: "DELETE_PROGRESS_ITEM"; payload: { subjectId: string, paperId: string, chapterId: string, progressItemId: string } }
-  | { type: "TOGGLE_TODO"; payload: { subjectId: string, paperId: string, chapterId: string, progressItemId: string, todoId: string, completed: boolean } };
+  | { type: "TOGGLE_TODO"; payload: { subjectId: string, paperId: string, chapterId: string, progressItemId: string, todoId: string, completed: boolean } }
+  | { type: "UPDATE_SETTINGS"; payload: Partial<UserSettings> };
 
 
 const appReducer = (state: AppState, action: Action): AppState => {
@@ -374,6 +376,8 @@ const appReducer = (state: AppState, action: Action): AppState => {
             )
         };
     }
+    case "UPDATE_SETTINGS":
+        return { ...state, settings: { ...state.settings, ...action.payload } };
     default:
       return state;
   }
@@ -384,6 +388,11 @@ const initialState: AppState = {
   exams: [],
   notes: [],
   tasks: [],
+  settings: {
+    id: 'user-settings',
+    weeklyStudyGoal: 10, // Default goal
+    lastWeekGoalMetShown: new Date(0).toISOString(),
+  },
 };
 
 export const AppDataContext = createContext<{
@@ -391,6 +400,7 @@ export const AppDataContext = createContext<{
   exams: Exam[];
   notes: Note[];
   tasks: StudyTask[];
+  settings: UserSettings;
   dispatch: React.Dispatch<Action>;
 }>({
   ...initialState,
@@ -411,12 +421,15 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
           const examsCol = collection(firestore, `users/${user.uid}/exams`);
           const notesCol = collection(firestore, `users/${user.uid}/notes`);
           const tasksCol = collection(firestore, `users/${user.uid}/tasks`);
+          const settingsDoc = doc(firestore, `users/${user.uid}/settings`, 'user-settings');
 
-          const [subjectsSnapshot, examsSnapshot, notesSnapshot, tasksSnapshot] = await Promise.all([
+
+          const [subjectsSnapshot, examsSnapshot, notesSnapshot, tasksSnapshot, settingsSnapshot] = await Promise.all([
             getDocs(subjectsCol),
             getDocs(examsCol),
             getDocs(notesCol),
             getDocs(tasksCol),
+            getDocs(collection(firestore, `users/${user.uid}/settings`)), // getDocs for collection
           ]);
           
           const subjects = subjectsSnapshot.docs.map(doc => doc.data() as Subject);
@@ -424,7 +437,15 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
           const notes = notesSnapshot.docs.map(doc => doc.data() as Note);
           const tasks = tasksSnapshot.docs.map(doc => doc.data() as StudyTask);
 
-          dispatch({ type: "SET_STATE", payload: { subjects, exams, notes, tasks } });
+          let settings: UserSettings;
+          if (settingsSnapshot.empty || !settingsSnapshot.docs[0].exists()) {
+             settings = initialState.settings;
+             setDocumentNonBlocking(firestore, `users/${user.uid}/settings`, 'user-settings', settings);
+          } else {
+             settings = settingsSnapshot.docs[0].data() as UserSettings;
+          }
+
+          dispatch({ type: "SET_STATE", payload: { subjects, exams, notes, tasks, settings } });
         } catch (error) {
           console.error("Error fetching from Firestore:", error);
           // On error, clear the state instead of loading initial data
@@ -563,6 +584,10 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
                     if (taskToUpdate) {
                          setDocumentNonBlocking(firestore, `users/${userId}/tasks`, taskToUpdate.id, taskToUpdate);
                     }
+                    break;
+                }
+                case "UPDATE_SETTINGS": {
+                    setDocumentNonBlocking(firestore, `users/${userId}/settings`, 'user-settings', newState.settings);
                     break;
                 }
             }

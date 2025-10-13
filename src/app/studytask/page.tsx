@@ -16,6 +16,7 @@ import { OverdueTasks } from '@/components/edutrack/task/OverdueTasks';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { TaskAnalyticsChart } from '@/components/edutrack/task/TaskAnalyticsChart';
 import type { DateRange } from 'react-day-picker';
+import { WeeklyTargetCard } from '@/components/edutrack/task/WeeklyTargetCard';
 
 export type ViewType = 'daily' | 'weekly' | 'monthly';
 
@@ -52,11 +53,11 @@ export default function StudyTaskPage() {
     const date = selectedDate || new Date();
     switch (activeView) {
         case 'weekly':
-            return { from: startOfWeek(date, { weekStartsOn: 6 }), to: endOfWeek(date, { weekStartsOn: 6 }) };
+            return { from: startOfWeek(date, { weekStartsOn: 1 }), to: endOfWeek(date, { weekStartsOn: 1 }) };
         case 'monthly':
             return { from: startOfMonth(date), to: endOfMonth(date) };
         default:
-             return { from: startOfWeek(date, { weekStartsOn: 6 }), to: endOfWeek(date, { weekStartsOn: 6 }) };
+             return { from: startOfWeek(date, { weekStartsOn: 1 }), to: endOfWeek(date, { weekStartsOn: 1 }) };
     }
   }, [activeView, selectedDate]);
 
@@ -74,6 +75,7 @@ export default function StudyTaskPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <aside className="lg:col-span-1 space-y-6 animate-fade-in-from-left">
                 <TaskProgressCard tasks={todaysTasks} />
+                <WeeklyTargetCard tasks={tasks} />
                 <CalendarView selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
             </aside>
             <main className="lg:col-span-2 animate-fade-in-from-right">

@@ -82,14 +82,24 @@ export interface TimeLog {
 export interface StudyTask {
   id: string;
   title: string;
-  description?: string;
+  description?: string | null;
   isCompleted: boolean;
   date: string; // YYYY-MM-DD format
+  startTime?: string | null;
+  endTime?: string | null;
+  color?: string | null;
+  icon?: string | null;
   priority: number;
   category: string;
-  subcategory?: string;
+  subcategory?: string | null;
   timeLogs: TimeLog[];
   activeTimeLogId?: string | null;
   originalId?: string; // To link a duplicated task to its original
   isArchived?: boolean; // To hide overdue tasks that have been moved
+}
+
+export interface UserSettings {
+    id: string;
+    weeklyStudyGoal: number; // in hours
+    lastWeekGoalMetShown: string; // ISO date string
 }

@@ -177,7 +177,7 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
     if (viewType === 'monthly') {
         const weeks = eachWeekOfInterval(
             { start: dateRange.from, end: dateRange.to },
-            { weekStartsOn: 6 } // Saturday
+            { weekStartsOn: 1 } // Monday
         );
 
         data = weeks.map((weekStart, index) => {
