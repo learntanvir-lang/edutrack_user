@@ -369,15 +369,15 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
           <Alert className="mt-4 bg-primary/5 border-primary/20">
             <div className='flex items-start gap-3'>
                 <Info className="h-4 w-4 mt-1 flex-shrink-0" color="hsl(var(--primary))" />
-                <div className="font-semibold text-foreground grid gap-2">
-                    <div className="grid grid-cols-[auto,1fr,auto] items-center gap-x-2">
+                <div className="grid gap-2 font-semibold text-foreground">
+                    <div className="grid grid-cols-[auto_1fr_auto] items-center gap-x-4">
                         <Calendar className="h-4 w-4 text-muted-foreground" />
-                        <span>Daily Average:</span>
-                        <span className="text-primary text-right">{formatTime(averageDailyTime, 'long')} per day</span>
+                        <span className="text-left">Daily Average:</span>
+                        <span className="text-primary text-right">{formatTime(averageDailyTime, 'long')}</span>
                     </div>
-                    <div className="grid grid-cols-[auto,1fr,auto] items-center gap-x-2">
+                    <div className="grid grid-cols-[auto_1fr_auto] items-center gap-x-4">
                         <BarChart2 className="h-4 w-4 text-muted-foreground" />
-                        <span>Total Time:</span>
+                        <span className="text-left">Total Time:</span>
                         <span className="text-primary text-right">{formatTime(totalTime, 'long')}</span>
                     </div>
                 </div>
@@ -393,3 +393,4 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
   
 
     
+
