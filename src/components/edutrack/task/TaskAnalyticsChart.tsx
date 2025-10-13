@@ -273,12 +273,12 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
   return (
     <Card className="shadow-lg rounded-xl border border-border/50" ref={cardRef}>
       <CardHeader>
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between">
-            <div>
-                <CardTitle className="text-xl font-bold mb-2">{viewType.charAt(0).toUpperCase() + viewType.slice(1)} Time Summary</CardTitle>
+        <div className="flex items-start justify-between gap-4">
+            <div className="grid gap-2 flex-1">
+                <CardTitle className="text-xl font-bold">{viewType.charAt(0).toUpperCase() + viewType.slice(1)} Time Summary</CardTitle>
                 <CardDescription className="text-3xl font-bold text-primary">{formatTime(totalTime, 'long')}</CardDescription>
             </div>
-            <div className="flex items-center gap-2 mt-4 sm:mt-0">
+            <div className="flex items-center gap-2">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="outline">
@@ -367,17 +367,21 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
         )}
         {(viewType === 'weekly' || viewType === 'monthly') && (
           <Alert className="mt-4 bg-primary/5 border-primary/20">
-            <Info className="h-4 w-4" color="hsl(var(--primary))" />
-            <AlertDescription className="font-semibold text-foreground flex flex-col items-start justify-center gap-2">
-                <span className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                    Daily Average: <span className="text-primary">{formatTime(averageDailyTime, 'long')} per day</span>
-                </span>
-                <span className="flex items-center gap-2">
-                    <BarChart2 className="h-4 w-4 text-muted-foreground" />
-                    Total Time: <span className="text-primary">{formatTime(totalTime, 'long')}</span>
-                </span>
-            </AlertDescription>
+            <div className='flex items-start gap-3'>
+                <Info className="h-4 w-4 mt-1" color="hsl(var(--primary))" />
+                <AlertDescription className="font-semibold text-foreground grid grid-cols-1 gap-2">
+                    <div className="flex items-center gap-2">
+                        <Calendar className="h-4 w-4 text-muted-foreground" />
+                        <span>Daily Average:</span>
+                        <span className="text-primary">{formatTime(averageDailyTime, 'long')} per day</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <BarChart2 className="h-4 w-4 text-muted-foreground" />
+                        <span>Total Time:</span>
+                        <span className="text-primary">{formatTime(totalTime, 'long')}</span>
+                    </div>
+                </AlertDescription>
+            </div>
           </Alert>
         )}
       </CardContent>
