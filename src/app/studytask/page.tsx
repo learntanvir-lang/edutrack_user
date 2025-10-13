@@ -53,11 +53,11 @@ export default function StudyTaskPage() {
     const date = selectedDate || new Date();
     switch (activeView) {
         case 'weekly':
-            return { from: startOfWeek(date, { weekStartsOn: 1 }), to: endOfWeek(date, { weekStartsOn: 1 }) };
+            return { from: startOfWeek(date, { weekStartsOn: 6 }), to: endOfWeek(date, { weekStartsOn: 6 }) };
         case 'monthly':
             return { from: startOfMonth(date), to: endOfMonth(date) };
         default:
-             return { from: startOfWeek(date, { weekStartsOn: 1 }), to: endOfWeek(date, { weekStartsOn: 1 }) };
+             return { from: startOfWeek(date, { weekStartsOn: 6 }), to: endOfWeek(date, { weekStartsOn: 6 }) };
     }
   }, [activeView, selectedDate]);
 
