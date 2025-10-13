@@ -164,7 +164,7 @@ export function ChangePasswordDialog({ open, onOpenChange }: ChangePasswordDialo
               )}
             />
             <DialogFooter>
-              <Button type="submit" disabled={loading}>
+              <Button type="submit" disabled={loading} className="font-bold transition-all duration-300 bg-primary text-primary-foreground border-2 border-primary hover:bg-transparent hover:text-primary hover:shadow-lg hover:shadow-primary/20">
                 {loading ? 'Updating...' : 'Change Password'}
               </Button>
             </DialogFooter>

@@ -198,7 +198,7 @@ export function TimeLogEntryDialog({ open, onOpenChange, task, log }: TimeLogEnt
                         </div>
 
                         <DialogFooter>
-                            <Button type="submit">{isEditing ? "Save Changes" : "Add Entry"}</Button>
+                            <Button type="submit" className="font-bold transition-all duration-300 bg-primary text-primary-foreground border-2 border-primary hover:bg-transparent hover:text-primary hover:shadow-lg hover:shadow-primary/20">{isEditing ? "Save Changes" : "Add Entry"}</Button>
                         </DialogFooter>
                     </form>
                 </Form>

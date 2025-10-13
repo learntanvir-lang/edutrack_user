@@ -448,7 +448,7 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
             )}
 
             <DialogFooter>
-              <Button type="submit">{isEditing ? "Save Changes" : "Add Exam"}</Button>
+              <Button type="submit" className="font-bold transition-all duration-300 bg-primary text-primary-foreground border-2 border-primary hover:bg-transparent hover:text-primary hover:shadow-lg hover:shadow-primary/20">{isEditing ? "Save Changes" : "Add Exam"}</Button>
             </DialogFooter>
           </form>
         </Form>

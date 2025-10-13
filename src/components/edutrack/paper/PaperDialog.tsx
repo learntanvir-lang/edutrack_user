@@ -92,7 +92,7 @@ export function PaperDialog({ open, onOpenChange, subjectId, paper }: PaperDialo
               )}
             />
             <DialogFooter>
-              <Button type="submit">{isEditing ? "Save Changes" : "Add Paper"}</Button>
+              <Button type="submit" className="font-bold transition-all duration-300 bg-primary text-primary-foreground border-2 border-primary hover:bg-transparent hover:text-primary hover:shadow-lg hover:shadow-primary/20">{isEditing ? "Save Changes" : "Add Paper"}</Button>
             </DialogFooter>
           </form>
         </Form>

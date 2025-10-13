@@ -153,7 +153,7 @@ export function NoteDialog({ open, onOpenChange, note }: NoteDialogProps) {
           </ScrollArea>
         </div>
         <DialogFooter className="pt-4 border-t flex-shrink-0">
-          <Button onClick={form.handleSubmit(onSubmit)} form="note-form">{isEditing ? "Save Changes" : "Add Note"}</Button>
+          <Button onClick={form.handleSubmit(onSubmit)} form="note-form" className="font-bold transition-all duration-300 bg-primary text-primary-foreground border-2 border-primary hover:bg-transparent hover:text-primary hover:shadow-lg hover:shadow-primary/20">{isEditing ? "Save Changes" : "Add Note"}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

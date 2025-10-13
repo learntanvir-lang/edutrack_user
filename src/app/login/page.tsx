@@ -252,7 +252,7 @@ export default function LoginPage() {
                   />
                 </CardContent>
                 <CardFooter>
-                  <Button type="submit" className="w-full" disabled={loading}>
+                  <Button type="submit" className="w-full font-bold transition-all duration-300 bg-primary text-primary-foreground border-2 border-primary hover:bg-transparent hover:text-primary hover:shadow-lg hover:shadow-primary/20" disabled={loading}>
                     {loading ? 'Logging in...' : 'Login'}
                   </Button>
                 </CardFooter>
@@ -325,7 +325,7 @@ export default function LoginPage() {
                   />
                 </CardContent>
                 <CardFooter>
-                  <Button type="submit" className="w-full" disabled={loading}>
+                  <Button type="submit" className="w-full font-bold transition-all duration-300 bg-primary text-primary-foreground border-2 border-primary hover:bg-transparent hover:text-primary hover:shadow-lg hover:shadow-primary/20" disabled={loading}>
                     {loading ? 'Creating Account...' : 'Sign Up'}
                   </Button>
                 </CardFooter>

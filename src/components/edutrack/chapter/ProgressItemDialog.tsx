@@ -28,7 +28,7 @@ import { AppDataContext } from "@/context/AppDataContext";
 import { v4 as uuidv4 } from 'uuid';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { IconPicker, type IconName } from './IconPicker';
+import { IconPicker, type IconName } from '../IconPicker';
 
 const progressItemSchema = z.object({
   name: z.string().min(1, "Tracker name is required"),
@@ -187,7 +187,7 @@ export function ProgressItemDialog({ open, onOpenChange, subjectId, paperId, cha
           </ScrollArea>
         </div>
         <DialogFooter className="pt-4 border-t flex-shrink-0">
-          <Button onClick={form.handleSubmit(onSubmit)} form="progress-item-form">{isEditing ? "Save Changes" : "Add Tracker"}</Button>
+          <Button onClick={form.handleSubmit(onSubmit)} form="progress-item-form" className="font-bold transition-all duration-300 bg-primary text-primary-foreground border-2 border-primary hover:bg-transparent hover:text-primary hover:shadow-lg hover:shadow-primary/20">{isEditing ? "Save Changes" : "Add Tracker"}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
