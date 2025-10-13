@@ -419,9 +419,28 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const loadData = async () => {
+      // Step 1: Immediately load data from localStorage if available
+      const lastUserId = localStorage.getItem('lastUserId');
+      const localDataStr = lastUserId ? localStorage.getItem(`appData-${lastUserId}`) : null;
+      
+      if (localDataStr) {
+          try {
+              const localData = JSON.parse(localDataStr);
+              dispatch({ type: "SET_STATE", payload: localData });
+          } catch (e) {
+              console.error("Failed to parse local data:", e);
+              dispatch({ type: "SET_STATE", payload: initialData });
+          }
+      } else {
+          // Fallback to initial sample data if no user and no local data
+          if (!user) {
+              dispatch({ type: "SET_STATE", payload: initialData });
+          }
+      }
+
+      // Step 2: Once user and firestore are available, fetch from cloud and sync
       if (user && firestore) {
         try {
-          // Online: Fetch from server, which will be up-to-date due to persistence
           const subjectsCol = collection(firestore, `users/${user.uid}/subjects`);
           const examsCol = collection(firestore, `users/${user.uid}/exams`);
           const notesCol = collection(firestore, `users/${user.uid}/notes`);
@@ -449,57 +468,20 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
           }
 
           const onlineState = { subjects, exams, notes, tasks, settings };
+          // Sync with online state
           dispatch({ type: "SET_STATE", payload: onlineState });
           localStorage.setItem(`appData-${user.uid}`, JSON.stringify(onlineState));
 
         } catch (error) {
-          console.error("Error fetching from Firestore server, trying cache:", error);
-          // Fallback to cache if server is unreachable
-          try {
-            const subjectsCol = collection(firestore, `users/${user.uid}/subjects`);
-            const examsCol = collection(firestore, `users/${user.uid}/exams`);
-            const notesCol = collection(firestore, `users/${user.uid}/notes`);
-            const tasksCol = collection(firestore, `users/${user.uid}/tasks`);
-
-            const [subjectsSnapshot, examsSnapshot, notesSnapshot, tasksSnapshot, settingsSnapshot] = await Promise.all([
-                getDocsFromCache(subjectsCol),
-                getDocsFromCache(examsCol),
-                getDocsFromCache(notesCol),
-                getDocsFromCache(tasksCol),
-                getDocsFromCache(collection(firestore, `users/${user.uid}/settings`)),
-            ]);
-
-            const subjects = subjectsSnapshot.docs.map(doc => doc.data() as Subject);
-            const exams = examsSnapshot.docs.map(doc => doc.data() as Exam);
-            const notes = notesSnapshot.docs.map(doc => doc.data() as Note);
-            const tasks = tasksSnapshot.docs.map(doc => ({ ...doc.data(), timeLogs: doc.data().timeLogs || [] }) as StudyTask);
-            const settings = settingsSnapshot.docs[0]?.data() as UserSettings || initialState.settings;
-            
-            const cachedState = { subjects, exams, notes, tasks, settings };
-            dispatch({ type: "SET_STATE", payload: cachedState });
-
-          } catch (cacheError) {
-              console.error("Error fetching from Firestore cache:", cacheError);
-              dispatch({ type: "SET_STATE", payload: initialState });
-          }
-        }
-      } else if (!isUserLoading && !user) {
-        // Not logged in: check for last user's data in localStorage
-        const lastUserId = localStorage.getItem('lastUserId');
-        const localData = lastUserId ? localStorage.getItem(`appData-${lastUserId}`) : null;
-
-        if (localData) {
-          dispatch({ type: "SET_STATE", payload: JSON.parse(localData) });
-        } else {
-          // Fallback to initial sample data if nothing else is available
-          dispatch({ type: "SET_STATE", payload: initialData });
+          console.error("Error fetching from Firestore server. Offline data will be used.", error);
+          // The app will continue to run with the data loaded from localStorage
         }
       }
     };
     
     loadData();
 
-  }, [user, firestore, isUserLoading]);
+  }, [user, firestore]);
   
   useEffect(() => {
     if (user) {
