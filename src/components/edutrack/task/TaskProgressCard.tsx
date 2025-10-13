@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Clock } from "lucide-react";
 import type { StudyTask } from "@/lib/types";
 import { Progress } from '@/components/ui/progress';
-import { formatDistanceStrict } from 'date-fns';
 
 interface TaskProgressCardProps {
     tasks: StudyTask[];
@@ -53,14 +52,14 @@ export function TaskProgressCard({ tasks }: TaskProgressCardProps) {
                 <CardTitle className="text-lg">Today's Progress</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-                <div className="flex justify-between items-center">
-                    <span className="font-semibold text-foreground text-lg">{completed} / {total} completed</span>
-                     <div className="flex items-center gap-2 text-sm text-primary font-semibold">
+                <Progress value={percentage} className="h-2" />
+                <div className="flex justify-between items-center text-sm">
+                    <span className="font-semibold text-foreground">{completed} / {total} Completed</span>
+                     <div className="flex items-center gap-2 text-primary font-semibold">
                         <Clock className="h-4 w-4" />
                         <span>{formatTime(totalTimeSpent)}</span>
                     </div>
                 </div>
-                <Progress value={percentage} className="h-2" />
             </CardContent>
         </Card>
     );
