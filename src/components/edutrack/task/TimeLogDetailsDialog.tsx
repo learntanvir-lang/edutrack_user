@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -46,14 +45,15 @@ export function TimeLogDetailsDialog({ open, onOpenChange, task }: TimeLogDetail
   return (
     <>
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[80vh] w-full max-w-2xl flex flex-col">
+      <DialogContent className="max-h-[90vh] w-full max-w-2xl flex flex-col">
         <DialogHeader>
           <DialogTitle>Time Log Details</DialogTitle>
           <DialogDescription>
             A detailed breakdown of all study sessions for "{task.title}".
           </DialogDescription>
         </DialogHeader>
-        <ScrollArea className="flex-grow -mx-6 px-6">
+        <div className="flex-grow overflow-y-auto -mx-6 px-6">
+          <ScrollArea className="h-full">
             {sortedLogs.length > 0 ? (
             <Table>
                 <TableHeader>
@@ -105,7 +105,8 @@ export function TimeLogDetailsDialog({ open, onOpenChange, task }: TimeLogDetail
             </div>
             )}
         </ScrollArea>
-        <DialogFooter className="pt-4 border-t">
+        </div>
+        <DialogFooter className="pt-4 border-t flex-shrink-0">
             <Button variant="outline" onClick={handleAddLog}>
                 <PlusCircle className="mr-2 h-4 w-4" />
                 Add Record
