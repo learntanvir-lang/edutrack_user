@@ -348,44 +348,55 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
                 {format(dateRange.from, 'd MMM, yyyy')} - {format(dateRange.to, 'd MMM, yyyy')}
             </div>
         )}
-        {(viewType === 'weekly' || viewType === 'monthly') && (
+        {viewType === 'weekly' && (
             <Alert className="mt-4 bg-primary/5 border-primary/20">
                 <AlertDescription className="grid grid-cols-1 divide-y divide-primary/10">
                     <div className="grid grid-cols-[auto_1fr] items-center gap-x-3 py-2">
+                        <Target className="h-5 w-5 text-primary" />
+                        <div className="flex justify-between items-center">
+                            <span className="font-semibold text-foreground">Weekly Target</span>
+                            <span className="font-bold text-primary">{settings.weeklyStudyGoal}h</span>
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-[auto_1fr] items-center gap-x-3 py-2">
+                        <BarChart2 className="h-5 w-5 text-primary" />
+                        <div className="flex justify-between items-center">
+                            <span className="font-semibold text-foreground">Weekly Total</span>
+                            <span className="font-bold text-primary">{formatTime(totalTime, 'short')}</span>
+                        </div>
+                    </div>
+                     <div className="grid grid-cols-[auto_1fr] items-center gap-x-3 py-2">
                         <CalendarClock className="h-5 w-5 text-primary" />
                         <div className="flex justify-between items-center">
                             <span className="font-semibold text-foreground">Daily Average</span>
                             <span className="font-bold text-primary">{formatTime(averageDailyTime, 'short')}</span>
                         </div>
                     </div>
-                    
-                    {viewType === 'weekly' && (
-                        <div className="grid grid-cols-[auto_1fr] items-center gap-x-3 py-2">
-                            <Target className="h-5 w-5 text-primary" />
-                            <div className="flex justify-between items-center">
-                                <span className="font-semibold text-foreground">Weekly Target</span>
-                                <span className="font-bold text-primary">{settings.weeklyStudyGoal}h</span>
-                            </div>
-                        </div>
-                    )}
-                    
-                    {viewType === 'monthly' && (
-                         <div className="grid grid-cols-[auto_1fr] items-center gap-x-3 py-2">
-                            <TrendingUp className="h-5 w-5 text-primary" />
-                            <div className="flex justify-between items-center">
-                                <span className="font-semibold text-foreground">Weekly Average</span>
-                                <span className="font-bold text-primary">{formatTime(averageWeeklyTime, 'short')}</span>
-                            </div>
-                        </div>
-                    )}
-
+                </AlertDescription>
+            </Alert>
+        )}
+        {viewType === 'monthly' && (
+            <Alert className="mt-4 bg-primary/5 border-primary/20">
+                <AlertDescription className="grid grid-cols-1 divide-y divide-primary/10">
                     <div className="grid grid-cols-[auto_1fr] items-center gap-x-3 py-2">
                         <BarChart2 className="h-5 w-5 text-primary" />
                         <div className="flex justify-between items-center">
-                            <span className="font-semibold text-foreground">
-                                {viewType === 'weekly' ? 'Weekly Total' : 'Monthly Total'}
-                            </span>
+                            <span className="font-semibold text-foreground">Monthly Total</span>
                             <span className="font-bold text-primary">{formatTime(totalTime, 'short')}</span>
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-[auto_1fr] items-center gap-x-3 py-2">
+                        <TrendingUp className="h-5 w-5 text-primary" />
+                        <div className="flex justify-between items-center">
+                            <span className="font-semibold text-foreground">Weekly Average</span>
+                            <span className="font-bold text-primary">{formatTime(averageWeeklyTime, 'short')}</span>
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-[auto_1fr] items-center gap-x-3 py-2">
+                        <CalendarClock className="h-5 w-5 text-primary" />
+                        <div className="flex justify-between items-center">
+                            <span className="font-semibold text-foreground">Daily Average</span>
+                            <span className="font-bold text-primary">{formatTime(averageDailyTime, 'short')}</span>
                         </div>
                     </div>
                 </AlertDescription>
