@@ -68,7 +68,13 @@ type Action =
 const appReducer = (state: AppState, action: Action): AppState => {
   switch (action.type) {
     case "SET_STATE":
-      return action.payload;
+      return {
+        ...action.payload,
+        tasks: (action.payload.tasks || []).map(task => ({
+          ...task,
+          timeLogs: task.timeLogs || [],
+        })),
+      };
     case "ADD_SUBJECT":
       return { ...state, subjects: [...state.subjects, action.payload] };
     case "UPDATE_SUBJECT":
@@ -432,7 +438,7 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
           const subjects = subjectsSnapshot.docs.map(doc => doc.data() as Subject);
           const exams = examsSnapshot.docs.map(doc => doc.data() as Exam);
           const notes = notesSnapshot.docs.map(doc => doc.data() as Note);
-          const tasks = tasksSnapshot.docs.map(doc => doc.data() as StudyTask);
+          const tasks = tasksSnapshot.docs.map(doc => ({ ...doc.data(), timeLogs: doc.data().timeLogs || [] }) as StudyTask);
           
           let settings: UserSettings;
           if (settingsSnapshot.empty || !settingsSnapshot.docs[0].exists()) {
@@ -466,7 +472,7 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
             const subjects = subjectsSnapshot.docs.map(doc => doc.data() as Subject);
             const exams = examsSnapshot.docs.map(doc => doc.data() as Exam);
             const notes = notesSnapshot.docs.map(doc => doc.data() as Note);
-            const tasks = tasksSnapshot.docs.map(doc => doc.data() as StudyTask);
+            const tasks = tasksSnapshot.docs.map(doc => ({ ...doc.data(), timeLogs: doc.data().timeLogs || [] }) as StudyTask);
             const settings = settingsSnapshot.docs[0]?.data() as UserSettings || initialState.settings;
             
             const cachedState = { subjects, exams, notes, tasks, settings };
