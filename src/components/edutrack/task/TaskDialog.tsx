@@ -33,18 +33,12 @@ import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
-import { ColorPicker } from "./ColorPicker";
-import { TaskIconPicker, IconName } from "./TaskIconPicker";
 
 
 const taskSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().optional(),
   date: z.date({ required_error: "Due date is required" }),
-  startTime: z.string().optional(),
-  endTime: z.string().optional(),
-  color: z.string().optional(),
-  icon: z.string().optional(),
   category: z.string().min(1, "Category is required"),
   subcategory: z.string().optional(),
 });
@@ -68,10 +62,6 @@ export function TaskDialog({ open, onOpenChange, date, task }: TaskDialogProps) 
       title: "",
       description: "",
       date: new Date(date),
-      startTime: "",
-      endTime: "",
-      color: "",
-      icon: "",
       category: "General",
       subcategory: "",
     },
@@ -84,10 +74,6 @@ export function TaskDialog({ open, onOpenChange, date, task }: TaskDialogProps) 
           title: task.title,
           description: task.description || "",
           date: new Date(task.date),
-          startTime: task.startTime || "",
-          endTime: task.endTime || "",
-          color: task.color || "",
-          icon: task.icon || "",
           category: task.category,
           subcategory: task.subcategory || "",
         });
@@ -96,10 +82,6 @@ export function TaskDialog({ open, onOpenChange, date, task }: TaskDialogProps) 
           title: "",
           description: "",
           date: new Date(date),
-          startTime: "",
-          endTime: "",
-          color: "#64B5F6", // Default to primary color
-          icon: "Book",
           category: "General",
           subcategory: "",
         });
@@ -115,10 +97,10 @@ export function TaskDialog({ open, onOpenChange, date, task }: TaskDialogProps) 
       description: values.description || null,
       isCompleted: task?.isCompleted || false,
       date: format(values.date, "yyyy-MM-dd"),
-      startTime: values.startTime || null,
-      endTime: values.endTime || null,
-      color: values.color || null,
-      icon: values.icon || null,
+      startTime: task?.startTime || null,
+      endTime: task?.endTime || null,
+      color: task?.color || null,
+      icon: task?.icon || null,
       priority: task?.priority || 1,
       category: values.category,
       subcategory: values.subcategory || null,
@@ -216,34 +198,7 @@ export function TaskDialog({ open, onOpenChange, date, task }: TaskDialogProps) 
                         )}
                     />
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="startTime"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Start Time (Optional)</FormLabel>
-                          <FormControl>
-                            <Input type="time" {...field} value={field.value || ""} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="endTime"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>End Time (Optional)</FormLabel>
-                          <FormControl>
-                            <Input type="time" {...field} value={field.value || ""} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                  
                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                      <FormField
                         control={form.control}
@@ -273,34 +228,6 @@ export function TaskDialog({ open, onOpenChange, date, task }: TaskDialogProps) 
                     />
                    </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <FormField
-                            control={form.control}
-                            name="color"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Color</FormLabel>
-                                    <FormControl>
-                                        <ColorPicker value={field.value || ""} onChange={field.onChange} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="icon"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Icon</FormLabel>
-                                    <FormControl>
-                                       <TaskIconPicker value={field.value as IconName} onChange={field.onChange} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                    </div>
               </form>
             </Form>
         </ScrollArea>
