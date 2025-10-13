@@ -51,8 +51,7 @@ export function TaskProgressCard({ tasks }: TaskProgressCardProps) {
             <CardHeader>
                 <CardTitle className="text-lg">Today's Progress</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
-                <Progress value={percentage} className="h-2" />
+            <CardContent className="space-y-2">
                 <div className="flex justify-between items-center text-sm">
                     <span className="font-semibold text-foreground">{completed} / {total} Completed</span>
                      <div className="flex items-center gap-2 text-primary font-semibold">
@@ -60,6 +59,7 @@ export function TaskProgressCard({ tasks }: TaskProgressCardProps) {
                         <span>{formatTime(totalTimeSpent)}</span>
                     </div>
                 </div>
+                <Progress value={percentage} className="h-2" />
             </CardContent>
         </Card>
     );
