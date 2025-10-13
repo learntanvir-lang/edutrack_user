@@ -368,7 +368,7 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
         {(viewType === 'weekly' || viewType === 'monthly') && (
           <Alert className="mt-4 bg-primary/5 border-primary/20">
             <Info className="h-4 w-4" color="hsl(var(--primary))" />
-            <AlertDescription className="font-semibold text-foreground flex flex-col items-center justify-center gap-2">
+            <AlertDescription className="font-semibold text-foreground flex flex-col items-start justify-center gap-2">
                 <span className="flex items-center gap-2">
                     <Calendar className="h-4 w-4 text-muted-foreground" />
                     Daily Average: <span className="text-primary">{formatTime(averageDailyTime, 'long')} per day</span>
