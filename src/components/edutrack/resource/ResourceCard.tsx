@@ -122,12 +122,14 @@ function ResourceCard({ resource }: ResourceCardProps) {
                         <div className="space-y-2">
                              {resource.links.map(link => {
                                 const Icon = getIcon(link.icon as IconName);
+                                // The user's old data used `title` but the new data uses `description`.
+                                const linkText = (link as any).description || (link as any).title;
                                 return (
                                 <div key={link.id} className="group/link flex items-center gap-1 rounded-md transition-colors border bg-primary/10 hover:bg-primary/20 border-border hover:border-primary">
                                     <Button variant="ghost" size="sm" className="w-full justify-start gap-2 flex-grow text-primary hover:bg-transparent hover:text-primary" asChild>
                                         <Link href={link.url} target="_blank" rel="noopener noreferrer">
                                             {Icon ? <Icon className="h-4 w-4 flex-shrink-0" /> : <ExternalLink className="h-4 w-4 flex-shrink-0" />}
-                                            <span className="truncate">{link.description}</span>
+                                            <span className="truncate">{linkText}</span>
                                         </Link>
                                     </Button>
                                     <DropdownMenu>
