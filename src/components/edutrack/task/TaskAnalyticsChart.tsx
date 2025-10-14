@@ -138,9 +138,9 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
   
   const availableSubcategories = subcategoriesByCategory[selectedCategory] || ['all'];
 
-  const { chartData, totalTime, maxHours, averageDailyTime, averageWeeklyTime } = useMemo(() => {
+  const { chartData, totalTime, maxHours, averageDailyTime, averageWeeklyTime, totalDays, totalHoursInPeriod } = useMemo(() => {
     if (!dateRange.from || !dateRange.to || !isValid(dateRange.from) || !isValid(dateRange.to)) {
-        return { chartData: [], totalTime: 0, maxHours: 1, averageDailyTime: 0, averageWeeklyTime: 0 };
+        return { chartData: [], totalTime: 0, maxHours: 1, averageDailyTime: 0, averageWeeklyTime: 0, totalDays: 0, totalHoursInPeriod: 0 };
     }
 
     const filteredTasks = tasks.filter(task => {
@@ -214,8 +214,9 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
     const maxHoursValue = data.length > 0 ? Math.max(...data.map(d => d.hours)) : 0;
 
     const daysInPeriod = differenceInCalendarDays(dateRange.to, dateRange.from) + 1;
+    const hoursInPeriod = daysInPeriod * 24;
     const avgTime = daysInPeriod > 0 ? totalMilliseconds / daysInPeriod : 0;
-    const weeksInPeriod = differenceInCalendarWeeks(dateRange.to, dateRange.from, { weekStartsOn: 6 }) + 1;
+    const weeksInPeriod = differenceInCalendarWeeks(dateRange.to, dateRange.from, { weekStartsOn: 1 }) + 1;
     const avgWeeklyTime = weeksInPeriod > 0 ? totalMilliseconds / weeksInPeriod : 0;
     
     return { 
@@ -224,6 +225,8 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
         maxHours: Math.ceil(maxHoursValue + 0.5) || 1,
         averageDailyTime: avgTime,
         averageWeeklyTime: avgWeeklyTime,
+        totalDays: daysInPeriod,
+        totalHoursInPeriod: hoursInPeriod,
     };
     
   }, [tasks, dateRange, viewType, selectedCategory, selectedSubcategory]);
@@ -256,6 +259,19 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
     }
     return label;
   }
+
+  const SummaryItem = ({ icon: Icon, label, value, subValue }: { icon: React.ElementType, label: string, value: string, subValue: string }) => (
+    <div className="grid grid-cols-[auto_1fr] items-center gap-x-3 py-2">
+        <Icon className="h-5 w-5 text-primary" />
+        <div className="flex justify-between items-center">
+            <span className="font-semibold text-foreground">{label}</span>
+            <div className="flex items-baseline gap-1.5 font-mono">
+                <span className="font-bold text-primary text-base">{value}</span>
+                <span className="text-muted-foreground text-xs">/ {subValue}</span>
+            </div>
+        </div>
+    </div>
+  );
 
   return (
     <Card className="shadow-lg rounded-xl border border-border/50">
@@ -348,60 +364,62 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
                 {format(dateRange.from, 'd MMM, yyyy')} - {format(dateRange.to, 'd MMM, yyyy')}
             </div>
         )}
-        {viewType === 'weekly' && (
-            <Alert className="mt-4 bg-primary/5 border-primary/20">
-                <AlertDescription className="grid grid-cols-1 divide-y divide-primary/10">
-                    <div className="grid grid-cols-[auto_1fr] items-center gap-x-3 py-2">
-                        <Target className="h-5 w-5 text-primary" />
-                        <div className="flex justify-between items-center">
-                            <span className="font-semibold text-foreground">Weekly Target</span>
-                            <span className="font-bold text-primary">{settings.weeklyStudyGoal}h</span>
-                        </div>
-                    </div>
-                    <div className="grid grid-cols-[auto_1fr] items-center gap-x-3 py-2">
-                        <BarChart2 className="h-5 w-5 text-primary" />
-                        <div className="flex justify-between items-center">
-                            <span className="font-semibold text-foreground">Weekly Total</span>
-                            <span className="font-bold text-primary">{formatTime(totalTime, 'short')}</span>
-                        </div>
-                    </div>
-                     <div className="grid grid-cols-[auto_1fr] items-center gap-x-3 py-2">
-                        <CalendarClock className="h-5 w-5 text-primary" />
-                        <div className="flex justify-between items-center">
-                            <span className="font-semibold text-foreground">Daily Average</span>
-                            <span className="font-bold text-primary">{formatTime(averageDailyTime, 'short')}</span>
-                        </div>
-                    </div>
-                </AlertDescription>
-            </Alert>
-        )}
-        {viewType === 'monthly' && (
-            <Alert className="mt-4 bg-primary/5 border-primary/20">
-                <AlertDescription className="grid grid-cols-1 divide-y divide-primary/10">
-                    <div className="grid grid-cols-[auto_1fr] items-center gap-x-3 py-2">
-                        <BarChart2 className="h-5 w-5 text-primary" />
-                        <div className="flex justify-between items-center">
-                            <span className="font-semibold text-foreground">Monthly Total</span>
-                            <span className="font-bold text-primary">{formatTime(totalTime, 'short')}</span>
-                        </div>
-                    </div>
-                    <div className="grid grid-cols-[auto_1fr] items-center gap-x-3 py-2">
-                        <TrendingUp className="h-5 w-5 text-primary" />
-                        <div className="flex justify-between items-center">
-                            <span className="font-semibold text-foreground">Weekly Average</span>
-                            <span className="font-bold text-primary">{formatTime(averageWeeklyTime, 'short')}</span>
-                        </div>
-                    </div>
-                    <div className="grid grid-cols-[auto_1fr] items-center gap-x-3 py-2">
-                        <CalendarClock className="h-5 w-5 text-primary" />
-                        <div className="flex justify-between items-center">
-                            <span className="font-semibold text-foreground">Daily Average</span>
-                            <span className="font-bold text-primary">{formatTime(averageDailyTime, 'short')}</span>
-                        </div>
-                    </div>
-                </AlertDescription>
-            </Alert>
-        )}
+        <Alert className="mt-4 bg-primary/5 border-primary/20">
+            <AlertDescription className="grid grid-cols-1 divide-y divide-primary/10">
+                {viewType === 'weekly' && (
+                    <>
+                       <SummaryItem
+                            icon={Target}
+                            label="Weekly Target"
+                            value={`${settings.weeklyStudyGoal}h`}
+                            subValue={`${totalDays * 24}h`}
+                        />
+                        <SummaryItem
+                            icon={BarChart2}
+                            label="Weekly Total"
+                            value={formatTime(totalTime, 'short')}
+                            subValue={`${totalDays * 24}h`}
+                        />
+                        <SummaryItem
+                            icon={CalendarClock}
+                            label="Daily Average"
+                            value={formatTime(averageDailyTime, 'short')}
+                            subValue="24h"
+                        />
+                    </>
+                )}
+                 {viewType === 'monthly' && (
+                    <>
+                        <SummaryItem
+                            icon={BarChart2}
+                            label="Monthly Total"
+                            value={formatTime(totalTime, 'short')}
+                            subValue={`${totalHoursInPeriod}h`}
+                        />
+                        <SummaryItem
+                            icon={TrendingUp}
+                            label="Weekly Average"
+                            value={formatTime(averageWeeklyTime, 'short')}
+                            subValue={`${7 * 24}h`}
+                        />
+                        <SummaryItem
+                            icon={CalendarClock}
+                            label="Daily Average"
+                            value={formatTime(averageDailyTime, 'short')}
+                            subValue="24h"
+                        />
+                    </>
+                )}
+                {viewType === 'daily' && (
+                     <SummaryItem
+                        icon={BarChart2}
+                        label="Total Time"
+                        value={formatTime(totalTime, 'short')}
+                        subValue="24h"
+                    />
+                )}
+            </AlertDescription>
+        </Alert>
       </CardContent>
     </Card>
   );
@@ -413,3 +431,4 @@ export function TaskAnalyticsChart({ tasks, dateRange, viewType }: TaskAnalytics
     
 
     
+
