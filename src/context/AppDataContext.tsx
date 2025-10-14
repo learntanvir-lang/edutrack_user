@@ -71,13 +71,13 @@ const appReducer = (state: AppState, action: Action): AppState => {
       return {
         ...state,
         ...action.payload,
-        subjects: action.payload.subjects || state.subjects,
-        exams: action.payload.exams || state.exams,
-        tasks: (action.payload.tasks || state.tasks).map(task => ({
+        subjects: action.payload.subjects || state.subjects || [],
+        exams: action.payload.exams || state.exams || [],
+        tasks: (action.payload.tasks || state.tasks || []).map(task => ({
           ...task,
           timeLogs: task.timeLogs || [],
         })),
-        resources: action.payload.resources || state.resources,
+        resources: action.payload.resources || state.resources || [],
         settings: action.payload.settings ? { ...state.settings, ...action.payload.settings } : state.settings,
       };
     case "ADD_SUBJECT":
