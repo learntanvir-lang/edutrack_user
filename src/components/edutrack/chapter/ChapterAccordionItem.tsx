@@ -20,7 +20,7 @@ import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { ProgressItemDialog } from "./ProgressItemDialog";
 import { ProgressItemDisplay } from "./ProgressItemDisplay";
-import { LinkDialog } from "../note/LinkDialog";
+import { LinkDialog } from "../resource/LinkDialog";
 import { v4 as uuidv4 } from "uuid";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
@@ -268,4 +268,6 @@ function ChapterAccordionItem({ chapter, subjectId, paperId }: ChapterAccordionI
     );
 }
 export default memo(ChapterAccordionItem);
+    
+
     
