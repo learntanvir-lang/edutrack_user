@@ -39,6 +39,7 @@ const taskSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().optional(),
   date: z.date({ required_error: "Due date is required" }),
+  priority: z.coerce.number().min(1, "Priority is required."),
   category: z.string().min(1, "Category is required"),
   subcategory: z.string().optional(),
 });
@@ -62,6 +63,7 @@ export function TaskDialog({ open, onOpenChange, date, task }: TaskDialogProps) 
       title: "",
       description: "",
       date: new Date(date),
+      priority: 1,
       category: "General",
       subcategory: "",
     },
@@ -74,6 +76,7 @@ export function TaskDialog({ open, onOpenChange, date, task }: TaskDialogProps) 
           title: task.title,
           description: task.description || "",
           date: new Date(task.date),
+          priority: task.priority,
           category: task.category,
           subcategory: task.subcategory || "",
         });
@@ -82,6 +85,7 @@ export function TaskDialog({ open, onOpenChange, date, task }: TaskDialogProps) 
           title: "",
           description: "",
           date: new Date(date),
+          priority: 1,
           category: "General",
           subcategory: "",
         });
@@ -101,7 +105,7 @@ export function TaskDialog({ open, onOpenChange, date, task }: TaskDialogProps) 
       endTime: task?.endTime || null,
       color: task?.color || null,
       icon: task?.icon || null,
-      priority: task?.priority || 1,
+      priority: values.priority,
       category: values.category,
       subcategory: values.subcategory || null,
       timeLogs: task?.timeLogs || [],
@@ -196,6 +200,19 @@ export function TaskDialog({ open, onOpenChange, date, task }: TaskDialogProps) 
                             <FormMessage />
                         </FormItem>
                         )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="priority"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Priority</FormLabel>
+                          <FormControl>
+                            <Input type="number" placeholder="e.g., 1" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
                   </div>
                   
