@@ -75,7 +75,11 @@ export default function StudyTaskPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <aside className="lg:col-span-1 space-y-6 animate-fade-in-from-left">
                 <TaskProgressCard tasks={todaysTasks} />
-                <CalendarView selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
+                <CalendarView 
+                  selectedDate={selectedDate} 
+                  setSelectedDate={setSelectedDate}
+                  tasks={tasks}
+                />
                 <WeeklyTargetCard tasks={tasks} />
             </aside>
             <main className="lg:col-span-2 animate-fade-in-from-right">

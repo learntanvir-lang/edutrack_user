@@ -192,4 +192,22 @@
     animation: fade-in-from-right 0.6s ease-out forwards;
     animation-fill-mode: both;
   }
+  
+  .day-dot {
+    position: absolute;
+    bottom: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+  }
+
+  .day-dot-green {
+    background-color: #22c55e;
+  }
+
+  .day-dot-red {
+    background-color: #ef4444;
+  }
 }
