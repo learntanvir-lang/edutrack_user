@@ -23,7 +23,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Paper } from "@/lib/types";
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import { AppDataContext } from "@/context/AppDataContext";
 import { v4 as uuidv4 } from 'uuid';
 
@@ -47,9 +47,17 @@ export function PaperDialog({ open, onOpenChange, subjectId, paper }: PaperDialo
   const form = useForm<PaperFormValues>({
     resolver: zodResolver(paperSchema),
     defaultValues: {
-      name: paper?.name || "",
+      name: "",
     },
   });
+
+  useEffect(() => {
+      if (paper) {
+        form.reset({ name: paper.name });
+      } else {
+        form.reset({ name: "" });
+      }
+  }, [paper, form, open]);
 
   const onSubmit = (values: PaperFormValues) => {
     dispatch({
@@ -64,11 +72,17 @@ export function PaperDialog({ open, onOpenChange, subjectId, paper }: PaperDialo
       },
     });
     onOpenChange(false);
-    form.reset();
   };
 
+  const handleOpenChange = (isOpen: boolean) => {
+      if (!isOpen) {
+        form.reset();
+      }
+      onOpenChange(isOpen);
+  }
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{isEditing ? "Edit Paper" : "Add Paper"}</DialogTitle>
@@ -77,7 +91,7 @@ export function PaperDialog({ open, onOpenChange, subjectId, paper }: PaperDialo
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form id="paper-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="name"
@@ -91,11 +105,11 @@ export function PaperDialog({ open, onOpenChange, subjectId, paper }: PaperDialo
                 </FormItem>
               )}
             />
-            <DialogFooter>
-              <Button type="submit" className="font-bold transition-all duration-300 bg-primary text-primary-foreground border-2 border-primary hover:bg-transparent hover:text-primary hover:shadow-lg hover:shadow-primary/20">{isEditing ? "Save Changes" : "Add Paper"}</Button>
-            </DialogFooter>
           </form>
         </Form>
+        <DialogFooter>
+          <Button type="submit" form="paper-form" onClick={form.handleSubmit(onSubmit)} className="font-bold transition-all duration-300 bg-primary text-primary-foreground border-2 border-primary hover:bg-transparent hover:text-primary hover:shadow-lg hover:shadow-primary/20">{isEditing ? "Save Changes" : "Add Paper"}</Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

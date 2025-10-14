@@ -29,6 +29,7 @@ import {
   FormDescription,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const editProfileSchema = z.object({
   displayName: z.string().min(1, { message: 'Display name is required.' }),
@@ -122,59 +123,63 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent>
+      <DialogContent className="max-h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>Edit Profile</DialogTitle>
           <DialogDescription>
             Update your display name and profile picture.
           </DialogDescription>
         </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="displayName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Display Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Your Name" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="photoURL"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Profile Picture URL</FormLabel>
-                  <FormControl>
-                    <Input placeholder="https://example.com/image.png" {...field} />
-                  </FormControl>
-                  <FormDescription>
-                    Recommended size: 400x400 pixels.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-             <div className="space-y-2">
-                <FormLabel>Email</FormLabel>
-                <Input value={user?.email || ''} disabled />
-            </div>
-            <div className="space-y-2">
-                <FormLabel>User ID</FormLabel>
-                <Input value={user?.uid || ''} disabled />
-            </div>
-            <DialogFooter>
-              <Button type="submit" disabled={loading} className="font-bold transition-all duration-300 bg-primary text-primary-foreground border-2 border-primary hover:bg-transparent hover:text-primary hover:shadow-lg hover:shadow-primary/20">
-                {loading ? 'Saving...' : 'Save Changes'}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
+        <div className="flex-grow overflow-hidden">
+          <ScrollArea className="h-full pr-6 -mr-6">
+            <Form {...form}>
+              <form id="edit-profile-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="displayName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Display Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Your Name" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="photoURL"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Profile Picture URL</FormLabel>
+                      <FormControl>
+                        <Input placeholder="https://example.com/image.png" {...field} />
+                      </FormControl>
+                      <FormDescription>
+                        Recommended size: 400x400 pixels.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <div className="space-y-2">
+                    <FormLabel>Email</FormLabel>
+                    <Input value={user?.email || ''} disabled />
+                </div>
+                <div className="space-y-2">
+                    <FormLabel>User ID</FormLabel>
+                    <Input value={user?.uid || ''} disabled />
+                </div>
+              </form>
+            </Form>
+          </ScrollArea>
+        </div>
+        <DialogFooter className="pt-4 border-t flex-shrink-0">
+          <Button type="submit" form="edit-profile-form" onClick={form.handleSubmit(onSubmit)} disabled={loading} className="font-bold transition-all duration-300 bg-primary text-primary-foreground border-2 border-primary hover:bg-transparent hover:text-primary hover:shadow-lg hover:shadow-primary/20">
+            {loading ? 'Saving...' : 'Save Changes'}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

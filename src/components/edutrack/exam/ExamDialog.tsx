@@ -162,296 +162,299 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
   
   return (
     <Dialog open={open} onOpenChange={handleDialogChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md max-h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>{isEditing ? "Edit Exam" : "Add Exam"}</DialogTitle>
           <DialogDescription>
             {isEditing ? "Update the details of your exam." : "Add a new exam to your schedule."}
           </DialogDescription>
         </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Exam Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g., Mid-term Exam" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="subjectIds"
-              render={({ field }) => (
-                <FormItem className="flex flex-col">
-                  <FormLabel>Subject(s)</FormLabel>
-                   <Popover>
-                      <PopoverTrigger asChild>
-                          <FormControl>
-                              <Button
-                              variant="outline"
-                              role="combobox"
-                              className={cn(
-                                  "w-full justify-between h-auto min-h-10",
-                                  !field.value?.length && "text-muted-foreground"
-                              )}
-                              >
-                              <div className="flex gap-1 flex-wrap">
-                                  {selectedSubjectIds.length > 0 ? selectedSubjectIds.map(subjectId => {
-                                      const subject = subjects.find(s => s.id === subjectId);
-                                      return <Badge key={subjectId} variant="secondary">{subject?.name}</Badge>
-                                  }) : "Select subjects..."}
-                              </div>
-                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                              </Button>
-                          </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-                        <ScrollArea>
-                          <Command className="max-h-60">
-                              <CommandInput placeholder="Search subjects..." />
-                              <CommandList>
-                                <CommandEmpty>No subjects found.</CommandEmpty>
-                                <CommandGroup>
-                                    {subjects.map((subject) => (
-                                    <CommandItem
-                                        value={subject.name}
-                                        key={subject.id}
-                                        onSelect={() => {
-                                            const currentIds = field.value || [];
-                                            const isSelected = currentIds.includes(subject.id);
-                                            const newIds = isSelected
-                                                ? currentIds.filter((id) => id !== subject.id)
-                                                : [...currentIds, subject.id];
-                                            form.setValue("subjectIds", newIds, { shouldValidate: true });
-                                            
-                                            const availableChapterIds = subjects
-                                              .filter(s => newIds.includes(s.id))
-                                              .flatMap(s => s.papers)
-                                              .flatMap(p => p.chapters)
-                                              .map(c => c.id);
-                                            
-                                            const newChapterIds = (form.getValues("chapterIds") || []).filter(id => availableChapterIds.includes(id));
-                                            form.setValue("chapterIds", newChapterIds, { shouldValidate: true });
-                                        }}
+        <div className="flex-grow overflow-hidden">
+          <ScrollArea className="h-full pr-6 -mr-6">
+            <Form {...form}>
+              <form id="exam-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Exam Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g., Mid-term Exam" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="subjectIds"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel>Subject(s)</FormLabel>
+                      <Popover>
+                          <PopoverTrigger asChild>
+                              <FormControl>
+                                  <Button
+                                  variant="outline"
+                                  role="combobox"
+                                  className={cn(
+                                      "w-full justify-between h-auto min-h-10",
+                                      !field.value?.length && "text-muted-foreground"
+                                  )}
+                                  >
+                                  <div className="flex gap-1 flex-wrap">
+                                      {selectedSubjectIds.length > 0 ? selectedSubjectIds.map(subjectId => {
+                                          const subject = subjects.find(s => s.id === subjectId);
+                                          return <Badge key={subjectId} variant="secondary">{subject?.name}</Badge>
+                                      }) : "Select subjects..."}
+                                  </div>
+                                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                  </Button>
+                              </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                            <ScrollArea>
+                              <Command className="max-h-60">
+                                  <CommandInput placeholder="Search subjects..." />
+                                  <CommandList>
+                                    <CommandEmpty>No subjects found.</CommandEmpty>
+                                    <CommandGroup>
+                                        {subjects.map((subject) => (
+                                        <CommandItem
+                                            value={subject.name}
+                                            key={subject.id}
+                                            onSelect={() => {
+                                                const currentIds = field.value || [];
+                                                const isSelected = currentIds.includes(subject.id);
+                                                const newIds = isSelected
+                                                    ? currentIds.filter((id) => id !== subject.id)
+                                                    : [...currentIds, subject.id];
+                                                form.setValue("subjectIds", newIds, { shouldValidate: true });
+                                                
+                                                const availableChapterIds = subjects
+                                                  .filter(s => newIds.includes(s.id))
+                                                  .flatMap(s => s.papers)
+                                                  .flatMap(p => p.chapters)
+                                                  .map(c => c.id);
+                                                
+                                                const newChapterIds = (form.getValues("chapterIds") || []).filter(id => availableChapterIds.includes(id));
+                                                form.setValue("chapterIds", newChapterIds, { shouldValidate: true });
+                                            }}
+                                        >
+                                            <Check
+                                            className={cn(
+                                                "mr-2 h-4 w-4",
+                                                (field.value || []).includes(subject.id) ? "opacity-100" : "opacity-0"
+                                            )}
+                                            />
+                                            {subject.name}
+                                        </CommandItem>
+                                        ))}
+                                    </CommandGroup>
+                                  </CommandList>
+                              </Command>
+                            </ScrollArea>
+                          </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                  </FormItem>
+                  )}
+                />
+                <FormField
+                    control={form.control}
+                    name="chapterIds"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col">
+                        <FormLabel>Chapter(s)</FormLabel>
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <FormControl>
+                                    <Button
+                                    variant="outline"
+                                    role="combobox"
+                                    className={cn(
+                                        "w-full justify-between h-auto min-h-10",
+                                        !field.value?.length && "text-muted-foreground"
+                                    )}
+                                    disabled={!selectedSubjectIds.length}
                                     >
-                                        <Check
-                                        className={cn(
-                                            "mr-2 h-4 w-4",
-                                            (field.value || []).includes(subject.id) ? "opacity-100" : "opacity-0"
-                                        )}
-                                        />
-                                        {subject.name}
-                                    </CommandItem>
+                                    <div className="flex gap-1 flex-wrap">
+                                        {selectedChapterIds.length > 0 ? selectedChapterIds.map(chapterId => {
+                                            const chapter = allChapters.find(c => c.id === chapterId);
+                                            return <Badge key={chapterId} variant="secondary">{chapter?.name}</Badge>
+                                        }) : "Select chapters..."}
+                                    </div>
+                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                    </Button>
+                                </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                              <ScrollArea>
+                                <Command className="max-h-60">
+                                    <CommandInput placeholder="Search chapters..." />
+                                    <CommandList>
+                                    <CommandEmpty>No chapters found. Select a subject first.</CommandEmpty>
+                                    {chaptersBySubject.map(subject => (
+                                      <CommandGroup key={subject.subjectId} heading={subject.subjectName}>
+                                        {subject.chapters.map((chapter) => (
+                                        <CommandItem
+                                            value={`${subject.subjectName}-${chapter.name}`}
+                                            key={chapter.id}
+                                            onSelect={() => {
+                                                const currentIds = field.value || [];
+                                                const newIds = currentIds.includes(chapter.id)
+                                                    ? currentIds.filter((id) => id !== chapter.id)
+                                                    : [...currentIds, chapter.id];
+                                                form.setValue("chapterIds", newIds, { shouldValidate: true });
+                                            }}
+                                        >
+                                            <Check
+                                            className={cn(
+                                                "mr-2 h-4 w-4",
+                                                (field.value || []).includes(chapter.id) ? "opacity-100" : "opacity-0"
+                                            )}
+                                            />
+                                            <div>
+                                                <p>{chapter.name}</p>
+                                                <p className="text-xs text-muted-foreground">{chapter.paperName}</p>
+                                            </div>
+                                        </CommandItem>
+                                        ))}
+                                      </CommandGroup>
                                     ))}
-                                </CommandGroup>
-                              </CommandList>
-                          </Command>
-                        </ScrollArea>
-                      </PopoverContent>
-                  </Popover>
-                  <FormMessage />
-              </FormItem>
-              )}
-            />
-             <FormField
-                control={form.control}
-                name="chapterIds"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>Chapter(s)</FormLabel>
-                    <Popover>
-                        <PopoverTrigger asChild>
+                                    </CommandList>
+                                </Command>
+                              </ScrollArea>
+                            </PopoverContent>
+                        </Popover>
+                        <FormMessage />
+                    </FormItem>
+                    )}
+                />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="date"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col">
+                        <FormLabel>Exam Date</FormLabel>
+                        <Popover>
+                          <PopoverTrigger asChild>
                             <FormControl>
-                                <Button
-                                variant="outline"
-                                role="combobox"
+                              <Button
+                                variant={"outline"}
                                 className={cn(
-                                    "w-full justify-between h-auto min-h-10",
-                                    !field.value?.length && "text-muted-foreground"
+                                  "w-full pl-3 text-left font-normal",
+                                  !field.value && "text-muted-foreground"
                                 )}
-                                disabled={!selectedSubjectIds.length}
-                                >
-                                <div className="flex gap-1 flex-wrap">
-                                    {selectedChapterIds.length > 0 ? selectedChapterIds.map(chapterId => {
-                                        const chapter = allChapters.find(c => c.id === chapterId);
-                                        return <Badge key={chapterId} variant="secondary">{chapter?.name}</Badge>
-                                    }) : "Select chapters..."}
-                                </div>
-                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                </Button>
+                              >
+                                {field.value ? (
+                                  format(field.value, "PPP")
+                                ) : (
+                                  <span>Pick a date</span>
+                                )}
+                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                              </Button>
                             </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-                          <ScrollArea>
-                            <Command className="max-h-60">
-                                <CommandInput placeholder="Search chapters..." />
-                                <CommandList>
-                                <CommandEmpty>No chapters found. Select a subject first.</CommandEmpty>
-                                {chaptersBySubject.map(subject => (
-                                  <CommandGroup key={subject.subjectId} heading={subject.subjectName}>
-                                    {subject.chapters.map((chapter) => (
-                                    <CommandItem
-                                        value={`${subject.subjectName}-${chapter.name}`}
-                                        key={chapter.id}
-                                        onSelect={() => {
-                                            const currentIds = field.value || [];
-                                            const newIds = currentIds.includes(chapter.id)
-                                                ? currentIds.filter((id) => id !== chapter.id)
-                                                : [...currentIds, chapter.id];
-                                            form.setValue("chapterIds", newIds, { shouldValidate: true });
-                                        }}
-                                    >
-                                        <Check
-                                        className={cn(
-                                            "mr-2 h-4 w-4",
-                                            (field.value || []).includes(chapter.id) ? "opacity-100" : "opacity-0"
-                                        )}
-                                        />
-                                        <div>
-                                            <p>{chapter.name}</p>
-                                            <p className="text-xs text-muted-foreground">{chapter.paperName}</p>
-                                        </div>
-                                    </CommandItem>
-                                    ))}
-                                  </CommandGroup>
-                                ))}
-                                </CommandList>
-                            </Command>
-                          </ScrollArea>
-                        </PopoverContent>
-                    </Popover>
-                    <FormMessage />
-                </FormItem>
-                )}
-            />
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="date"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>Exam Date</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              mode="single"
+                              selected={field.value}
+                              onSelect={field.onChange}
+                              initialFocus
+                            />
+                          </PopoverContent>
+                        </Popover>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="time"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Exam Time</FormLabel>
                         <FormControl>
-                          <Button
-                            variant={"outline"}
-                            className={cn(
-                              "w-full pl-3 text-left font-normal",
-                              !field.value && "text-muted-foreground"
-                            )}
-                          >
-                            {field.value ? (
-                              format(field.value, "PPP")
-                            ) : (
-                              <span>Pick a date</span>
-                            )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
+                          <Input type="time" {...field} value={field.value || ""} />
                         </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="time"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Exam Time</FormLabel>
-                    <FormControl>
-                      <Input type="time" {...field} value={field.value || ""} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            
-            {isPast && (
-                <>
-                    <Separator />
-                    <div className="space-y-4 rounded-md border p-4">
-                        <h3 className="text-lg font-medium">Exam Result</h3>
-                        <FormField
-                            control={form.control}
-                            name="isCompleted"
-                            render={({ field }) => (
-                                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                                    <div className="space-y-0.5">
-                                        <FormLabel>Status</FormLabel>
-                                        <FormDescription>
-                                            Mark this exam as completed or not.
-                                        </FormDescription>
-                                    </div>
-                                    <div className="flex items-center space-x-2">
-                                        <Button type="button" onClick={() => field.onChange(false)} variant={!field.value ? "destructive" : "outline"} size="sm">
-                                            <X className="mr-2 h-4 w-4" />
-                                            Not Completed
-                                        </Button>
-                                        <Button type="button" onClick={() => field.onChange(true)} variant={field.value ? "default" : "outline"} size="sm" className={cn(field.value && "bg-green-600 hover:bg-green-700")}>
-                                            <Check className="mr-2 h-4 w-4" />
-                                            Completed
-                                        </Button>
-                                    </div>
-                                </FormItem>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                
+                {isPast && (
+                    <>
+                        <Separator />
+                        <div className="space-y-4 rounded-md border p-4">
+                            <h3 className="text-lg font-medium">Exam Result</h3>
+                            <FormField
+                                control={form.control}
+                                name="isCompleted"
+                                render={({ field }) => (
+                                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                                        <div className="space-y-0.5">
+                                            <FormLabel>Status</FormLabel>
+                                            <FormDescription>
+                                                Mark this exam as completed or not.
+                                            </FormDescription>
+                                        </div>
+                                        <div className="flex items-center space-x-2">
+                                            <Button type="button" onClick={() => field.onChange(false)} variant={!field.value ? "destructive" : "outline"} size="sm">
+                                                <X className="mr-2 h-4 w-4" />
+                                                Not Completed
+                                            </Button>
+                                            <Button type="button" onClick={() => field.onChange(true)} variant={field.value ? "default" : "outline"} size="sm" className={cn(field.value && "bg-green-600 hover:bg-green-700")}>
+                                                <Check className="mr-2 h-4 w-4" />
+                                                Completed
+                                            </Button>
+                                        </div>
+                                    </FormItem>
+                                )}
+                            />
+                            {isCompleted && (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                                    <FormField
+                                        control={form.control}
+                                        name="marksObtained"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Marks Obtained</FormLabel>
+                                                <FormControl>
+                                                    <Input type="number" placeholder="e.g., 85" {...field} value={field.value ?? ''} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name="totalMarks"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Total Marks</FormLabel>
+                                                <FormControl>
+                                                    <Input type="number" placeholder="e.g., 100" {...field} value={field.value ?? ''} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
                             )}
-                        />
-                        {isCompleted && (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                                <FormField
-                                    control={form.control}
-                                    name="marksObtained"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Marks Obtained</FormLabel>
-                                            <FormControl>
-                                                <Input type="number" placeholder="e.g., 85" {...field} value={field.value ?? ''} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="totalMarks"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Total Marks</FormLabel>
-                                            <FormControl>
-                                                <Input type="number" placeholder="e.g., 100" {...field} value={field.value ?? ''} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                            </div>
-                        )}
-                    </div>
-                </>
-            )}
-
-            <DialogFooter>
-              <Button type="submit" className="font-bold transition-all duration-300 bg-primary text-primary-foreground border-2 border-primary hover:bg-transparent hover:text-primary hover:shadow-lg hover:shadow-primary/20">{isEditing ? "Save Changes" : "Add Exam"}</Button>
-            </DialogFooter>
-          </form>
-        </Form>
+                        </div>
+                    </>
+                )}
+              </form>
+            </Form>
+          </ScrollArea>
+        </div>
+        <DialogFooter className="pt-4 border-t flex-shrink-0">
+          <Button type="submit" form="exam-form" onClick={form.handleSubmit(onSubmit)} className="font-bold transition-all duration-300 bg-primary text-primary-foreground border-2 border-primary hover:bg-transparent hover:text-primary hover:shadow-lg hover:shadow-primary/20">{isEditing ? "Save Changes" : "Add Exam"}</Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

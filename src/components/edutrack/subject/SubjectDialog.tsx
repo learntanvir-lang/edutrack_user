@@ -23,7 +23,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Subject } from "@/lib/types";
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import { AppDataContext } from "@/context/AppDataContext";
 import { v4 as uuidv4 } from 'uuid';
 
@@ -47,10 +47,18 @@ export function SubjectDialog({ open, onOpenChange, subject }: SubjectDialogProp
   const form = useForm<SubjectFormValues>({
     resolver: zodResolver(subjectSchema),
     defaultValues: {
-      name: subject?.name || "",
-      code: subject?.code || "",
+      name: "",
+      code: "",
     },
   });
+
+  useEffect(() => {
+    if (subject) {
+      form.reset({ name: subject.name, code: subject.code || "" });
+    } else {
+      form.reset({ name: "", code: "" });
+    }
+  }, [subject, form, open]);
 
   const onSubmit = (values: SubjectFormValues) => {
     dispatch({
@@ -65,14 +73,17 @@ export function SubjectDialog({ open, onOpenChange, subject }: SubjectDialogProp
       },
     });
     onOpenChange(false);
-    form.reset();
   };
 
+  const handleOpenChange = (isOpen: boolean) => {
+      if (!isOpen) {
+        form.reset();
+      }
+      onOpenChange(isOpen);
+  }
+
   return (
-    <Dialog open={open} onOpenChange={(isOpen) => {
-        onOpenChange(isOpen);
-        if (!isOpen) form.reset();
-    }}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{isEditing ? "Edit Subject" : "Add Subject"}</DialogTitle>
@@ -81,7 +92,7 @@ export function SubjectDialog({ open, onOpenChange, subject }: SubjectDialogProp
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form id="subject-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="name"
@@ -108,11 +119,11 @@ export function SubjectDialog({ open, onOpenChange, subject }: SubjectDialogProp
                 </FormItem>
               )}
             />
-            <DialogFooter>
-              <Button type="submit" className="font-bold transition-all duration-300 bg-primary text-primary-foreground border-2 border-primary hover:bg-transparent hover:text-primary hover:shadow-lg hover:shadow-primary/20">{isEditing ? "Save Changes" : "Add Subject"}</Button>
-            </DialogFooter>
           </form>
         </Form>
+        <DialogFooter>
+          <Button type="submit" form="subject-form" onClick={form.handleSubmit(onSubmit)} className="font-bold transition-all duration-300 bg-primary text-primary-foreground border-2 border-primary hover:bg-transparent hover:text-primary hover:shadow-lg hover:shadow-primary/20">{isEditing ? "Save Changes" : "Add Subject"}</Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
