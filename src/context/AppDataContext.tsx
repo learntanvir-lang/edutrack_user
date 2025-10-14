@@ -444,34 +444,42 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
           const subjectsCol = collection(firestore, `users/${user.uid}/subjects`);
           const examsCol = collection(firestore, `users/${user.uid}/exams`);
           const resourcesCol = collection(firestore, `users/${user.uid}/resources`);
-          const oldNotesCol = collection(firestore, `users/${user.uid}/notes`); // <-- Fetch from old 'notes'
+          const oldNotesCol = collection(firestore, `users/${user.uid}/notes`);
           const tasksCol = collection(firestore, `users/${user.uid}/tasks`);
           
           const [subjectsSnapshot, examsSnapshot, resourcesSnapshot, oldNotesSnapshot, tasksSnapshot, settingsSnapshot] = await Promise.all([
             getDocs(subjectsCol),
             getDocs(examsCol),
             getDocs(resourcesCol),
-            getDocs(oldNotesCol), // <-- Get old notes
+            getDocs(oldNotesCol),
             getDocs(tasksCol),
             getDocs(collection(firestore, `users/${user.uid}/settings`)),
           ]);
 
           const subjects = subjectsSnapshot.docs.map(doc => doc.data() as Subject);
           const exams = examsSnapshot.docs.map(doc => doc.data() as Exam);
-          const resources = resourcesSnapshot.docs.map(doc => doc.data() as Resource);
-          const oldNotes = oldNotesSnapshot.docs.map(doc => doc.data() as Resource); // Treat old notes as Resources
+          const currentResources = resourcesSnapshot.docs.map(doc => doc.data() as Resource);
+          const oldNotes = oldNotesSnapshot.docs.map(doc => doc.data() as Resource);
           const tasks = tasksSnapshot.docs.map(doc => ({ ...doc.data(), timeLogs: doc.data().timeLogs || [] }) as StudyTask);
 
-          // Merge old notes and new resources
-          const combinedResources = [...resources];
-          const resourceIds = new Set(resources.map(r => r.id));
-          oldNotes.forEach(note => {
+          // Perform a one-time migration from 'notes' to 'resources'
+          const resourceIds = new Set(currentResources.map(r => r.id));
+          const migratedResources = [...currentResources];
+          let migrationOccurred = false;
+
+          for (const note of oldNotes) {
             if (!resourceIds.has(note.id)) {
-                combinedResources.push(note);
-                // Also save the migrated note to the new collection non-blockingly
-                setDocumentNonBlocking(firestore, `users/${user.uid}/resources`, note.id, note);
+              migratedResources.push(note);
+              // Save the migrated note to the new 'resources' collection
+              setDocumentNonBlocking(firestore, `users/${user.uid}/resources`, note.id, note);
+              // Delete from the old 'notes' collection
+              deleteDocumentNonBlocking(firestore, `users/${user.uid}/notes`, note.id);
+              migrationOccurred = true;
+            } else {
+              // If the note already exists in resources, just delete it from the old collection
+              deleteDocumentNonBlocking(firestore, `users/${user.uid}/notes`, note.id);
             }
-          });
+          }
           
           let settings: UserSettings;
           if (settingsSnapshot.empty || !settingsSnapshot.docs[0].exists()) {
@@ -481,7 +489,7 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
              settings = settingsSnapshot.docs[0].data() as UserSettings;
           }
 
-          const onlineState = { subjects, exams, resources: combinedResources, tasks, settings };
+          const onlineState = { subjects, exams, resources: migratedResources, tasks, settings };
           // Sync with online state
           dispatch({ type: "SET_STATE", payload: onlineState });
           localStorage.setItem(`appData-${user.uid}`, JSON.stringify(onlineState));

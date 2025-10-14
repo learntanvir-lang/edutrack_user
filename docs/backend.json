@@ -138,14 +138,15 @@
       "properties": {
         "id": { "type": "string" },
         "url": { "type": "string", "format": "uri" },
-        "description": { "type": "string" }
+        "description": { "type": "string" },
+        "icon": { "type": "string", "description": "The name of the lucide-react icon to display." }
       },
       "required": ["id", "url", "description"]
     },
-    "Note": {
-      "title": "Note",
+    "Resource": {
+      "title": "Resource",
       "type": "object",
-      "description": "Represents an important note or resource.",
+      "description": "Represents an important resource or collection of links.",
       "properties": {
         "id": { "type": "string" },
         "title": { "type": "string" },
@@ -153,22 +154,11 @@
         "imageUrl": { "type": "string", "format": "uri" },
         "links": {
           "type": "array",
-          "items": { "$ref": "#/entities/NoteLink" }
+          "items": { "$ref": "#/entities/ResourceLink" }
         },
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["id", "title", "imageUrl", "createdAt"]
-    },
-    "NoteLink": {
-      "title": "Note Link",
-      "type": "object",
-      "description": "Represents a link within a note.",
-      "properties": {
-        "id": { "type": "string" },
-        "title": { "type": "string" },
-        "url": { "type": "string", "format": "uri" }
-      },
-      "required": ["id", "title", "url"]
     },
     "TimeLog": {
         "title": "Time Log",
@@ -188,19 +178,36 @@
         "properties": {
           "id": { "type": "string" },
           "title": { "type": "string" },
-          "description": { "type": "string" },
+          "description": { "type": ["string", "null"] },
           "isCompleted": { "type": "boolean" },
           "date": { "type": "string", "format": "date", "description": "The date for the task in YYYY-MM-DD format." },
+          "startTime": { "type": ["string", "null"], "description": "The start time for the task in HH:mm format." },
+          "endTime": { "type": ["string", "null"], "description": "The end time for the task in HH:mm format." },
+          "color": { "type": ["string", "null"], "description": "A hex color code for the task." },
+          "icon": { "type": ["string", "null"], "description": "An icon name for the task." },
           "priority": { "type": "number" },
           "category": { "type": "string" },
-          "subcategory": { "type": "string" },
+          "subcategory": { "type": ["string", "null"] },
           "timeLogs": {
             "type": "array",
             "items": { "$ref": "#/entities/TimeLog" }
           },
-          "activeTimeLogId": { "type": ["string", "null"] }
+          "activeTimeLogId": { "type": ["string", "null"] },
+          "originalId": { "type": ["string", "null"] },
+          "isArchived": { "type": "boolean" }
         },
         "required": ["id", "title", "isCompleted", "date", "priority", "category", "timeLogs"]
+    },
+    "UserSettings": {
+        "title": "User Settings",
+        "type": "object",
+        "description": "Stores user-specific settings.",
+        "properties": {
+            "id": { "type": "string" },
+            "weeklyStudyGoal": { "type": "number", "description": "The user's weekly study goal in hours." },
+            "lastWeekGoalMetShown": { "type": "string", "format": "date-time", "description": "The last time the weekly goal met notification was shown." }
+        },
+        "required": ["id", "weeklyStudyGoal"]
     }
   },
   "auth": {
@@ -221,13 +228,17 @@
         "schema": {"$ref": "#/entities/Exam"},
         "description": "Sub-collection for exams belonging to a user."
     },
-    "/users/{userId}/notes": {
-        "schema": {"$ref": "#/entities/Note"},
-        "description": "Sub-collection for notes belonging to a user."
+    "/users/{userId}/resources": {
+        "schema": {"$ref": "#/entities/Resource"},
+        "description": "Sub-collection for resources belonging to a user."
     },
     "/users/{userId}/tasks": {
         "schema": {"$ref": "#/entities/StudyTask"},
         "description": "Sub-collection for daily study tasks for a user."
+    },
+    "/users/{userId}/settings": {
+        "schema": {"$ref": "#/entities/UserSettings"},
+        "description": "Stores user-specific settings like weekly goals."
     }
   }
 }
