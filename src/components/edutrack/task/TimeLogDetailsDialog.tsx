@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useContext } from "react";
 import {
   Dialog,
   DialogContent,
@@ -11,7 +11,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { StudyTask, TimeLog } from "@/lib/types";
-import { format, formatDistanceStrict } from "date-fns";
+import { format } from "date-fns";
 import { Clock, PlusCircle, MoreVertical, Edit, Trash2 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -20,6 +20,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { TimeLogEntryDialog } from "./TimeLogEntryDialog";
 import { DeleteConfirmationDialog } from "../DeleteConfirmationDialog";
 import { formatDuration } from "@/lib/utils";
+import { AppDataContext } from "@/context/AppDataContext";
 
 
 interface TimeLogDetailsDialogProps {
@@ -29,6 +30,7 @@ interface TimeLogDetailsDialogProps {
 }
 
 export function TimeLogDetailsDialog({ open, onOpenChange, task }: TimeLogDetailsDialogProps) {
+    const { dispatch } = useContext(AppDataContext);
     const [isEntryDialogOpen, setIsEntryDialogOpen] = useState(false);
     const [editingLog, setEditingLog] = useState<TimeLog | undefined>(undefined);
     const [deletingLog, setDeletingLog] = useState<TimeLog | null>(null);
@@ -43,6 +45,16 @@ export function TimeLogDetailsDialog({ open, onOpenChange, task }: TimeLogDetail
     const handleEditLog = (log: TimeLog) => {
         setEditingLog(log);
         setIsEntryDialogOpen(true);
+    };
+    
+    const handleDeleteLog = () => {
+        if (deletingLog) {
+            dispatch({
+                type: 'DELETE_TIME_LOG',
+                payload: { taskId: task.id, logId: deletingLog.id }
+            });
+            setDeletingLog(null);
+        }
     };
 
   return (
@@ -132,11 +144,7 @@ export function TimeLogDetailsDialog({ open, onOpenChange, task }: TimeLogDetail
         <DeleteConfirmationDialog 
             open={!!deletingLog}
             onOpenChange={() => setDeletingLog(null)}
-            onConfirm={() => {
-                // Dispatch delete action here
-                console.log("Delete log", deletingLog.id);
-                setDeletingLog(null);
-            }}
+            onConfirm={handleDeleteLog}
             itemName="this time log"
             itemType="entry"
         />
