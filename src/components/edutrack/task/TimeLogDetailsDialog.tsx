@@ -61,7 +61,7 @@ export function TimeLogDetailsDialog({ open, onOpenChange, task }: TimeLogDetail
     <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] w-full max-w-2xl flex flex-col">
-        <DialogHeader>
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle>Time Log Details</DialogTitle>
           <DialogDescription>
             A detailed breakdown of all study sessions for "{task.title}".

@@ -163,16 +163,16 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
   return (
     <Dialog open={open} onOpenChange={handleDialogChange}>
       <DialogContent className="sm:max-w-md max-h-[90vh] flex flex-col">
-        <DialogHeader>
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle>{isEditing ? "Edit Exam" : "Add Exam"}</DialogTitle>
           <DialogDescription>
             {isEditing ? "Update the details of your exam." : "Add a new exam to your schedule."}
           </DialogDescription>
         </DialogHeader>
-        <div className="flex-grow overflow-hidden">
-          <ScrollArea className="h-full pr-6 -mr-6">
+        <div className="flex-grow overflow-y-auto -mx-6 px-6">
+          <ScrollArea className="h-full">
             <Form {...form}>
-              <form id="exam-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <form id="exam-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 px-1">
                 <FormField
                   control={form.control}
                   name="name"

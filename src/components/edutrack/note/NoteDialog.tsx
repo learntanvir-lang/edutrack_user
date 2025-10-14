@@ -99,16 +99,16 @@ export function NoteDialog({ open, onOpenChange, note }: NoteDialogProps) {
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-lg max-h-[90vh] flex flex-col">
-        <DialogHeader>
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle>{isEditing ? "Edit Note" : "Add New Note"}</DialogTitle>
           <DialogDescription>
             {isEditing ? "Update the details for your note." : "Add a new note to your collection."}
           </DialogDescription>
         </DialogHeader>
-        <div className="flex-grow overflow-hidden">
-          <ScrollArea className="h-full pr-6 -mr-6">
+        <div className="flex-grow overflow-y-auto -mx-6 px-6">
+          <ScrollArea className="h-full">
             <Form {...form}>
-              <form id="note-form" className="space-y-4">
+              <form id="note-form" className="space-y-4 px-1">
                   <FormField
                     control={form.control}
                     name="title"

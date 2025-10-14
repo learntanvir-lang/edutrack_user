@@ -117,16 +117,16 @@ export function ChangePasswordDialog({ open, onOpenChange }: ChangePasswordDialo
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-h-[90vh] flex flex-col">
-        <DialogHeader>
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle>Change Password</DialogTitle>
           <DialogDescription>
             Enter your current password and a new password below.
           </DialogDescription>
         </DialogHeader>
-        <div className="flex-grow overflow-hidden">
-          <ScrollArea className="h-full pr-6 -mr-6">
+        <div className="flex-grow overflow-y-auto -mx-6 px-6">
+          <ScrollArea className="h-full">
             <Form {...form}>
-              <form id="change-password-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <form id="change-password-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 px-1">
                 <FormField
                   control={form.control}
                   name="currentPassword"

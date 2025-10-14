@@ -108,16 +108,16 @@ export function ChapterDialog({ open, onOpenChange, subjectId, paperId, chapter 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-h-[90vh] flex flex-col">
-        <DialogHeader>
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle>{isEditing ? "Edit Chapter" : "Add New Chapter"}</DialogTitle>
           <DialogDescription>
             {isEditing ? "Update the name and number for this chapter." : "Add a new chapter to this paper."}
           </DialogDescription>
         </DialogHeader>
-        <div className="flex-grow overflow-hidden">
-        <ScrollArea className="h-full pr-6 -mr-6">
+        <div className="flex-grow overflow-y-auto -mx-6 px-6">
+          <ScrollArea className="h-full">
             <Form {...form}>
-              <form id="chapter-form" className="space-y-4">
+              <form id="chapter-form" className="space-y-4 px-1">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
@@ -148,7 +148,7 @@ export function ChapterDialog({ open, onOpenChange, subjectId, paperId, chapter 
                 </div>
               </form>
             </Form>
-        </ScrollArea>
+          </ScrollArea>
         </div>
         <DialogFooter className="pt-4 border-t flex-shrink-0">
           <Button onClick={form.handleSubmit(onSubmit)} form="chapter-form" className="font-bold transition-all duration-300 bg-primary text-primary-foreground border-2 border-primary hover:bg-transparent hover:text-primary hover:shadow-lg hover:shadow-primary/20">{isEditing ? "Save Changes" : "Add Chapter"}</Button>

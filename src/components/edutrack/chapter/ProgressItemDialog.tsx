@@ -109,14 +109,14 @@ export function ProgressItemDialog({ open, onOpenChange, subjectId, paperId, cha
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-h-[90vh] flex flex-col">
-        <DialogHeader>
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle>{isEditing ? "Edit Progress Tracker" : "Add New Progress Tracker"}</DialogTitle>
           <DialogDescription>Track your progress for this chapter.</DialogDescription>
         </DialogHeader>
-        <div className="flex-grow overflow-hidden">
-          <ScrollArea className="h-full pr-6 -mr-6">
+        <div className="flex-grow overflow-y-auto -mx-6 px-6">
+          <ScrollArea className="h-full">
             <Form {...form}>
-              <form id="progress-item-form" className="space-y-4">
+              <form id="progress-item-form" className="space-y-4 px-1">
                 <FormField
                   control={form.control}
                   name="name"

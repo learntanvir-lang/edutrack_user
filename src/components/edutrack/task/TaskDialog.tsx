@@ -126,16 +126,16 @@ export function TaskDialog({ open, onOpenChange, date, task }: TaskDialogProps) 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-h-[90vh] flex flex-col">
-        <DialogHeader>
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle>{isEditing ? "Edit Task" : "Add New Task"}</DialogTitle>
           <DialogDescription>
             {isEditing ? "Update the details for this task." : "Add a new task to your study plan."}
           </DialogDescription>
         </DialogHeader>
-        <div className="flex-grow overflow-hidden">
-        <ScrollArea className="h-full pr-6 -mr-6">
+        <div className="flex-grow overflow-y-auto -mx-6 px-6">
+          <ScrollArea className="h-full">
             <Form {...form}>
-              <form id="task-form" className="space-y-4">
+              <form id="task-form" className="space-y-4 px-1">
                   <FormField
                     control={form.control}
                     name="title"
@@ -247,7 +247,7 @@ export function TaskDialog({ open, onOpenChange, date, task }: TaskDialogProps) 
 
               </form>
             </Form>
-        </ScrollArea>
+          </ScrollArea>
         </div>
         <DialogFooter className="pt-4 border-t flex-shrink-0">
           <Button onClick={form.handleSubmit(onSubmit)} form="task-form" className="font-bold transition-all duration-300 bg-primary text-primary-foreground border-2 border-primary hover:bg-transparent hover:text-primary hover:shadow-lg hover:shadow-primary/20">{isEditing ? "Save Changes" : "Add Task"}</Button>

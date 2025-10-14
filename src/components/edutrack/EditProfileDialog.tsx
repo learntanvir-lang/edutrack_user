@@ -124,16 +124,16 @@ export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-h-[90vh] flex flex-col">
-        <DialogHeader>
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle>Edit Profile</DialogTitle>
           <DialogDescription>
             Update your display name and profile picture.
           </DialogDescription>
         </DialogHeader>
-        <div className="flex-grow overflow-hidden">
-          <ScrollArea className="h-full pr-6 -mr-6">
+        <div className="flex-grow overflow-y-auto -mx-6 px-6">
+          <ScrollArea className="h-full">
             <Form {...form}>
-              <form id="edit-profile-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <form id="edit-profile-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 px-1">
                 <FormField
                   control={form.control}
                   name="displayName"
