@@ -195,19 +195,19 @@
   
   .day-dot {
     position: absolute;
-    bottom: 4px;
+    bottom: 2px;
     left: 50%;
     transform: translateX(-50%);
-    width: 6px;
-    height: 6px;
+    width: 5px;
+    height: 5px;
     border-radius: 50%;
   }
 
   .day-dot-green {
-    background-color: hsla(142, 71%, 45%, 0.8);
+    background-color: hsla(142, 71%, 45%, 0.7);
   }
 
   .day-dot-red {
-    background-color: hsla(0, 84%, 60%, 0.8);
+    background-color: hsla(0, 84%, 60%, 0.7);
   }
 }
