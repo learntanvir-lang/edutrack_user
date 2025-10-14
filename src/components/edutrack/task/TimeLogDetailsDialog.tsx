@@ -108,7 +108,7 @@ export function TimeLogDetailsDialog({ open, onOpenChange, task }: TimeLogDetail
         </ScrollArea>
         </div>
         <DialogFooter className="pt-4 border-t flex-shrink-0">
-            <Button variant="ghost" onClick={handleAddLog} className="text-primary hover:bg-primary/10 hover:text-primary">
+            <Button variant="ghost" onClick={handleAddLog} className="hover:bg-primary/10 hover:text-primary">
                 <PlusCircle className="mr-2 h-4 w-4" />
                 Add Record
             </Button>
