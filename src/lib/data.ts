@@ -1,5 +1,5 @@
 
-import { Subject, Exam, Note } from './types';
+import { Subject, Exam, Resource } from './types';
 import { v4 as uuidv4 } from 'uuid';
 
 const physicsChapter1Id = uuidv4();
@@ -22,7 +22,7 @@ const getPastDate = (days: number, hours: number, minutes: number) => {
     return date.toISOString();
 }
 
-export const initialData: { subjects: Subject[], exams: Exam[], notes: Note[] } = {
+export const initialData: { subjects: Subject[], exams: Exam[], resources: Resource[] } = {
   subjects: [
     {
       id: subjectPhysicsId,
@@ -40,8 +40,8 @@ export const initialData: { subjects: Subject[], exams: Exam[], notes: Note[] } 
               number: "1",
               isCompleted: false,
               progressItems: [
-                { id: uuidv4(), name: 'Class Sessions', completed: 8, total: 10 },
-                { id: uuidv4(), name: 'Practice Problems', completed: 25, total: 50 },
+                { id: uuidv4(), name: 'Class Sessions', type: 'counter', completed: 8, total: 10 },
+                { id: uuidv4(), name: 'Practice Problems', type: 'counter', completed: 25, total: 50 },
               ],
               resourceLinks: [
                 { id: uuidv4(), url: 'https://www.youtube.com/watch?v=1G5E_C2e2fE', description: 'Vector Intro Video' }
@@ -53,8 +53,8 @@ export const initialData: { subjects: Subject[], exams: Exam[], notes: Note[] } 
               number: "2",
               isCompleted: false,
               progressItems: [
-                { id: uuidv4(), name: 'Class Sessions', completed: 5, total: 12 },
-                { id: uuidv4(), name: 'Practice Problems', completed: 10, total: 60 },
+                { id: uuidv4(), name: 'Class Sessions', type: 'counter', completed: 5, total: 12 },
+                { id: uuidv4(), name: 'Practice Problems', type: 'counter', completed: 10, total: 60 },
               ],
               resourceLinks: []
             }
@@ -78,8 +78,8 @@ export const initialData: { subjects: Subject[], exams: Exam[], notes: Note[] } 
                         number: "1",
                         isCompleted: true,
                         progressItems: [
-                          { id: uuidv4(), name: 'Class Sessions', completed: 15, total: 15 },
-                          { id: uuidv4(), name: 'Practice Problems', completed: 80, total: 80 },
+                          { id: uuidv4(), name: 'Class Sessions', type: 'counter', completed: 15, total: 15 },
+                          { id: uuidv4(), name: 'Practice Problems', type: 'counter', completed: 80, total: 80 },
                         ],
                         resourceLinks: []
                     }
@@ -114,7 +114,7 @@ export const initialData: { subjects: Subject[], exams: Exam[], notes: Note[] } 
         isCompleted: true
       }
   ],
-  notes: [
+  resources: [
     {
         id: uuidv4(),
         title: "Quantum Mechanics Resources",
@@ -122,8 +122,8 @@ export const initialData: { subjects: Subject[], exams: Exam[], notes: Note[] } 
         imageUrl: "https://picsum.photos/seed/1/600/400",
         createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
         links: [
-            { id: uuidv4(), title: "Feynman Lectures on Physics", url: "https://www.feynmanlectures.caltech.edu/" },
-            { id: uuidv4(), title: "Veritasium - The Quantum World", url: "https://www.youtube.com/watch?v=kYAdwS5MFjQ" }
+            { id: uuidv4(), description: "Feynman Lectures on Physics", url: "https://www.feynmanlectures.caltech.edu/" },
+            { id: uuidv4(), description: "Veritasium - The Quantum World", url: "https://www.youtube.com/watch?v=kYAdwS5MFjQ" }
         ]
     }
   ],

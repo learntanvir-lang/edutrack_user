@@ -55,7 +55,7 @@ export function AppHeader() {
       { href: '/syllabus', label: 'Syllabus', icon: BookCopy },
       { href: '/exams', label: 'Exams', icon: Target },
       { href: '/studytask', label: 'Study Tasks', icon: ListTodo },
-      { href: '/notes', label: 'Resources', icon: Library },
+      { href: '/resources', label: 'Resources', icon: Library },
   ];
 
   const NavLink = ({ href, label, icon: Icon }: { href: string; label: string; icon: React.ElementType }) => (

@@ -57,19 +57,12 @@ export interface Exam {
   totalMarks?: number;
 }
 
-export interface NoteLink {
-  id: string;
-  title: string;
-  url: string;
-  icon?: string;
-}
-
-export interface Note {
+export interface Resource {
   id: string;
   title: string;
   description: string;
   imageUrl: string;
-  links: NoteLink[];
+  links: ResourceLink[];
   createdAt: string; // ISO 8601 format
 }
 

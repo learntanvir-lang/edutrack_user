@@ -23,32 +23,32 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Note } from "@/lib/types";
+import { Resource } from "@/lib/types";
 import { useContext, useEffect } from "react";
 import { AppDataContext } from "@/context/AppDataContext";
 import { v4 as uuidv4 } from 'uuid';
 import { ScrollArea } from "@/components/ui/scroll-area";
 
-const noteSchema = z.object({
+const resourceSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().optional(),
   imageUrl: z.string().url("Must be a valid image URL").min(1, "Image URL is required"),
 });
 
-type NoteFormValues = z.infer<typeof noteSchema>;
+type ResourceFormValues = z.infer<typeof resourceSchema>;
 
-interface NoteDialogProps {
+interface ResourceDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  note?: Note;
+  resource?: Resource;
 }
 
-export function NoteDialog({ open, onOpenChange, note }: NoteDialogProps) {
+export function ResourceDialog({ open, onOpenChange, resource }: ResourceDialogProps) {
   const { dispatch } = useContext(AppDataContext);
-  const isEditing = !!note;
+  const isEditing = !!resource;
 
-  const form = useForm<NoteFormValues>({
-    resolver: zodResolver(noteSchema),
+  const form = useForm<ResourceFormValues>({
+    resolver: zodResolver(resourceSchema),
     defaultValues: {
       title: "",
       description: "",
@@ -57,11 +57,11 @@ export function NoteDialog({ open, onOpenChange, note }: NoteDialogProps) {
   });
 
   useEffect(() => {
-    if (note && open) {
+    if (resource && open) {
       form.reset({
-        title: note.title,
-        description: note.description,
-        imageUrl: note.imageUrl,
+        title: resource.title,
+        description: resource.description,
+        imageUrl: resource.imageUrl,
       });
     } else if (!isEditing && open) {
       form.reset({
@@ -70,21 +70,21 @@ export function NoteDialog({ open, onOpenChange, note }: NoteDialogProps) {
         imageUrl: `https://picsum.photos/seed/${uuidv4()}/600/400`,
       });
     }
-  }, [note, open, form, isEditing]);
+  }, [resource, open, form, isEditing]);
 
-  const onSubmit = (values: NoteFormValues) => {
-    const noteData: Note = {
-      id: note?.id || uuidv4(),
+  const onSubmit = (values: ResourceFormValues) => {
+    const resourceData: Resource = {
+      id: resource?.id || uuidv4(),
       title: values.title,
       description: values.description || "",
       imageUrl: values.imageUrl,
-      links: note?.links || [],
-      createdAt: note?.createdAt || new Date().toISOString(),
+      links: resource?.links || [],
+      createdAt: resource?.createdAt || new Date().toISOString(),
     };
 
     dispatch({
-      type: isEditing ? "UPDATE_NOTE" : "ADD_NOTE",
-      payload: noteData,
+      type: isEditing ? "UPDATE_RESOURCE" : "ADD_RESOURCE",
+      payload: resourceData,
     });
     onOpenChange(false);
   };
@@ -100,15 +100,15 @@ export function NoteDialog({ open, onOpenChange, note }: NoteDialogProps) {
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-lg max-h-[90vh] flex flex-col">
         <DialogHeader className="flex-shrink-0">
-          <DialogTitle>{isEditing ? "Edit Note" : "Add New Note"}</DialogTitle>
+          <DialogTitle>{isEditing ? "Edit Resource" : "Add New Resource"}</DialogTitle>
           <DialogDescription>
-            {isEditing ? "Update the details for your note." : "Add a new note to your collection."}
+            {isEditing ? "Update the details for your resource." : "Add a new resource to your collection."}
           </DialogDescription>
         </DialogHeader>
         <div className="flex-grow overflow-y-auto -mx-6 px-6">
           <ScrollArea className="h-full">
             <Form {...form}>
-              <form id="note-form" className="space-y-4 px-1">
+              <form id="resource-form" className="space-y-4 px-1">
                   <FormField
                     control={form.control}
                     name="title"
@@ -116,7 +116,7 @@ export function NoteDialog({ open, onOpenChange, note }: NoteDialogProps) {
                       <FormItem>
                         <FormLabel>Title</FormLabel>
                         <FormControl>
-                          <Input placeholder="e.g., My Awesome Project" {...field} />
+                          <Input placeholder="e.g., Quantum Physics Explained" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -142,7 +142,7 @@ export function NoteDialog({ open, onOpenChange, note }: NoteDialogProps) {
                       <FormItem>
                         <FormLabel>Description</FormLabel>
                         <FormControl>
-                          <Textarea placeholder="A short description of your note..." {...field} />
+                          <Textarea placeholder="A short description of your resource..." {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -153,7 +153,7 @@ export function NoteDialog({ open, onOpenChange, note }: NoteDialogProps) {
           </ScrollArea>
         </div>
         <DialogFooter className="pt-4 border-t flex-shrink-0">
-          <Button onClick={form.handleSubmit(onSubmit)} form="note-form" className="font-bold transition-all duration-300 bg-primary text-primary-foreground border-2 border-primary hover:bg-transparent hover:text-primary hover:shadow-lg hover:shadow-primary/20">{isEditing ? "Save Changes" : "Add Note"}</Button>
+          <Button onClick={form.handleSubmit(onSubmit)} form="resource-form" className="font-bold transition-all duration-300 bg-primary text-primary-foreground border-2 border-primary hover:bg-transparent hover:text-primary hover:shadow-lg hover:shadow-primary/20">{isEditing ? "Save Changes" : "Add Resource"}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

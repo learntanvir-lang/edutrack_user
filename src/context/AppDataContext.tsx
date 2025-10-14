@@ -2,7 +2,7 @@
 "use client";
 
 import { createContext, useReducer, useEffect, ReactNode, useContext, useMemo } from "react";
-import { Subject, Exam, Paper, Chapter, Note, StudyTask, TimeLog, ProgressItem, TodoItem, UserSettings } from "@/lib/types";
+import { Subject, Exam, Resource, Paper, Chapter, StudyTask, TimeLog, ProgressItem, TodoItem, UserSettings } from "@/lib/types";
 import { initialData } from "@/lib/data";
 import { v4 as uuidv4 } from 'uuid';
 import { useFirebase, useUser } from "@/firebase";
@@ -24,7 +24,7 @@ import { format } from "date-fns";
 type AppState = {
   subjects: Subject[];
   exams: Exam[];
-  notes: Note[];
+  resources: Resource[];
   tasks: StudyTask[];
   settings: UserSettings;
 };
@@ -47,10 +47,10 @@ type Action =
   | { type: "ADD_EXAM"; payload: Exam }
   | { type: "UPDATE_EXAM"; payload: Exam }
   | { type: "DELETE_EXAM"; payload: { id: string } }
-  | { type: "ADD_NOTE"; payload: Note }
-  | { type: "UPDATE_NOTE"; payload: Note }
-  | { type: "DUPLICATE_NOTE"; payload: Note }
-  | { type: "DELETE_NOTE"; payload: { id: string } }
+  | { type: "ADD_RESOURCE"; payload: Resource }
+  | { type: "UPDATE_RESOURCE"; payload: Resource }
+  | { type: "DUPLICATE_RESOURCE"; payload: Resource }
+  | { type: "DELETE_RESOURCE"; payload: { id: string } }
   | { type: "ADD_TASK"; payload: StudyTask }
   | { type: "UPDATE_TASK"; payload: StudyTask }
   | { type: "DELETE_TASK"; payload: { id: string } }
@@ -287,23 +287,23 @@ const appReducer = (state: AppState, action: Action): AppState => {
       return { ...state, exams: state.exams.map(e => e.id === action.payload.id ? action.payload : e) };
     case "DELETE_EXAM":
       return { ...state, exams: state.exams.filter(e => e.id !== action.payload.id) };
-    case "ADD_NOTE":
-      return { ...state, notes: [...state.notes, action.payload] };
-    case "UPDATE_NOTE":
-      return { ...state, notes: state.notes.map(n => n.id === action.payload.id ? action.payload : n) };
-    case "DUPLICATE_NOTE": {
-        const note = action.payload;
-        const newNote: Note = {
-            ...note,
+    case "ADD_RESOURCE":
+      return { ...state, resources: [...state.resources, action.payload] };
+    case "UPDATE_RESOURCE":
+      return { ...state, resources: state.resources.map(n => n.id === action.payload.id ? action.payload : n) };
+    case "DUPLICATE_RESOURCE": {
+        const resource = action.payload;
+        const newResource: Resource = {
+            ...resource,
             id: uuidv4(),
-            title: `${note.title} (Copy)`,
+            title: `${resource.title} (Copy)`,
             createdAt: new Date().toISOString(),
-            links: note.links.map(link => ({...link, id: uuidv4()})),
+            links: resource.links.map(link => ({...link, id: uuidv4()})),
         };
-        return { ...state, notes: [...state.notes, newNote] };
+        return { ...state, resources: [...state.resources, newResource] };
     }
-    case "DELETE_NOTE":
-      return { ...state, notes: state.notes.filter(n => n.id !== action.payload.id) };
+    case "DELETE_RESOURCE":
+      return { ...state, resources: state.resources.filter(n => n.id !== action.payload.id) };
     case "ADD_TASK":
       return { ...state, tasks: [...state.tasks, action.payload] };
     case "UPDATE_TASK": {
@@ -392,7 +392,7 @@ const appReducer = (state: AppState, action: Action): AppState => {
 const initialState: AppState = {
   subjects: [],
   exams: [],
-  notes: [],
+  resources: [],
   tasks: [],
   settings: {
     id: 'user-settings',
@@ -404,7 +404,7 @@ const initialState: AppState = {
 export const AppDataContext = createContext<{
   subjects: Subject[];
   exams: Exam[];
-  notes: Note[];
+  resources: Resource[];
   tasks: StudyTask[];
   settings: UserSettings;
   dispatch: React.Dispatch<Action>;
@@ -443,20 +443,20 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
         try {
           const subjectsCol = collection(firestore, `users/${user.uid}/subjects`);
           const examsCol = collection(firestore, `users/${user.uid}/exams`);
-          const notesCol = collection(firestore, `users/${user.uid}/notes`);
+          const resourcesCol = collection(firestore, `users/${user.uid}/resources`);
           const tasksCol = collection(firestore, `users/${user.uid}/tasks`);
           
-          const [subjectsSnapshot, examsSnapshot, notesSnapshot, tasksSnapshot, settingsSnapshot] = await Promise.all([
+          const [subjectsSnapshot, examsSnapshot, resourcesSnapshot, tasksSnapshot, settingsSnapshot] = await Promise.all([
             getDocs(subjectsCol),
             getDocs(examsCol),
-            getDocs(notesCol),
+            getDocs(resourcesCol),
             getDocs(tasksCol),
             getDocs(collection(firestore, `users/${user.uid}/settings`)),
           ]);
 
           const subjects = subjectsSnapshot.docs.map(doc => doc.data() as Subject);
           const exams = examsSnapshot.docs.map(doc => doc.data() as Exam);
-          const notes = notesSnapshot.docs.map(doc => doc.data() as Note);
+          const resources = resourcesSnapshot.docs.map(doc => doc.data() as Resource);
           const tasks = tasksSnapshot.docs.map(doc => ({ ...doc.data(), timeLogs: doc.data().timeLogs || [] }) as StudyTask);
           
           let settings: UserSettings;
@@ -467,7 +467,7 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
              settings = settingsSnapshot.docs[0].data() as UserSettings;
           }
 
-          const onlineState = { subjects, exams, notes, tasks, settings };
+          const onlineState = { subjects, exams, resources, tasks, settings };
           // Sync with online state
           dispatch({ type: "SET_STATE", payload: onlineState });
           localStorage.setItem(`appData-${user.uid}`, JSON.stringify(onlineState));
@@ -553,19 +553,19 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
                     deleteDocumentNonBlocking(firestore, `users/${userId}/exams`, action.payload.id);
                     break;
         
-                case "ADD_NOTE":
-                case "UPDATE_NOTE":
-                    setDocumentNonBlocking(firestore, `users/${userId}/notes`, action.payload.id, action.payload);
+                case "ADD_RESOURCE":
+                case "UPDATE_RESOURCE":
+                    setDocumentNonBlocking(firestore, `users/${userId}/resources`, action.payload.id, action.payload);
                     break;
-                case "DUPLICATE_NOTE": {
-                    const newNote = newState.notes.find(n => n.title === `${action.payload.title} (Copy)`);
-                    if (newNote) {
-                        setDocumentNonBlocking(firestore, `users/${userId}/notes`, newNote.id, newNote);
+                case "DUPLICATE_RESOURCE": {
+                    const newResource = newState.resources.find(n => n.title === `${action.payload.title} (Copy)`);
+                    if (newResource) {
+                        setDocumentNonBlocking(firestore, `users/${userId}/resources`, newResource.id, newResource);
                     }
                     break;
                 }
-                case "DELETE_NOTE":
-                    deleteDocumentNonBlocking(firestore, `users/${userId}/notes`, action.payload.id);
+                case "DELETE_RESOURCE":
+                    deleteDocumentNonBlocking(firestore, `users/${userId}/resources`, action.payload.id);
                     break;
                 
                 case "ADD_TASK":

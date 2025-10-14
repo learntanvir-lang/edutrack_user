@@ -16,7 +16,7 @@ export function BottomNavBar() {
     { href: '/syllabus', label: 'Syllabus', icon: BookCopy },
     { href: '/exams', label: 'Exams', icon: Target },
     { href: '/studytask', label: 'Tasks', icon: ListTodo },
-    { href: '/notes', label: 'Resources', icon: Library },
+    { href: '/resources', label: 'Resources', icon: Library },
   ];
 
   if (!user) {

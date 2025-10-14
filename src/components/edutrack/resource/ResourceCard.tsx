@@ -3,37 +3,37 @@
 
 import { useState, useContext, memo } from 'react';
 import Link from 'next/link';
-import { Note, NoteLink, ResourceLink } from '@/lib/types';
+import { Resource, ResourceLink as TResourceLink } from '@/lib/types';
 import { AppDataContext } from '@/context/AppDataContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { MoreVertical, Pen, Trash2, Link as LinkIcon, PlusCircle, Edit, ExternalLink, Copy } from 'lucide-react';
-import { NoteDialog } from './NoteDialog';
+import { ResourceDialog } from './ResourceDialog';
 import { DeleteConfirmationDialog } from '../DeleteConfirmationDialog';
 import { LinkDialog } from './LinkDialog';
 import { v4 as uuidv4 } from 'uuid';
 import { getIcon, IconName } from '../IconPicker';
 
-interface NoteCardProps {
-    note: Note;
+interface ResourceCardProps {
+    resource: Resource;
 }
 
-function NoteCard({ note }: NoteCardProps) {
+function ResourceCard({ resource }: ResourceCardProps) {
     const { dispatch } = useContext(AppDataContext);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [isLinkDialogOpen, setIsLinkDialogOpen] = useState(false);
-    const [editingLink, setEditingLink] = useState<NoteLink | undefined>(undefined);
-    const [deletingLink, setDeletingLink] = useState<NoteLink | null>(null);
+    const [editingLink, setEditingLink] = useState<TResourceLink | undefined>(undefined);
+    const [deletingLink, setDeletingLink] = useState<TResourceLink | null>(null);
 
-    const handleDeleteNote = () => {
-        dispatch({ type: "DELETE_NOTE", payload: { id: note.id } });
+    const handleDeleteResource = () => {
+        dispatch({ type: "DELETE_RESOURCE", payload: { id: resource.id } });
         setIsDeleteDialogOpen(false);
     };
 
-    const handleDuplicateNote = () => {
-        dispatch({ type: "DUPLICATE_NOTE", payload: note });
+    const handleDuplicateResource = () => {
+        dispatch({ type: "DUPLICATE_RESOURCE", payload: resource });
     };
 
     const handleAddLink = () => {
@@ -41,26 +41,26 @@ function NoteCard({ note }: NoteCardProps) {
         setIsLinkDialogOpen(true);
     };
 
-    const handleEditLink = (link: NoteLink) => {
+    const handleEditLink = (link: TResourceLink) => {
         setEditingLink(link);
         setIsLinkDialogOpen(true);
     };
     
     const handleSaveLink = (linkData: { description: string, url: string, icon?: string }) => {
-        const linkToSave: NoteLink = { 
+        const linkToSave: TResourceLink = { 
             id: editingLink?.id || uuidv4(), 
-            title: linkData.description, 
+            description: linkData.description, 
             url: linkData.url, 
             icon: linkData.icon 
         };
         
-        let updatedLinks: NoteLink[];
+        let updatedLinks: TResourceLink[];
         if (editingLink) {
-             updatedLinks = note.links.map(l => l.id === editingLink.id ? linkToSave : l);
+             updatedLinks = resource.links.map(l => l.id === editingLink.id ? linkToSave : l);
         } else {
-             updatedLinks = [...note.links, linkToSave];
+             updatedLinks = [...resource.links, linkToSave];
         }
-        dispatch({ type: "UPDATE_NOTE", payload: { ...note, links: updatedLinks } });
+        dispatch({ type: "UPDATE_RESOURCE", payload: { ...resource, links: updatedLinks } });
         setIsLinkDialogOpen(false);
         setEditingLink(undefined);
     };
@@ -68,8 +68,8 @@ function NoteCard({ note }: NoteCardProps) {
 
     const handleDeleteLink = () => {
         if (deletingLink) {
-            const updatedLinks = note.links.filter(link => link.id !== deletingLink.id);
-            dispatch({ type: "UPDATE_NOTE", payload: { ...note, links: updatedLinks } });
+            const updatedLinks = resource.links.filter(link => link.id !== deletingLink.id);
+            dispatch({ type: "UPDATE_RESOURCE", payload: { ...resource, links: updatedLinks } });
             setDeletingLink(null);
         }
     };
@@ -80,8 +80,8 @@ function NoteCard({ note }: NoteCardProps) {
                 <div className="relative aspect-video w-full overflow-hidden">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                        src={note.imageUrl}
-                        alt={note.title}
+                        src={resource.imageUrl}
+                        alt={resource.title}
                         className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
@@ -97,7 +97,7 @@ function NoteCard({ note }: NoteCardProps) {
                                 <Pen className="mr-2 h-4 w-4" />
                                 Edit Resource Details
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={handleDuplicateNote}>
+                                <DropdownMenuItem onClick={handleDuplicateResource}>
                                     <Copy className="mr-2 h-4 w-4" />
                                     Duplicate Resource
                                 </DropdownMenuItem>
@@ -114,20 +114,20 @@ function NoteCard({ note }: NoteCardProps) {
                     </div>
                 </div>
                 <CardHeader className="pt-4">
-                    <CardTitle className="font-bold text-xl text-foreground">{note.title}</CardTitle>
-                    {note.description && <CardDescription className="text-muted-foreground line-clamp-3">{note.description}</CardDescription>}
+                    <CardTitle className="font-bold text-xl text-foreground">{resource.title}</CardTitle>
+                    {resource.description && <CardDescription className="text-muted-foreground line-clamp-3">{resource.description}</CardDescription>}
                 </CardHeader>
                 <CardContent className="flex-grow space-y-3">
-                    {note.links && note.links.length > 0 && (
+                    {resource.links && resource.links.length > 0 && (
                         <div className="space-y-2">
-                             {note.links.map(link => {
+                             {resource.links.map(link => {
                                 const Icon = getIcon(link.icon as IconName);
                                 return (
                                 <div key={link.id} className="group/link flex items-center gap-1 rounded-md transition-colors border bg-primary/10 hover:bg-primary/20 border-border hover:border-primary">
                                     <Button variant="ghost" size="sm" className="w-full justify-start gap-2 flex-grow text-primary hover:bg-transparent hover:text-primary" asChild>
                                         <Link href={link.url} target="_blank" rel="noopener noreferrer">
                                             {Icon ? <Icon className="h-4 w-4 flex-shrink-0" /> : <ExternalLink className="h-4 w-4 flex-shrink-0" />}
-                                            <span className="truncate">{link.title}</span>
+                                            <span className="truncate">{link.description}</span>
                                         </Link>
                                     </Button>
                                     <DropdownMenu>
@@ -167,23 +167,23 @@ function NoteCard({ note }: NoteCardProps) {
                 </CardFooter>
             </Card>
 
-            <NoteDialog
+            <ResourceDialog
                 open={isEditDialogOpen}
                 onOpenChange={setIsEditDialogOpen}
-                note={note}
+                resource={resource}
             />
              <LinkDialog
                 open={isLinkDialogOpen}
                 onOpenChange={setIsLinkDialogOpen}
                 onSave={handleSaveLink}
-                link={editingLink ? { ...editingLink, description: editingLink.title } : undefined}
+                link={editingLink}
                 itemType="Link"
             />
             <DeleteConfirmationDialog
                 open={isDeleteDialogOpen}
                 onOpenChange={setIsDeleteDialogOpen}
-                onConfirm={handleDeleteNote}
-                itemName={note.title}
+                onConfirm={handleDeleteResource}
+                itemName={resource.title}
                 itemType="resource"
             />
              {deletingLink && (
@@ -191,7 +191,7 @@ function NoteCard({ note }: NoteCardProps) {
                     open={!!deletingLink}
                     onOpenChange={() => setDeletingLink(null)}
                     onConfirm={handleDeleteLink}
-                    itemName={deletingLink.title}
+                    itemName={deletingLink.description}
                     itemType="link"
                 />
             )}
@@ -199,4 +199,4 @@ function NoteCard({ note }: NoteCardProps) {
     );
 }
 
-export default memo(NoteCard);
+export default memo(ResourceCard);
