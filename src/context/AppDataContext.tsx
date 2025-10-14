@@ -30,7 +30,7 @@ type AppState = {
 };
 
 type Action =
-  | { type: "SET_STATE"; payload: AppState }
+  | { type: "SET_STATE"; payload: Partial<AppState> }
   | { type: "ADD_SUBJECT"; payload: Subject }
   | { type: "UPDATE_SUBJECT"; payload: Subject }
   | { type: "DUPLICATE_SUBJECT"; payload: Subject }
@@ -69,11 +69,16 @@ const appReducer = (state: AppState, action: Action): AppState => {
   switch (action.type) {
     case "SET_STATE":
       return {
+        ...state,
         ...action.payload,
-        tasks: (action.payload.tasks || []).map(task => ({
+        subjects: action.payload.subjects || state.subjects,
+        exams: action.payload.exams || state.exams,
+        tasks: (action.payload.tasks || state.tasks).map(task => ({
           ...task,
           timeLogs: task.timeLogs || [],
         })),
+        resources: action.payload.resources || state.resources,
+        settings: action.payload.settings ? { ...state.settings, ...action.payload.settings } : state.settings,
       };
     case "ADD_SUBJECT":
       return { ...state, subjects: [...state.subjects, action.payload] };
@@ -444,43 +449,21 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
           const subjectsCol = collection(firestore, `users/${user.uid}/subjects`);
           const examsCol = collection(firestore, `users/${user.uid}/exams`);
           const resourcesCol = collection(firestore, `users/${user.uid}/resources`);
-          const oldNotesCol = collection(firestore, `users/${user.uid}/notes`);
           const tasksCol = collection(firestore, `users/${user.uid}/tasks`);
           
-          const [subjectsSnapshot, examsSnapshot, resourcesSnapshot, oldNotesSnapshot, tasksSnapshot, settingsSnapshot] = await Promise.all([
+          const [subjectsSnapshot, examsSnapshot, resourcesSnapshot, tasksSnapshot, settingsSnapshot] = await Promise.all([
             getDocs(subjectsCol),
             getDocs(examsCol),
             getDocs(resourcesCol),
-            getDocs(oldNotesCol),
             getDocs(tasksCol),
             getDocs(collection(firestore, `users/${user.uid}/settings`)),
           ]);
 
           const subjects = subjectsSnapshot.docs.map(doc => doc.data() as Subject);
           const exams = examsSnapshot.docs.map(doc => doc.data() as Exam);
-          const currentResources = resourcesSnapshot.docs.map(doc => doc.data() as Resource);
-          const oldNotes = oldNotesSnapshot.docs.map(doc => doc.data() as Resource);
+          const resources = resourcesSnapshot.docs.map(doc => doc.data() as Resource);
           const tasks = tasksSnapshot.docs.map(doc => ({ ...doc.data(), timeLogs: doc.data().timeLogs || [] }) as StudyTask);
 
-          // Perform a one-time migration from 'notes' to 'resources'
-          const resourceIds = new Set(currentResources.map(r => r.id));
-          const migratedResources = [...currentResources];
-          let migrationOccurred = false;
-
-          for (const note of oldNotes) {
-            if (!resourceIds.has(note.id)) {
-              migratedResources.push(note);
-              // Save the migrated note to the new 'resources' collection
-              setDocumentNonBlocking(firestore, `users/${user.uid}/resources`, note.id, note);
-              // Delete from the old 'notes' collection
-              deleteDocumentNonBlocking(firestore, `users/${user.uid}/notes`, note.id);
-              migrationOccurred = true;
-            } else {
-              // If the note already exists in resources, just delete it from the old collection
-              deleteDocumentNonBlocking(firestore, `users/${user.uid}/notes`, note.id);
-            }
-          }
-          
           let settings: UserSettings;
           if (settingsSnapshot.empty || !settingsSnapshot.docs[0].exists()) {
              settings = initialState.settings;
@@ -489,7 +472,7 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
              settings = settingsSnapshot.docs[0].data() as UserSettings;
           }
 
-          const onlineState = { subjects, exams, resources: migratedResources, tasks, settings };
+          const onlineState = { subjects, exams, resources, tasks, settings };
           // Sync with online state
           dispatch({ type: "SET_STATE", payload: onlineState });
           localStorage.setItem(`appData-${user.uid}`, JSON.stringify(onlineState));
