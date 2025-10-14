@@ -7,7 +7,7 @@ import { AppDataContext } from '@/context/AppDataContext';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Trash2, Edit, Play, Square, MoreVertical, Calendar, Flag, Tag, Clock } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, formatDuration } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { TaskDialog } from './TaskDialog';
 import { format, isBefore, startOfToday } from 'date-fns';
@@ -110,21 +110,6 @@ export function TaskItem({ task }: TaskItemProps) {
     }
   };
   
-    const formatTime = (totalMilliseconds: number) => {
-        if (totalMilliseconds < 1000) return '0s';
-
-        const hours = Math.floor(totalMilliseconds / 3600000);
-        const minutes = Math.floor((totalMilliseconds % 3600000) / 60000);
-        const seconds = Math.floor((totalMilliseconds % 60000) / 1000);
-        
-        let parts = [];
-        if (hours > 0) parts.push(`${hours}h`);
-        if (minutes > 0) parts.push(`${minutes}m`);
-        if (seconds > 0) parts.push(`${seconds}s`);
-
-        return parts.join(' ') || '0s';
-  };
-
   return (
     <>
     <div className={cn(
@@ -181,9 +166,9 @@ export function TaskItem({ task }: TaskItemProps) {
             {task.subcategory && <Badge variant="secondary" className={cn("flex items-center gap-1.5", task.isCompleted && "bg-muted text-muted-foreground")}>{task.subcategory}</Badge>}
             
             <button onClick={() => setIsTimeLogOpen(true)} className="disabled:opacity-50" disabled={!task.timeLogs || task.timeLogs.length === 0}>
-                <Badge variant="outline" className={cn("flex items-center gap-1.5 font-mono cursor-pointer transition-colors border-primary text-primary text-sm font-bold", task.isCompleted ? "border-muted-foreground/50 text-muted-foreground" : "hover:bg-primary/10")}>
+                <Badge variant="outline" className={cn("flex items-center gap-1.5 font-mono cursor-pointer transition-colors text-primary border-primary text-sm font-bold", task.isCompleted ? "border-muted-foreground/50 text-muted-foreground" : "hover:bg-primary/10")}>
                     <Clock className="h-3 w-3" />
-                    {formatTime(totalTimeSpent)}
+                    {formatDuration(totalTimeSpent)}
                 </Badge>
             </button>
         </div>

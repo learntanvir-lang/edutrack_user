@@ -19,6 +19,8 @@ import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { TimeLogEntryDialog } from "./TimeLogEntryDialog";
 import { DeleteConfirmationDialog } from "../DeleteConfirmationDialog";
+import { formatDuration } from "@/lib/utils";
+
 
 interface TimeLogDetailsDialogProps {
   open: boolean;
@@ -69,7 +71,7 @@ export function TimeLogDetailsDialog({ open, onOpenChange, task }: TimeLogDetail
                     {sortedLogs.map((log) => {
                         const start = new Date(log.startTime);
                         const end = log.endTime ? new Date(log.endTime) : new Date();
-                        const duration = log.endTime ? formatDistanceStrict(end, start) : 'In progress';
+                        const duration = log.endTime ? formatDuration(end.getTime() - start.getTime()) : 'In progress';
 
                         return (
                             <TableRow key={log.id}>
@@ -108,7 +110,10 @@ export function TimeLogDetailsDialog({ open, onOpenChange, task }: TimeLogDetail
         </ScrollArea>
         </div>
         <DialogFooter className="pt-4 border-t flex-shrink-0">
-            <Button onClick={handleAddLog} className="font-bold transition-all duration-300 bg-primary text-primary-foreground border-2 border-primary hover:bg-transparent hover:text-primary hover:shadow-lg hover:shadow-primary/20">
+            <Button 
+                onClick={handleAddLog} 
+                className="font-bold transition-all duration-300 bg-primary text-primary-foreground border-2 border-primary hover:bg-transparent hover:text-primary hover:shadow-lg hover:shadow-primary/20"
+            >
                 <PlusCircle className="mr-2 h-4 w-4" />
                 Add Record
             </Button>
