@@ -195,7 +195,7 @@
   
   .day-dot {
     position: absolute;
-    bottom: 6px;
+    bottom: 4px;
     left: 50%;
     transform: translateX(-50%);
     width: 6px;
@@ -204,10 +204,10 @@
   }
 
   .day-dot-green {
-    background-color: #22c55e;
+    background-color: hsla(142, 71%, 45%, 0.8);
   }
 
   .day-dot-red {
-    background-color: #ef4444;
+    background-color: hsla(0, 84%, 60%, 0.8);
   }
 }
