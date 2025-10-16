@@ -135,7 +135,7 @@ function ExamItem({ exam }: ExamItemProps) {
               <Calendar className="h-4 w-4" /> {format(new Date(exam.date), "d MMMM, yyyy, p")}
             </p>
             {exam.startDate && exam.endDate && (
-              <div className="pt-1">
+              <div className="pt-1 mb-[10px]">
                 <p className="font-semibold text-foreground text-sm mb-[10px]">{exam.examPeriodTitle}</p>
                 <p className={cn("flex items-center gap-2 text-sm font-bold", isPast ? "text-muted-foreground" : "text-primary/90")}>
                   <CalendarRange className="h-4 w-4" /> 
@@ -143,11 +143,15 @@ function ExamItem({ exam }: ExamItemProps) {
                 </p>
               </div>
             )}
-             {(exam.examFee || exam.feeStatus) && (
-              <div className="flex items-center gap-4 text-sm font-medium pt-2">
-                {exam.examFee != null && exam.examFee > 0 && <span>Fee: <span className="font-bold">{exam.examFee}</span></span>}
-                {exam.feeStatus && <span>Status: <span className="font-bold">{exam.feeStatus}</span></span>}
-              </div>
+            {exam.examFee && exam.examFee > 0 && (
+                <div className="flex items-center gap-4 text-sm font-medium pt-2">
+                    <span>Fee: <span className="font-bold">{exam.examFee}</span></span>
+                    <span>Status: 
+                        <span className={cn("font-bold", exam.isFeePaid ? 'text-green-600' : 'text-red-600')}>
+                            {exam.isFeePaid ? ' Paid' : ' Not Paid'}
+                        </span>
+                    </span>
+                </div>
             )}
           </div>
           {!isPast ? (

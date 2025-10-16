@@ -58,7 +58,7 @@
         "endDate": { "type": "string", "format": "date-time" },
         "isEligible": { "type": "boolean" },
         "examFee": { "type": "number" },
-        "feeStatus": { "type": "string" }
+        "isFeePaid": { "type": "boolean" }
       },
       "required": ["id", "name", "date", "isCompleted"]
     },

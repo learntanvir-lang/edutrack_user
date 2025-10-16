@@ -56,7 +56,7 @@ const examSchema = z.object({
   }).optional(),
   isEligible: z.boolean().optional(),
   examFee: z.coerce.number().optional(),
-  feeStatus: z.string().optional(),
+  isFeePaid: z.boolean().optional(),
 });
 
 type ExamFormValues = z.infer<typeof examSchema>;
@@ -90,7 +90,7 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
       },
       isEligible: false,
       examFee: undefined,
-      feeStatus: "",
+      isFeePaid: false,
     },
   });
 
@@ -113,7 +113,7 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
         },
         isEligible: exam.isEligible,
         examFee: exam.examFee,
-        feeStatus: exam.feeStatus,
+        isFeePaid: exam.isFeePaid,
       })
     } else {
       form.reset({
@@ -132,7 +132,7 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
         },
         isEligible: false,
         examFee: undefined,
-        feeStatus: "",
+        isFeePaid: false,
       })
     }
   }, [exam, isEditing, form, open]);
@@ -174,7 +174,7 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
       endDate: values.dateRange?.to?.toISOString() || '',
       isEligible: values.isEligible || false,
       examFee: values.examFee || 0,
-      feeStatus: values.feeStatus || '',
+      isFeePaid: values.isFeePaid || false,
     };
     
     if (values.isCompleted) {
@@ -495,7 +495,7 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
                   />
                 </div>
                 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
                     <FormField
                       control={form.control}
                       name="examFee"
@@ -509,16 +509,20 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
                         </FormItem>
                       )}
                     />
-                    <FormField
+                     <FormField
                       control={form.control}
-                      name="feeStatus"
+                      name="isFeePaid"
                       render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Fee Status (Optional)</FormLabel>
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm mt-8">
+                          <div className="space-y-0.5">
+                            <FormLabel>Fee Status</FormLabel>
+                          </div>
                           <FormControl>
-                            <Input placeholder="e.g., Paid" {...field} value={field.value ?? ''} />
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
                           </FormControl>
-                          <FormMessage />
                         </FormItem>
                       )}
                     />
