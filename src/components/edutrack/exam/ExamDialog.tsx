@@ -108,16 +108,16 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
         date: examDate,
         time: format(examDate, "HH:mm"),
         isCompleted: exam.isCompleted,
-        marksObtained: exam.marksObtained,
-        totalMarks: exam.totalMarks,
-        examPeriodTitle: exam.examPeriodTitle,
+        marksObtained: exam.marksObtained ?? undefined,
+        totalMarks: exam.totalMarks ?? undefined,
+        examPeriodTitle: exam.examPeriodTitle ?? "",
         dateRange: {
             from: exam.startDate ? new Date(exam.startDate) : undefined,
             to: exam.endDate ? new Date(exam.endDate) : undefined,
         },
         isEligible: exam.isEligible,
         showEligibility: exam.showEligibility ?? true,
-        examFee: exam.examFee,
+        examFee: exam.examFee ?? undefined,
         isFeePaid: exam.isFeePaid,
       })
     } else {
@@ -175,27 +175,17 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
       chapterIds: values.chapterIds || [],
       date: combinedDate.toISOString(),
       isCompleted: values.isCompleted || false,
-      marksObtained: values.marksObtained,
-      totalMarks: values.totalMarks,
-      examPeriodTitle: values.examPeriodTitle || '',
-      startDate: values.dateRange?.from?.toISOString() || '',
-      endDate: values.dateRange?.to?.toISOString() || '',
-      isEligible: values.isEligible,
-      showEligibility: values.showEligibility,
-      examFee: values.examFee,
-      isFeePaid: values.isFeePaid,
+      marksObtained: values.isCompleted && typeof values.marksObtained === 'number' && !isNaN(values.marksObtained) ? values.marksObtained : null,
+      totalMarks: values.isCompleted && typeof values.totalMarks === 'number' && !isNaN(values.totalMarks) ? values.totalMarks : null,
+      examPeriodTitle: values.examPeriodTitle || null,
+      startDate: values.dateRange?.from?.toISOString() || null,
+      endDate: values.dateRange?.to?.toISOString() || null,
+      isEligible: values.isEligible ?? false,
+      showEligibility: values.showEligibility ?? true,
+      examFee: typeof values.examFee === 'number' && !isNaN(values.examFee) ? values.examFee : null,
+      isFeePaid: values.isFeePaid ?? false,
     };
     
-    if (values.isCompleted) {
-        if (typeof values.marksObtained === 'number' && !isNaN(values.marksObtained)) {
-            examData.marksObtained = values.marksObtained;
-        }
-        if (typeof values.totalMarks === 'number' && !isNaN(values.totalMarks)) {
-            examData.totalMarks = values.totalMarks;
-        }
-    }
-
-
     dispatch({
       type: isEditing ? "UPDATE_EXAM" : "ADD_EXAM",
       payload: examData,
