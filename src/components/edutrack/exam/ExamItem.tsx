@@ -218,3 +218,5 @@ function ExamItem({ exam }: ExamItemProps) {
   );
 }
 export default memo(ExamItem);
+
+    

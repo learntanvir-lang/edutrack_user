@@ -36,7 +36,7 @@ function NextExamCard({ exam }: NextExamCardProps) {
         return null;
       }).filter(Boolean);
 
-      if (chapterNames.length === 0) return null;
+      if (exam.chapterIds?.length > 0 && chapterNames.length === 0 && (subject.papers.flatMap(p => p.chapters).length > 0)) return null;
 
       return {
         subjectName: subject.name,
@@ -112,3 +112,5 @@ function NextExamCard({ exam }: NextExamCardProps) {
 }
 
 export default memo(NextExamCard);
+
+    
