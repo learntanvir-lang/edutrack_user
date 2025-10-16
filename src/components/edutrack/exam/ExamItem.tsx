@@ -84,11 +84,11 @@ function ExamItem({ exam }: ExamItemProps) {
         <CardHeader className="pb-4">
           <div className="flex justify-between items-start">
             <div className="flex-1 space-y-1">
-              <CardTitle className="font-bold text-xl text-foreground">
+              <CardTitle className="font-bold text-xl text-foreground mb-4">
                 {exam.name}
               </CardTitle>
                <Badge variant="outline" className={cn(
-                   "text-xs font-bold pointer-events-none mt-[10px]", 
+                   "text-xs font-bold pointer-events-none mt-[20px]", 
                    exam.isEligible ? "bg-green-100 text-green-800 border-green-200" : "bg-red-100 text-red-800 border-red-200"
                 )}>
                   {exam.isEligible ? <ShieldCheck className="h-3 w-3 mr-1" /> : <ShieldAlert className="h-3 w-3 mr-1" />}
