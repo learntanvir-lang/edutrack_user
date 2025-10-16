@@ -158,10 +158,12 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
       chapterIds: values.chapterIds || [],
       date: combinedDate.toISOString(),
       isCompleted: values.isCompleted,
-      examPeriodTitle: values.examPeriodTitle,
-      startDate: values.dateRange?.from?.toISOString(),
-      endDate: values.dateRange?.to?.toISOString(),
-      isEligible: values.isEligible,
+      marksObtained: values.marksObtained || 0,
+      totalMarks: values.totalMarks || 0,
+      examPeriodTitle: values.examPeriodTitle || '',
+      startDate: values.dateRange?.from?.toISOString() || '',
+      endDate: values.dateRange?.to?.toISOString() || '',
+      isEligible: values.isEligible || false,
     };
     
     if (values.isCompleted) {
@@ -576,3 +578,5 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
     </Dialog>
   );
 }
+
+    
