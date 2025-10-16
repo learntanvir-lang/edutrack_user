@@ -52,7 +52,11 @@
         "date": { "type": "string", "format": "date-time" },
         "isCompleted": { "type": "boolean" },
         "marksObtained": { "type": "number" },
-        "totalMarks": { "type": "number" }
+        "totalMarks": { "type": "number" },
+        "examPeriodTitle": { "type": "string" },
+        "startDate": { "type": "string", "format": "date-time" },
+        "endDate": { "type": "string", "format": "date-time" },
+        "isEligible": { "type": "boolean" }
       },
       "required": ["id", "name", "date", "isCompleted"]
     },

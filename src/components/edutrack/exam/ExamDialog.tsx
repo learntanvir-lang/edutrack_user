@@ -37,6 +37,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { DateRange } from "react-day-picker";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const examSchema = z.object({
   name: z.string().min(1, "Exam name is required"),
@@ -52,6 +53,7 @@ const examSchema = z.object({
     from: z.date().optional(),
     to: z.date().optional(),
   }).optional(),
+  isEligible: z.boolean().optional(),
 });
 
 type ExamFormValues = z.infer<typeof examSchema>;
@@ -82,7 +84,8 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
       dateRange: {
         from: undefined,
         to: undefined,
-      }
+      },
+      isEligible: false,
     },
   });
 
@@ -102,7 +105,8 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
         dateRange: {
             from: exam.startDate ? new Date(exam.startDate) : undefined,
             to: exam.endDate ? new Date(exam.endDate) : undefined,
-        }
+        },
+        isEligible: exam.isEligible,
       })
     } else {
       form.reset({
@@ -118,7 +122,8 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
         dateRange: {
             from: undefined,
             to: undefined,
-        }
+        },
+        isEligible: false,
       })
     }
   }, [exam, isEditing, form, open]);
@@ -156,6 +161,7 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
       examPeriodTitle: values.examPeriodTitle,
       startDate: values.dateRange?.from?.toISOString(),
       endDate: values.dateRange?.to?.toISOString(),
+      isEligible: values.isEligible,
     };
     
     if (values.isCompleted) {
@@ -476,6 +482,27 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
                   />
                 </div>
                 
+                <FormField
+                  control={form.control}
+                  name="isEligible"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                      <div className="space-y-0.5">
+                        <FormLabel>Eligible Status</FormLabel>
+                        <FormDescription>
+                          Mark if you are eligible to sit for this exam.
+                        </FormDescription>
+                      </div>
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+
                 {isPast && (
                     <>
                         <Separator />

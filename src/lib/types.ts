@@ -58,6 +58,7 @@ export interface Exam {
   examPeriodTitle?: string;
   startDate?: string;
   endDate?: string;
+  isEligible?: boolean;
 }
 
 export interface Resource {
