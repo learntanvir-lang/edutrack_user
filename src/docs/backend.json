@@ -47,6 +47,7 @@
       "properties": {
         "id": { "type": "string" },
         "name": { "type": "string" },
+        "category": { "type": "string" },
         "subjectIds": { "type": "array", "items": { "type": "string" } },
         "chapterIds": { "type": "array", "items": { "type": "string" } },
         "date": { "type": "string", "format": "date-time" },

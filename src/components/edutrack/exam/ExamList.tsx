@@ -1,30 +1,68 @@
 
 "use client";
 
-import { useContext, useState, useMemo } from "react";
+import { useContext, useMemo } from "react";
 import { AppDataContext } from "@/context/AppDataContext";
+import { Exam } from "@/lib/types";
 import ExamItem from "./ExamItem";
 import { Separator } from "@/components/ui/separator";
+
+const MasonryGrid = ({ children }: { children: React.ReactNode }) => (
+    <div className="md:columns-2 lg:columns-3 gap-4 space-y-4">
+      {children}
+    </div>
+);
+
+const ExamCategory = ({ title, exams }: { title: string, exams: Exam[] }) => (
+    <div>
+        <h3 className="text-xl font-bold mb-4 text-muted-foreground">{title}</h3>
+        <MasonryGrid>
+            {exams.map((exam, index) => (
+                <div 
+                    key={exam.id} 
+                    className="break-inside-avoid animate-fade-in-from-bottom"
+                    style={{ animationDelay: `${index * 0.1}s` }}
+                >
+                    <ExamItem exam={exam} />
+                </div>
+            ))}
+        </MasonryGrid>
+    </div>
+);
 
 export function ExamList() {
   const { exams } = useContext(AppDataContext);
   
   const { upcomingExams, pastExams } = useMemo(() => {
     const now = new Date();
+    
     const upcoming = exams
       .filter(exam => new Date(exam.date) >= now)
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      
     const past = exams
       .filter(exam => new Date(exam.date) < now)
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-    return { upcomingExams: upcoming, pastExams: past };
+
+    const groupByCategory = (examList: Exam[]) => {
+        return examList.reduce((acc, exam) => {
+            const category = exam.category || "General";
+            if (!acc[category]) {
+                acc[category] = [];
+            }
+            acc[category].push(exam);
+            return acc;
+        }, {} as Record<string, Exam[]>);
+    };
+
+    return { 
+        upcomingExams: groupByCategory(upcoming), 
+        pastExams: groupByCategory(past) 
+    };
   }, [exams]);
 
-  const MasonryGrid = ({ children }: { children: React.ReactNode }) => (
-    <div className="md:columns-2 lg:columns-3 gap-4 space-y-4">
-      {children}
-    </div>
-  )
+  const upcomingCategories = Object.keys(upcomingExams).sort();
+  const pastCategories = Object.keys(pastExams).sort();
 
   if (exams.length === 0) {
     return (
@@ -38,42 +76,26 @@ export function ExamList() {
   return (
     <div className="space-y-8">
         <>
-          {upcomingExams.length > 0 && (
+          {upcomingCategories.length > 0 && (
             <div>
-              <h2 className="text-2xl font-semibold mb-4">Upcoming</h2>
-              <MasonryGrid>
-                {upcomingExams.map((exam, index) => (
-                  <div 
-                    key={exam.id} 
-                    className="break-inside-avoid animate-fade-in-from-bottom"
-                    style={{ animationDelay: `${index * 0.1}s` }}
-                  >
-                    <ExamItem 
-                      exam={exam} 
-                    />
-                  </div>
+              <h2 className="text-2xl font-semibold mb-6">Upcoming</h2>
+              <div className="space-y-6">
+                {upcomingCategories.map(category => (
+                    <ExamCategory key={category} title={category} exams={upcomingExams[category]} />
                 ))}
-              </MasonryGrid>
+              </div>
             </div>
           )}
 
-          {pastExams.length > 0 && (
+          {pastCategories.length > 0 && (
             <div>
-              {upcomingExams.length > 0 && <Separator className="my-8" />}
-              <h2 className="text-2xl font-semibold mb-4">Past</h2>
-              <MasonryGrid>
-                {pastExams.map((exam, index) => (
-                   <div 
-                    key={exam.id} 
-                    className="break-inside-avoid animate-fade-in-from-bottom"
-                    style={{ animationDelay: `${index * 0.1}s` }}
-                   >
-                    <ExamItem 
-                      exam={exam} 
-                    />
-                  </div>
+              {upcomingCategories.length > 0 && <Separator className="my-8" />}
+              <h2 className="text-2xl font-semibold mb-6">Past</h2>
+              <div className="space-y-6">
+                {pastCategories.map(category => (
+                    <ExamCategory key={category} title={category} exams={pastExams[category]} />
                 ))}
-              </MasonryGrid>
+              </div>
             </div>
           )}
         </>

@@ -42,6 +42,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 
 const examSchema = z.object({
   name: z.string().min(1, "Exam name is required"),
+  category: z.string().optional(),
   subjectIds: z.array(z.string()).optional(),
   chapterIds: z.array(z.string()).optional(),
   date: z.date({ required_error: "Main exam date is required" }),
@@ -76,6 +77,7 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
     resolver: zodResolver(examSchema),
     defaultValues: {
       name: "",
+      category: "",
       subjectIds: [],
       chapterIds: [],
       date: undefined,
@@ -99,6 +101,7 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
         const examDate = new Date(exam.date);
       form.reset({
         name: exam.name,
+        category: exam.category,
         subjectIds: exam.subjectIds,
         chapterIds: exam.chapterIds,
         date: examDate,
@@ -118,6 +121,7 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
     } else {
       form.reset({
         name: "",
+        category: "",
         subjectIds: [],
         chapterIds: [],
         date: undefined,
@@ -163,6 +167,7 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
     const examData: Exam = {
       id: exam?.id || uuidv4(),
       name: values.name,
+      category: values.category || 'General',
       subjectIds: values.subjectIds || [],
       chapterIds: values.chapterIds || [],
       date: combinedDate.toISOString(),
@@ -216,19 +221,34 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
           <ScrollArea className="h-full">
             <Form {...form}>
               <form id="exam-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 px-1">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Exam Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="e.g., Mid-term Exam" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Exam Name</FormLabel>
+                          <FormControl>
+                            <Input placeholder="e.g., Mid-term Exam" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="category"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Category (Optional)</FormLabel>
+                          <FormControl>
+                            <Input placeholder="e.g., Finals, Midterms" {...field} value={field.value ?? ''}/>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                </div>
                 <FormField
                   control={form.control}
                   name="subjectIds"

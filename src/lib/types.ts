@@ -49,6 +49,7 @@ export interface Subject {
 export interface Exam {
   id: string;
   name: string;
+  category?: string;
   subjectIds: string[];
   chapterIds: string[];
   date: string; // ISO 8601 format
