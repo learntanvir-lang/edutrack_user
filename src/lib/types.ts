@@ -59,6 +59,8 @@ export interface Exam {
   startDate?: string;
   endDate?: string;
   isEligible?: boolean;
+  examFee?: number;
+  feeStatus?: string;
 }
 
 export interface Resource {

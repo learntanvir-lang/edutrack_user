@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useContext, memo } from "react";
@@ -135,11 +136,17 @@ function ExamItem({ exam }: ExamItemProps) {
             </p>
             {exam.startDate && exam.endDate && (
               <div className="pt-1">
-                {exam.examPeriodTitle && <p className="font-semibold text-foreground text-sm mb-[10px]">{exam.examPeriodTitle}</p>}
+                <p className="font-semibold text-foreground text-sm mb-[10px]">{exam.examPeriodTitle}</p>
                 <p className={cn("flex items-center gap-2 text-sm font-bold", isPast ? "text-muted-foreground" : "text-primary/90")}>
                   <CalendarRange className="h-4 w-4" /> 
                   {format(new Date(exam.startDate), "d MMM")} - {format(new Date(exam.endDate), "d MMM, yyyy")}
                 </p>
+              </div>
+            )}
+             {(exam.examFee || exam.feeStatus) && (
+              <div className="flex items-center gap-4 text-sm font-medium pt-2">
+                {exam.examFee != null && exam.examFee > 0 && <span>Fee: <span className="font-bold">{exam.examFee}</span></span>}
+                {exam.feeStatus && <span>Status: <span className="font-bold">{exam.feeStatus}</span></span>}
               </div>
             )}
           </div>

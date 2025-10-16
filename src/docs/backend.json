@@ -56,7 +56,9 @@
         "examPeriodTitle": { "type": "string" },
         "startDate": { "type": "string", "format": "date-time" },
         "endDate": { "type": "string", "format": "date-time" },
-        "isEligible": { "type": "boolean" }
+        "isEligible": { "type": "boolean" },
+        "examFee": { "type": "number" },
+        "feeStatus": { "type": "string" }
       },
       "required": ["id", "name", "date", "isCompleted"]
     },

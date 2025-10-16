@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { z } from "zod";
@@ -54,6 +55,8 @@ const examSchema = z.object({
     to: z.date().optional(),
   }).optional(),
   isEligible: z.boolean().optional(),
+  examFee: z.coerce.number().optional(),
+  feeStatus: z.string().optional(),
 });
 
 type ExamFormValues = z.infer<typeof examSchema>;
@@ -86,6 +89,8 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
         to: undefined,
       },
       isEligible: false,
+      examFee: undefined,
+      feeStatus: "",
     },
   });
 
@@ -107,6 +112,8 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
             to: exam.endDate ? new Date(exam.endDate) : undefined,
         },
         isEligible: exam.isEligible,
+        examFee: exam.examFee,
+        feeStatus: exam.feeStatus,
       })
     } else {
       form.reset({
@@ -124,6 +131,8 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
             to: undefined,
         },
         isEligible: false,
+        examFee: undefined,
+        feeStatus: "",
       })
     }
   }, [exam, isEditing, form, open]);
@@ -164,6 +173,8 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
       startDate: values.dateRange?.from?.toISOString() || '',
       endDate: values.dateRange?.to?.toISOString() || '',
       isEligible: values.isEligible || false,
+      examFee: values.examFee || 0,
+      feeStatus: values.feeStatus || '',
     };
     
     if (values.isCompleted) {
@@ -484,6 +495,35 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
                   />
                 </div>
                 
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="examFee"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Exam Fee (Optional)</FormLabel>
+                          <FormControl>
+                            <Input type="number" placeholder="e.g., 50" {...field} value={field.value ?? ''} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="feeStatus"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Fee Status (Optional)</FormLabel>
+                          <FormControl>
+                            <Input placeholder="e.g., Paid" {...field} value={field.value ?? ''} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                </div>
+
                 <FormField
                   control={form.control}
                   name="isEligible"
@@ -578,5 +618,4 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
     </Dialog>
   );
 }
-
     
