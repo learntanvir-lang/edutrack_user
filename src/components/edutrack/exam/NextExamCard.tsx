@@ -8,7 +8,7 @@ import { Countdown } from "../Countdown";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { ExamDialog } from "./ExamDialog";
-import { Book, Calendar, Pen, Clock, Info } from "lucide-react";
+import { Book, Calendar, Pen, Clock, Info, CalendarRange } from "lucide-react";
 import { AppDataContext } from "@/context/AppDataContext";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -73,6 +73,17 @@ function NextExamCard({ exam }: NextExamCardProps) {
             </div>
         </CardHeader>
         <CardContent className="space-y-6 p-8 pt-0">
+            {exam.startDate && exam.endDate && (
+              <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm font-medium text-primary-foreground/80">
+                      <CalendarRange className="h-4 w-4" />
+                      <span>{exam.examPeriodTitle || 'Exam Period'}</span>
+                  </div>
+                  <Badge variant="secondary" className="px-3 py-1 text-base bg-primary-foreground/20 text-primary-foreground transition-all hover:bg-primary-foreground/30 hover:scale-105">
+                     {format(new Date(exam.startDate), "d MMM")} - {format(new Date(exam.endDate), "d MMM, yyyy")}
+                  </Badge>
+              </div>
+            )}
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-sm font-medium text-primary-foreground/80">
                   <Info className="h-4 w-4" />

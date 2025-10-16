@@ -55,6 +55,9 @@ export interface Exam {
   isCompleted: boolean;
   marksObtained?: number;
   totalMarks?: number;
+  examPeriodTitle?: string;
+  startDate?: string;
+  endDate?: string;
 }
 
 export interface Resource {

@@ -36,16 +36,22 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { DateRange } from "react-day-picker";
 
 const examSchema = z.object({
   name: z.string().min(1, "Exam name is required"),
   subjectIds: z.array(z.string()).optional(),
   chapterIds: z.array(z.string()).optional(),
-  date: z.date({ required_error: "Exam date is required" }),
+  date: z.date({ required_error: "Main exam date is required" }),
   time: z.string().optional(),
   isCompleted: z.boolean(),
   marksObtained: z.coerce.number().optional(),
   totalMarks: z.coerce.number().optional(),
+  examPeriodTitle: z.string().optional(),
+  dateRange: z.object({
+    from: z.date().optional(),
+    to: z.date().optional(),
+  }).optional(),
 });
 
 type ExamFormValues = z.infer<typeof examSchema>;
@@ -72,6 +78,11 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
       isCompleted: false,
       marksObtained: undefined,
       totalMarks: undefined,
+      examPeriodTitle: "",
+      dateRange: {
+        from: undefined,
+        to: undefined,
+      }
     },
   });
 
@@ -87,6 +98,11 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
         isCompleted: exam.isCompleted,
         marksObtained: exam.marksObtained,
         totalMarks: exam.totalMarks,
+        examPeriodTitle: exam.examPeriodTitle,
+        dateRange: {
+            from: exam.startDate ? new Date(exam.startDate) : undefined,
+            to: exam.endDate ? new Date(exam.endDate) : undefined,
+        }
       })
     } else {
       form.reset({
@@ -98,6 +114,11 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
         isCompleted: false,
         marksObtained: undefined,
         totalMarks: undefined,
+        examPeriodTitle: "",
+        dateRange: {
+            from: undefined,
+            to: undefined,
+        }
       })
     }
   }, [exam, isEditing, form, open]);
@@ -132,6 +153,9 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
       chapterIds: values.chapterIds || [],
       date: combinedDate.toISOString(),
       isCompleted: values.isCompleted,
+      examPeriodTitle: values.examPeriodTitle,
+      startDate: values.dateRange?.from?.toISOString(),
+      endDate: values.dateRange?.to?.toISOString(),
     };
     
     if (values.isCompleted) {
@@ -162,7 +186,7 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
   
   return (
     <Dialog open={open} onOpenChange={handleDialogChange}>
-      <DialogContent className="sm:max-w-md max-h-[90vh] flex flex-col">
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] flex flex-col">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle>{isEditing ? "Edit Exam" : "Add Exam"}</DialogTitle>
           <DialogDescription>
@@ -338,7 +362,7 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
                     name="date"
                     render={({ field }) => (
                       <FormItem className="flex flex-col">
-                        <FormLabel>Exam Date</FormLabel>
+                        <FormLabel>Main Exam Date</FormLabel>
                         <Popover>
                           <PopoverTrigger asChild>
                             <FormControl>
@@ -376,10 +400,76 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
                     name="time"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Exam Time</FormLabel>
+                        <FormLabel>Main Exam Time</FormLabel>
                         <FormControl>
                           <Input type="time" {...field} value={field.value || ""} />
                         </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <Separator />
+                <div className="space-y-4 rounded-md border p-4">
+                  <h3 className="text-lg font-medium">Exam Period (Optional)</h3>
+                   <FormField
+                      control={form.control}
+                      name="examPeriodTitle"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Period Title</FormLabel>
+                          <FormControl>
+                            <Input placeholder="e.g., Final Exams" {...field} value={field.value ?? ''} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  <FormField
+                    control={form.control}
+                    name="dateRange"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col">
+                        <FormLabel>Start & End Date</FormLabel>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                id="date"
+                                variant={"outline"}
+                                className={cn(
+                                  "w-full justify-start text-left font-normal",
+                                  !field.value?.from && "text-muted-foreground"
+                                )}
+                              >
+                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                {field.value?.from ? (
+                                  field.value.to ? (
+                                    <>
+                                      {format(field.value.from, "LLL dd, y")} -{" "}
+                                      {format(field.value.to, "LLL dd, y")}
+                                    </>
+                                  ) : (
+                                    format(field.value.from, "LLL dd, y")
+                                  )
+                                ) : (
+                                  <span>Pick a date range</span>
+                                )}
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              initialFocus
+                              mode="range"
+                              defaultMonth={field.value?.from}
+                              selected={field.value as DateRange}
+                              onSelect={field.onChange}
+                              numberOfMonths={2}
+                            />
+                          </PopoverContent>
+                        </Popover>
                         <FormMessage />
                       </FormItem>
                     )}
