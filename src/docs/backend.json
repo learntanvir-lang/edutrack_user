@@ -52,13 +52,13 @@
         "chapterIds": { "type": "array", "items": { "type": "string" } },
         "date": { "type": "string", "format": "date-time" },
         "isCompleted": { "type": "boolean" },
-        "marksObtained": { "type": "number" },
-        "totalMarks": { "type": "number" },
-        "examPeriodTitle": { "type": "string" },
-        "startDate": { "type": "string", "format": "date-time" },
-        "endDate": { "type": "string", "format": "date-time" },
+        "marksObtained": { "type": ["number", "null"] },
+        "totalMarks": { "type": ["number", "null"] },
+        "examPeriodTitle": { "type": ["string", "null"] },
+        "startDate": { "type": ["string", "null"], "format": "date-time" },
+        "endDate": { "type": ["string", "null"], "format": "date-time" },
         "isEligible": { "type": "boolean" },
-        "examFee": { "type": "number" },
+        "examFee": { "type": ["number", "null"] },
         "isFeePaid": { "type": "boolean" }
       },
       "required": ["id", "name", "date", "isCompleted"]
@@ -249,3 +249,5 @@
     }
   }
 }
+
+    

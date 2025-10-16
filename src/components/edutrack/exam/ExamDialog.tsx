@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { z } from "zod";
@@ -171,14 +170,14 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
       subjectIds: values.subjectIds || [],
       chapterIds: values.chapterIds || [],
       date: combinedDate.toISOString(),
-      isCompleted: values.isCompleted,
+      isCompleted: values.isCompleted || false,
       marksObtained: values.marksObtained || 0,
       totalMarks: values.totalMarks || 0,
       examPeriodTitle: values.examPeriodTitle || '',
       startDate: values.dateRange?.from?.toISOString() || '',
       endDate: values.dateRange?.to?.toISOString() || '',
       isEligible: values.isEligible || false,
-      examFee: values.examFee || 0,
+      examFee: values.examFee,
       isFeePaid: values.isFeePaid || false,
     };
     
@@ -642,4 +641,6 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
     </Dialog>
   );
 }
+    
+
     

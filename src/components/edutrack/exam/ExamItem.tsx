@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useState, useContext, memo } from "react";
@@ -88,7 +87,7 @@ function ExamItem({ exam }: ExamItemProps) {
                 {exam.name}
               </CardTitle>
                <Badge variant="outline" className={cn(
-                   "text-xs font-bold pointer-events-none mt-[20px]", 
+                   "text-xs font-bold pointer-events-none mt-[10px]", 
                    exam.isEligible ? "bg-green-100 text-green-800 border-green-200" : "bg-red-100 text-red-800 border-red-200"
                 )}>
                   {exam.isEligible ? <ShieldCheck className="h-3 w-3 mr-1" /> : <ShieldAlert className="h-3 w-3 mr-1" />}
@@ -143,7 +142,7 @@ function ExamItem({ exam }: ExamItemProps) {
                 </p>
               </div>
             )}
-            {exam.examFee && exam.examFee > 0 && (
+            {exam.examFee != null && exam.examFee > 0 && (
                 <div className="flex items-center gap-4 text-sm font-medium pt-2">
                     <span>Fee: <span className="font-bold">{exam.examFee}</span></span>
                     <span>Status: 
@@ -218,5 +217,6 @@ function ExamItem({ exam }: ExamItemProps) {
   );
 }
 export default memo(ExamItem);
+    
 
     
