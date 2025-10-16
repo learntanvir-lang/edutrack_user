@@ -90,9 +90,9 @@ function NextExamCard({ exam }: NextExamCardProps) {
                   <span>Syllabus</span>
               </div>
               <div className="flex flex-wrap gap-2">
-                {examDetailsBySubject.map((detail, index) => detail && (
+                {(examDetailsBySubject.length > 0 ? examDetailsBySubject : (exam.subjectIds || []).map(sId => ({subjectName: subjects.find(s => s.id === sId)?.name, chapters: ''}))).map((detail, index) => detail && detail.subjectName && (
                   <Badge key={index} variant="secondary" className="px-3 py-1 text-base bg-primary-foreground/20 text-primary-foreground transition-all hover:bg-primary-foreground/30 hover:scale-105">
-                    {detail.subjectName} - {detail.chapters}
+                    {detail.subjectName}{detail.chapters && ` - ${detail.chapters}`}
                   </Badge>
                 ))}
               </div>

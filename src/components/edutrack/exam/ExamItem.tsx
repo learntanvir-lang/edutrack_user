@@ -124,8 +124,8 @@ function ExamItem({ exam }: ExamItemProps) {
               {(examDetailsBySubject.length > 0 ? examDetailsBySubject : (exam.subjectIds || []).map(sId => ({subjectName: subjects.find(s => s.id === sId)?.name, chapters: ''}))).map((detail, index) => detail && detail.subjectName && (
                 <Badge key={index} variant={isPast ? (exam.isCompleted ? 'default' : 'destructive') : 'secondary'} className={cn('px-3 py-1 text-sm', 
                     isPast ? 
-                        (exam.isCompleted ? 'bg-green-100 text-green-800 transition-all hover:bg-green-200 hover:scale-105' : 'bg-red-100 text-red-800 transition-all hover:bg-red-200 hover:scale-105') : 
-                        'bg-blue-100 text-blue-800 transition-all hover:bg-blue-200 hover:scale-105'
+                        (exam.isCompleted ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800') : 
+                        'bg-blue-100 text-blue-800'
                 )}>
                   {detail.subjectName}{detail.chapters && ` - ${detail.chapters}`}
                 </Badge>
