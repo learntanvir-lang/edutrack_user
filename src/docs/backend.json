@@ -58,6 +58,7 @@
         "startDate": { "type": ["string", "null"], "format": "date-time" },
         "endDate": { "type": ["string", "null"], "format": "date-time" },
         "isEligible": { "type": "boolean" },
+        "showEligibility": { "type": "boolean" },
         "examFee": { "type": ["number", "null"] },
         "isFeePaid": { "type": "boolean" }
       },
@@ -249,5 +250,3 @@
     }
   }
 }
-
-    

@@ -86,13 +86,15 @@ function ExamItem({ exam }: ExamItemProps) {
               <CardTitle className="font-bold text-xl text-foreground mb-4">
                 {exam.name}
               </CardTitle>
-               <Badge variant="outline" className={cn(
-                   "text-xs font-bold pointer-events-none mt-[10px]", 
-                   exam.isEligible ? "bg-green-100 text-green-800 border-green-200" : "bg-red-100 text-red-800 border-red-200"
-                )}>
-                  {exam.isEligible ? <ShieldCheck className="h-3 w-3 mr-1" /> : <ShieldAlert className="h-3 w-3 mr-1" />}
-                  {exam.isEligible ? 'Eligible' : 'Not Eligible'}
-              </Badge>
+              {exam.showEligibility && (
+                 <Badge variant="outline" className={cn(
+                     "text-xs font-bold pointer-events-none mt-[10px]", 
+                     exam.isEligible ? "bg-green-100 text-green-800 border-green-200" : "bg-red-100 text-red-800 border-red-200"
+                  )}>
+                    {exam.isEligible ? <ShieldCheck className="h-3 w-3 mr-1" /> : <ShieldAlert className="h-3 w-3 mr-1" />}
+                    {exam.isEligible ? 'Eligible' : 'Not Eligible'}
+                </Badge>
+              )}
             </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -217,6 +219,3 @@ function ExamItem({ exam }: ExamItemProps) {
   );
 }
 export default memo(ExamItem);
-    
-
-    

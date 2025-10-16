@@ -26,7 +26,7 @@ import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
-import { CalendarIcon, Check, ChevronsUpDown, X } from "lucide-react";
+import { CalendarIcon, Check, ChevronsUpDown, X, Eye, EyeOff } from "lucide-react";
 import { format } from "date-fns";
 import { Exam } from "@/lib/types";
 import { useContext, useMemo, useState, useEffect } from "react";
@@ -55,6 +55,7 @@ const examSchema = z.object({
     to: z.date().optional(),
   }).optional(),
   isEligible: z.boolean().optional(),
+  showEligibility: z.boolean().optional(),
   examFee: z.coerce.number().optional(),
   isFeePaid: z.boolean().optional(),
 });
@@ -90,6 +91,7 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
         to: undefined,
       },
       isEligible: false,
+      showEligibility: true,
       examFee: undefined,
       isFeePaid: false,
     },
@@ -114,6 +116,7 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
             to: exam.endDate ? new Date(exam.endDate) : undefined,
         },
         isEligible: exam.isEligible,
+        showEligibility: exam.showEligibility ?? true,
         examFee: exam.examFee,
         isFeePaid: exam.isFeePaid,
       })
@@ -134,6 +137,7 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
             to: undefined,
         },
         isEligible: false,
+        showEligibility: true,
         examFee: undefined,
         isFeePaid: false,
       })
@@ -171,14 +175,15 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
       chapterIds: values.chapterIds || [],
       date: combinedDate.toISOString(),
       isCompleted: values.isCompleted || false,
-      marksObtained: values.marksObtained || 0,
-      totalMarks: values.totalMarks || 0,
+      marksObtained: values.marksObtained,
+      totalMarks: values.totalMarks,
       examPeriodTitle: values.examPeriodTitle || '',
       startDate: values.dateRange?.from?.toISOString() || '',
       endDate: values.dateRange?.to?.toISOString() || '',
-      isEligible: values.isEligible || false,
+      isEligible: values.isEligible,
+      showEligibility: values.showEligibility,
       examFee: values.examFee,
-      isFeePaid: values.isFeePaid || false,
+      isFeePaid: values.isFeePaid,
     };
     
     if (values.isCompleted) {
@@ -558,12 +563,29 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
                           Mark if you are eligible to sit for this exam.
                         </FormDescription>
                       </div>
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
+                      <div className="flex items-center gap-2">
+                        <FormField
+                            control={form.control}
+                            name="showEligibility"
+                            render={({ field: showField }) => (
+                                <Button 
+                                  type="button"
+                                  variant="ghost" 
+                                  size="icon" 
+                                  onClick={() => showField.onChange(!showField.value)}
+                                  className="h-8 w-8 text-muted-foreground"
+                                >
+                                    {showField.value ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                                </Button>
+                            )}
                         />
-                      </FormControl>
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                      </div>
                     </FormItem>
                   )}
                 />
@@ -641,6 +663,3 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
     </Dialog>
   );
 }
-    
-
-    

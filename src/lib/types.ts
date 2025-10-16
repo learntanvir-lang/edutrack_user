@@ -60,6 +60,7 @@ export interface Exam {
   startDate?: string;
   endDate?: string;
   isEligible?: boolean;
+  showEligibility?: boolean;
   examFee?: number;
   isFeePaid?: boolean;
 }
