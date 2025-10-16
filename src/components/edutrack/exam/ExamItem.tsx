@@ -86,7 +86,10 @@ function ExamItem({ exam }: ExamItemProps) {
               <CardTitle className="font-bold text-xl text-foreground">
                 {exam.name}
               </CardTitle>
-               <Badge className={cn("text-xs font-bold", exam.isEligible ? "bg-green-100 text-green-800 border-green-200" : "bg-red-100 text-red-800 border-red-200")}>
+               <Badge variant="outline" className={cn(
+                   "text-xs font-bold pointer-events-none", 
+                   exam.isEligible ? "bg-green-100 text-green-800 border-green-200" : "bg-red-100 text-red-800 border-red-200"
+                )}>
                   {exam.isEligible ? <ShieldCheck className="h-3 w-3 mr-1" /> : <ShieldAlert className="h-3 w-3 mr-1" />}
                   {exam.isEligible ? 'Eligible' : 'Not Eligible'}
               </Badge>
