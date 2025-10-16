@@ -79,7 +79,7 @@ function NextExamCard({ exam }: NextExamCardProps) {
                       <CalendarRange className="h-4 w-4" />
                       <span>{exam.examPeriodTitle || 'Exam Period'}</span>
                   </div>
-                  <Badge variant="secondary" className="px-3 py-1 text-base bg-primary-foreground/20 text-primary-foreground transition-all hover:bg-primary-foreground/30 hover:scale-105">
+                  <Badge variant="secondary" className="px-3 py-1 text-base font-bold bg-primary-foreground/20 text-primary-foreground transition-all hover:bg-primary-foreground/30 hover:scale-105">
                      {format(new Date(exam.startDate), "d MMM")} - {format(new Date(exam.endDate), "d MMM, yyyy")}
                   </Badge>
               </div>

@@ -136,7 +136,7 @@ function ExamItem({ exam }: ExamItemProps) {
             {exam.startDate && exam.endDate && (
               <div className="pt-1">
                 {exam.examPeriodTitle && <p className="font-semibold text-foreground text-sm mb-[10px]">{exam.examPeriodTitle}</p>}
-                <p className={cn("flex items-center gap-2 text-sm font-medium", isPast ? "text-muted-foreground" : "text-primary/90")}>
+                <p className={cn("flex items-center gap-2 text-sm font-bold", isPast ? "text-muted-foreground" : "text-primary/90")}>
                   <CalendarRange className="h-4 w-4" /> 
                   {format(new Date(exam.startDate), "d MMM")} - {format(new Date(exam.endDate), "d MMM, yyyy")}
                 </p>
