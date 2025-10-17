@@ -116,6 +116,7 @@ export function TaskDialog({ open, onOpenChange, date, task }: TaskDialogProps) 
       icon: task?.icon || null,
       timeLogs: task?.timeLogs || [],
       activeTimeLogId: task?.activeTimeLogId || null,
+      isArchived: task?.isArchived || false, // Explicitly set to false for new tasks
     };
 
     dispatch({
