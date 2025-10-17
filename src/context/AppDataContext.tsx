@@ -315,11 +315,20 @@ const appReducer = (state: AppState, action: Action): AppState => {
       const updatedTask = action.payload;
       let tasks = state.tasks.map(t => t.id === updatedTask.id ? updatedTask : t);
       
-      // If the updated task was completed and has an originalId, complete the original task too
-      if (updatedTask.isCompleted && updatedTask.originalId) {
-        tasks = tasks.map(t => t.id === updatedTask.originalId ? { ...t, isCompleted: true, isArchived: true } : t);
-      }
+      const rootId = updatedTask.originalId || updatedTask.id;
       
+      tasks = tasks.map(t => {
+          const isRelated = t.id === rootId || t.originalId === rootId;
+          if (isRelated) {
+              return { 
+                  ...t, 
+                  isCompleted: updatedTask.isCompleted,
+                  isArchived: updatedTask.isCompleted ? true : t.isArchived,
+              };
+          }
+          return t;
+      });
+
       return { ...state, tasks };
     }
     case "DELETE_TASK": {
@@ -574,15 +583,26 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
                     break;
                 
                 case "ADD_TASK":
-                case "UPDATE_TASK":
                     setDocumentNonBlocking(firestore, `users/${userId}/tasks`, action.payload.id, action.payload);
-                    if (action.payload.isCompleted && action.payload.originalId) {
-                      const originalTask = newState.tasks.find(t => t.id === action.payload.originalId);
-                      if (originalTask) {
-                        setDocumentNonBlocking(firestore, `users/${userId}/tasks`, originalTask.id, originalTask);
-                      }
+                    break;
+                case "UPDATE_TASK": {
+                    // Find all related tasks that need to be updated in Firestore
+                    const rootId = action.payload.originalId || action.payload.id;
+                    newState.tasks.forEach(task => {
+                        const isRelated = task.id === rootId || task.originalId === rootId;
+                        const oldTask = state.tasks.find(t => t.id === task.id);
+                        // Only write to Firestore if the task has actually changed
+                        if (isRelated && JSON.stringify(task) !== JSON.stringify(oldTask)) {
+                            setDocumentNonBlocking(firestore, `users/${userId}/tasks`, task.id, task);
+                        }
+                    });
+                     // Also update the currently dispatched task if it wasn't caught above
+                    const oldUpdatedTask = state.tasks.find(t => t.id === action.payload.id);
+                    if(JSON.stringify(action.payload) !== JSON.stringify(oldUpdatedTask)) {
+                        setDocumentNonBlocking(firestore, `users/${userId}/tasks`, action.payload.id, action.payload);
                     }
                     break;
+                }
                 case "DELETE_TASK": {
                     deleteDocumentNonBlocking(firestore, `users/${userId}/tasks`, action.payload.id);
                     const taskToDelete = state.tasks.find(t => t.id === action.payload.id);
