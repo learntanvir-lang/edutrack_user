@@ -96,18 +96,24 @@ export function TaskDialog({ open, onOpenChange, date, task }: TaskDialogProps) 
 
   const onSubmit = (values: TaskFormValues) => {
     const taskData: StudyTask = {
+      // Carry over all existing properties from the task being edited
+      ...(isEditing && task ? task : {}),
+      
+      // Overwrite with new values from the form
       id: task?.id || uuidv4(),
       title: values.title,
       description: values.description || null,
       isCompleted: task?.isCompleted || false,
       date: format(values.date, "yyyy-MM-dd"),
+      priority: values.priority,
+      category: values.category,
+      subcategory: values.subcategory || null,
+
+      // Ensure fields not in the form are initialized for new tasks
       startTime: task?.startTime || null,
       endTime: task?.endTime || null,
       color: task?.color || null,
       icon: task?.icon || null,
-      priority: values.priority,
-      category: values.category,
-      subcategory: values.subcategory || null,
       timeLogs: task?.timeLogs || [],
       activeTimeLogId: task?.activeTimeLogId || null,
     };
