@@ -51,6 +51,7 @@
         "subjectIds": { "type": "array", "items": { "type": "string" } },
         "chapterIds": { "type": "array", "items": { "type": "string" } },
         "date": { "type": "string", "format": "date-time" },
+        "createdAt": { "type": "string", "format": "date-time" },
         "isCompleted": { "type": "boolean" },
         "marksObtained": { "type": ["number", "null"] },
         "totalMarks": { "type": ["number", "null"] },
@@ -62,7 +63,7 @@
         "examFee": { "type": ["number", "null"] },
         "isFeePaid": { "type": "boolean" }
       },
-      "required": ["id", "name", "date", "isCompleted"]
+      "required": ["id", "name", "date", "createdAt", "isCompleted"]
     },
     "ExamCategory": {
         "title": "Exam Category",

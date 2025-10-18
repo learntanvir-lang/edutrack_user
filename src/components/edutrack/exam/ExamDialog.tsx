@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { z } from "zod";
@@ -207,6 +208,7 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
       subjectIds: values.subjectIds || [],
       chapterIds: values.chapterIds || [],
       date: combinedDate.toISOString(),
+      createdAt: exam?.createdAt || new Date().toISOString(),
       isCompleted: values.isCompleted || false,
       marksObtained: values.isCompleted && typeof values.marksObtained === 'number' && !isNaN(values.marksObtained) ? values.marksObtained : null,
       totalMarks: values.isCompleted && typeof values.totalMarks === 'number' && !isNaN(values.totalMarks) ? values.totalMarks : null,

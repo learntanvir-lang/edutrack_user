@@ -37,11 +37,14 @@ export function ExamList() {
   const { upcomingExams, pastExams } = useMemo(() => {
     const now = new Date();
     
-    const upcoming = exams
+    // Sort all exams by creation time first
+    const sortedByCreation = [...exams].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+
+    const upcoming = sortedByCreation
       .filter(exam => new Date(exam.date) >= now)
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
       
-    const past = exams
+    const past = sortedByCreation
       .filter(exam => new Date(exam.date) < now)
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
