@@ -29,10 +29,13 @@ import { v4 as uuidv4 } from 'uuid';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, ChevronsUpDown, Check, PlusCircle } from "lucide-react";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Label } from "@/components/ui/label";
 
 
 const taskSchema = z.object({
@@ -54,8 +57,13 @@ interface TaskDialogProps {
 }
 
 export function TaskDialog({ open, onOpenChange, date, task }: TaskDialogProps) {
-  const { dispatch } = useContext(AppDataContext);
+  const { tasks, dispatch } = useContext(AppDataContext);
   const isEditing = !!task;
+
+  const [isCategoryCreatorOpen, setIsCategoryCreatorOpen] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState("");
+  const [isSubcategoryCreatorOpen, setIsSubcategoryCreatorOpen] = useState(false);
+  const [newSubcategoryName, setNewSubcategoryName] = useState("");
 
   const form = useForm<TaskFormValues>({
     resolver: zodResolver(taskSchema),
@@ -68,6 +76,31 @@ export function TaskDialog({ open, onOpenChange, date, task }: TaskDialogProps) 
       subcategory: "",
     },
   });
+  
+  const watchedCategory = form.watch("category");
+
+  const { categories, subcategoriesByCategory } = useMemo(() => {
+    const cats = new Set<string>();
+    const subcats: { [key: string]: Set<string> } = {};
+
+    tasks.forEach(t => {
+      cats.add(t.category);
+      if (t.subcategory) {
+        if (!subcats[t.category]) {
+          subcats[t.category] = new Set();
+        }
+        subcats[t.category].add(t.subcategory);
+      }
+    });
+    
+    return {
+      categories: Array.from(cats).sort(),
+      subcategoriesByCategory: Object.entries(subcats).reduce((acc, [key, value]) => {
+            acc[key] = Array.from(value).sort();
+            return acc;
+        }, {} as { [key: string]: string[] }),
+    };
+  }, [tasks]);
 
   useEffect(() => {
     if (open) {
@@ -96,10 +129,7 @@ export function TaskDialog({ open, onOpenChange, date, task }: TaskDialogProps) 
 
   const onSubmit = (values: TaskFormValues) => {
     const taskData: StudyTask = {
-      // Carry over all existing properties from the task being edited
       ...(isEditing && task ? task : {}),
-      
-      // Overwrite with new values from the form
       id: task?.id || uuidv4(),
       title: values.title,
       description: values.description || null,
@@ -108,15 +138,13 @@ export function TaskDialog({ open, onOpenChange, date, task }: TaskDialogProps) 
       priority: values.priority,
       category: values.category,
       subcategory: values.subcategory || null,
-
-      // Ensure fields not in the form are initialized for new tasks
       startTime: task?.startTime || null,
       endTime: task?.endTime || null,
       color: task?.color || null,
       icon: task?.icon || null,
       timeLogs: task?.timeLogs || [],
       activeTimeLogId: task?.activeTimeLogId || null,
-      isArchived: task?.isArchived || false, // Explicitly set to false for new tasks
+      isArchived: task?.isArchived || false,
     };
 
     dispatch({
@@ -130,7 +158,24 @@ export function TaskDialog({ open, onOpenChange, date, task }: TaskDialogProps) 
       onOpenChange(isOpen);
   }
 
+  const handleCreateCategory = () => {
+    if (newCategoryName) {
+      form.setValue('category', newCategoryName, { shouldValidate: true });
+      setNewCategoryName("");
+      setIsCategoryCreatorOpen(false);
+    }
+  };
+
+  const handleCreateSubcategory = () => {
+    if (newSubcategoryName) {
+        form.setValue('subcategory', newSubcategoryName, { shouldValidate: true });
+        setNewSubcategoryName("");
+        setIsSubcategoryCreatorOpen(false);
+    }
+  };
+
   return (
+    <>
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-h-[90vh] flex flex-col">
         <DialogHeader className="flex-shrink-0">
@@ -228,11 +273,48 @@ export function TaskDialog({ open, onOpenChange, date, task }: TaskDialogProps) 
                         control={form.control}
                         name="category"
                         render={({ field }) => (
-                            <FormItem>
+                            <FormItem className="flex flex-col">
                                 <FormLabel>Category</FormLabel>
-                                <FormControl>
-                                    <Input placeholder="e.g., Physics" {...field} />
-                                </FormControl>
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                        <FormControl>
+                                            <Button variant="outline" role="combobox" className={cn("w-full justify-between", !field.value && "text-muted-foreground")}>
+                                                {field.value || "Select category"}
+                                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                            </Button>
+                                        </FormControl>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                                        <Command>
+                                            <CommandInput placeholder="Search or create..." />
+                                            <CommandList>
+                                                <CommandEmpty onSelect={() => {
+                                                    const currentVal = form.getValues('category');
+                                                    setNewCategoryName(currentVal);
+                                                    setIsCategoryCreatorOpen(true);
+                                                }}>
+                                                    No category found. Create new?
+                                                </CommandEmpty>
+                                                <CommandGroup>
+                                                    {categories.map((cat) => (
+                                                        <CommandItem
+                                                            value={cat}
+                                                            key={cat}
+                                                            onSelect={() => form.setValue("category", cat)}
+                                                        >
+                                                            <Check className={cn("mr-2 h-4 w-4", cat === field.value ? "opacity-100" : "opacity-0")} />
+                                                            {cat}
+                                                        </CommandItem>
+                                                    ))}
+                                                </CommandGroup>
+                                                <CommandItem onSelect={() => setIsCategoryCreatorOpen(true)}>
+                                                    <PlusCircle className="mr-2 h-4 w-4" />
+                                                    Create new category
+                                                </CommandItem>
+                                            </CommandList>
+                                        </Command>
+                                    </PopoverContent>
+                                </Popover>
                                 <FormMessage />
                             </FormItem>
                         )}
@@ -241,17 +323,47 @@ export function TaskDialog({ open, onOpenChange, date, task }: TaskDialogProps) 
                         control={form.control}
                         name="subcategory"
                         render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Subcategory (Optional)</FormLabel>
-                            <FormControl>
-                            <Input placeholder="e.g., Practice Problems" {...field} value={field.value || ""} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
+                            <FormItem className="flex flex-col">
+                                <FormLabel>Subcategory (Optional)</FormLabel>
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                        <FormControl>
+                                            <Button variant="outline" role="combobox" className={cn("w-full justify-between", !field.value && "text-muted-foreground")}>
+                                                {field.value || "Select subcategory"}
+                                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                            </Button>
+                                        </FormControl>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                                        <Command>
+                                            <CommandInput placeholder="Search or create..." />
+                                            <CommandList>
+                                                <CommandEmpty>No subcategory found. Create new?</CommandEmpty>
+                                                <CommandGroup>
+                                                    {(subcategoriesByCategory[watchedCategory] || []).map((subcat) => (
+                                                        <CommandItem
+                                                            value={subcat}
+                                                            key={subcat}
+                                                            onSelect={() => form.setValue("subcategory", subcat)}
+                                                        >
+                                                            <Check className={cn("mr-2 h-4 w-4", subcat === field.value ? "opacity-100" : "opacity-0")} />
+                                                            {subcat}
+                                                        </CommandItem>
+                                                    ))}
+                                                </CommandGroup>
+                                                 <CommandItem onSelect={() => setIsSubcategoryCreatorOpen(true)}>
+                                                    <PlusCircle className="mr-2 h-4 w-4" />
+                                                    Create new subcategory
+                                                </CommandItem>
+                                            </CommandList>
+                                        </Command>
+                                    </PopoverContent>
+                                </Popover>
+                                <FormMessage />
+                            </FormItem>
                         )}
                     />
                    </div>
-
               </form>
             </Form>
           </ScrollArea>
@@ -261,5 +373,44 @@ export function TaskDialog({ open, onOpenChange, date, task }: TaskDialogProps) 
         </DialogFooter>
       </DialogContent>
     </Dialog>
+    
+    <AlertDialog open={isCategoryCreatorOpen} onOpenChange={setIsCategoryCreatorOpen}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+                <AlertDialogTitle>Create New Category</AlertDialogTitle>
+                <AlertDialogDescription>
+                    Enter a name for the new task category.
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <div className="space-y-2">
+                <Label htmlFor="new-category-name">Category Name</Label>
+                <Input id="new-category-name" value={newCategoryName} onChange={e => setNewCategoryName(e.target.value)} placeholder="e.g., Study" />
+            </div>
+            <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleCreateCategory}>Create</AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+    </AlertDialog>
+
+    <AlertDialog open={isSubcategoryCreatorOpen} onOpenChange={setIsSubcategoryCreatorOpen}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+                <AlertDialogTitle>Create New Subcategory</AlertDialogTitle>
+                <AlertDialogDescription>
+                   Enter a name for the new subcategory under "{watchedCategory}".
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <div className="space-y-2">
+                <Label htmlFor="new-subcategory-name">Subcategory Name</Label>
+                <Input id="new-subcategory-name" value={newSubcategoryName} onChange={e => setNewSubcategoryName(e.target.value)} placeholder="e.g., Practice Problems" />
+            </div>
+            <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleCreateSubcategory}>Create</AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }
