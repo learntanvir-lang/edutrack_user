@@ -151,7 +151,7 @@ export function TaskDialog({ open, onOpenChange, date, task }: TaskDialogProps) 
       timeLogs: task?.timeLogs || [],
       activeTimeLogId: task?.activeTimeLogId || null,
       isArchived: task?.isArchived ?? false,
-      originalId: task?.originalId
+      originalId: task?.originalId || null,
     };
 
     dispatch({
