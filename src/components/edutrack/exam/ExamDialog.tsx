@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { z } from "zod";
@@ -26,9 +27,9 @@ import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
-import { CalendarIcon, Check, ChevronsUpDown, X, Eye, EyeOff } from "lucide-react";
+import { CalendarIcon, Check, ChevronsUpDown, X, Eye, EyeOff, PlusCircle } from "lucide-react";
 import { format } from "date-fns";
-import { Exam } from "@/lib/types";
+import { Exam, ExamCategory } from "@/lib/types";
 import { useContext, useMemo, useState, useEffect } from "react";
 import { AppDataContext } from "@/context/AppDataContext";
 import { v4 as uuidv4 } from 'uuid';
@@ -38,10 +39,21 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { DateRange } from "react-day-picker";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 const examSchema = z.object({
   name: z.string().min(1, "Exam name is required"),
-  category: z.string().optional(),
+  categoryId: z.string().optional(),
   subjectIds: z.array(z.string()).optional(),
   chapterIds: z.array(z.string()).optional(),
   date: z.date({ required_error: "Main exam date is required" }),
@@ -69,15 +81,19 @@ interface ExamDialogProps {
 }
 
 export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
-  const { subjects, dispatch } = useContext(AppDataContext);
+  const { subjects, examCategories, dispatch } = useContext(AppDataContext);
   const isEditing = !!exam;
   const isPast = isEditing && exam ? new Date(exam.date) < new Date() : false;
+
+  const [isCategoryCreatorOpen, setIsCategoryCreatorOpen] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState("");
+  const [newCategoryOrder, setNewCategoryOrder] = useState(() => (examCategories.length > 0 ? Math.max(...examCategories.map(c => c.order)) + 1 : 1));
 
   const form = useForm<ExamFormValues>({
     resolver: zodResolver(examSchema),
     defaultValues: {
       name: "",
-      category: "",
+      categoryId: undefined,
       subjectIds: [],
       chapterIds: [],
       date: undefined,
@@ -102,7 +118,7 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
         const examDate = new Date(exam.date);
       form.reset({
         name: exam.name,
-        category: exam.category,
+        categoryId: exam.categoryId,
         subjectIds: exam.subjectIds,
         chapterIds: exam.chapterIds,
         date: examDate,
@@ -123,7 +139,7 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
     } else {
       form.reset({
         name: "",
-        category: "",
+        categoryId: undefined,
         subjectIds: [],
         chapterIds: [],
         date: undefined,
@@ -170,7 +186,7 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
     const examData: Exam = {
       id: exam?.id || uuidv4(),
       name: values.name,
-      category: values.category || 'General',
+      categoryId: values.categoryId,
       subjectIds: values.subjectIds || [],
       chapterIds: values.chapterIds || [],
       date: combinedDate.toISOString(),
@@ -200,6 +216,21 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
         form.reset();
     }
     onOpenChange(isOpen);
+  };
+
+  const handleCreateCategory = () => {
+      if (newCategoryName && newCategoryOrder > 0) {
+          const newCategory: ExamCategory = {
+              id: uuidv4(),
+              name: newCategoryName,
+              order: newCategoryOrder,
+          };
+          dispatch({ type: 'ADD_EXAM_CATEGORY', payload: newCategory });
+          form.setValue('categoryId', newCategory.id, { shouldValidate: true });
+          setNewCategoryName("");
+          setNewCategoryOrder(newCategoryOrder + 1);
+          setIsCategoryCreatorOpen(false);
+      }
   };
   
   return (
@@ -231,14 +262,48 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
                     />
                     <FormField
                       control={form.control}
-                      name="category"
+                      name="categoryId"
                       render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Category (Optional)</FormLabel>
-                          <FormControl>
-                            <Input placeholder="e.g., Finals, Midterms" {...field} value={field.value ?? ''}/>
-                          </FormControl>
-                          <FormMessage />
+                        <FormItem className="flex flex-col">
+                            <FormLabel>Category</FormLabel>
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                    <FormControl>
+                                        <Button variant="outline" role="combobox" className={cn("w-full justify-between", !field.value && "text-muted-foreground")}>
+                                            {field.value ? examCategories.find(c => c.id === field.value)?.name : "Select category"}
+                                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                        </Button>
+                                    </FormControl>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                                    <Command>
+                                        <CommandInput placeholder="Search category..." />
+                                        <CommandList>
+                                            <CommandEmpty>No category found.</CommandEmpty>
+                                            <CommandGroup>
+                                                {examCategories.map((category) => (
+                                                    <CommandItem
+                                                        value={category.name}
+                                                        key={category.id}
+                                                        onSelect={() => form.setValue("categoryId", category.id)}
+                                                    >
+                                                        <Check className={cn("mr-2 h-4 w-4", category.id === field.value ? "opacity-100" : "opacity-0")} />
+                                                        {category.name}
+                                                    </CommandItem>
+                                                ))}
+                                            </CommandGroup>
+                                            <CommandSeparator />
+                                            <CommandGroup>
+                                                <CommandItem onSelect={() => setIsCategoryCreatorOpen(true)}>
+                                                    <PlusCircle className="mr-2 h-4 w-4" />
+                                                    Create new category
+                                                </CommandItem>
+                                            </CommandGroup>
+                                        </CommandList>
+                                    </Command>
+                                </PopoverContent>
+                            </Popover>
+                            <FormMessage />
                         </FormItem>
                       )}
                     />
@@ -650,6 +715,30 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
           <Button type="submit" form="exam-form" onClick={form.handleSubmit(onSubmit)} className="font-bold transition-all duration-300 bg-primary text-primary-foreground border-2 border-primary hover:bg-transparent hover:text-primary hover:shadow-lg hover:shadow-primary/20">{isEditing ? "Save Changes" : "Add Exam"}</Button>
         </DialogFooter>
       </DialogContent>
+      <AlertDialog open={isCategoryCreatorOpen} onOpenChange={setIsCategoryCreatorOpen}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+            <AlertDialogTitle>Create New Category</AlertDialogTitle>
+            <AlertDialogDescription>
+                Add a new category for your exams. The order number determines its position in the list (lower numbers appear first).
+            </AlertDialogDescription>
+            </AlertDialogHeader>
+            <div className="space-y-4">
+                <div className="space-y-2">
+                    <Label htmlFor="new-category-name">Category Name</Label>
+                    <Input id="new-category-name" value={newCategoryName} onChange={e => setNewCategoryName(e.target.value)} placeholder="e.g., Finals" />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="new-category-order">Order</Label>
+                    <Input id="new-category-order" type="number" value={newCategoryOrder} onChange={e => setNewCategoryOrder(Number(e.target.value))} />
+                </div>
+            </div>
+            <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleCreateCategory}>Create</AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 }

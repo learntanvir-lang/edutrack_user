@@ -46,10 +46,16 @@ export interface Subject {
   showOnDashboard?: boolean;
 }
 
+export interface ExamCategory {
+    id: string;
+    name: string;
+    order: number;
+}
+
 export interface Exam {
   id: string;
   name: string;
-  category?: string;
+  categoryId?: string;
   subjectIds: string[];
   chapterIds: string[];
   date: string; // ISO 8601 format

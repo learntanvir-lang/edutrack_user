@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useContext, memo } from "react";
@@ -19,7 +20,7 @@ interface NextExamCardProps {
 
 function NextExamCard({ exam }: NextExamCardProps) {
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-    const { subjects } = useContext(AppDataContext);
+    const { subjects, examCategories } = useContext(AppDataContext);
     const isPast = new Date(exam.date) < new Date();
 
     const examDetailsBySubject = (exam.subjectIds || []).map(subjectId => {
@@ -44,6 +45,8 @@ function NextExamCard({ exam }: NextExamCardProps) {
       };
     }).filter(Boolean);
 
+    const categoryName = exam.categoryId ? examCategories.find(c => c.id === exam.categoryId)?.name : 'General';
+
 
   return (
     <>
@@ -57,7 +60,7 @@ function NextExamCard({ exam }: NextExamCardProps) {
               <div>
                   <div className="flex items-center gap-2 text-sm font-medium text-primary-foreground/80 mb-2">
                     <Calendar className="h-4 w-4" />
-                    <span>Next Exam</span>
+                    <span>Next Exam: {categoryName}</span>
                   </div>
                   <CardTitle className="text-3xl font-bold">
                     {exam.name}
@@ -112,5 +115,3 @@ function NextExamCard({ exam }: NextExamCardProps) {
 }
 
 export default memo(NextExamCard);
-
-    

@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useContext, useMemo } from "react";
@@ -31,7 +32,7 @@ const ExamCategory = ({ title, exams }: { title: string, exams: Exam[] }) => (
 );
 
 export function ExamList() {
-  const { exams } = useContext(AppDataContext);
+  const { exams, examCategories } = useContext(AppDataContext);
   
   const { upcomingExams, pastExams } = useMemo(() => {
     const now = new Date();
@@ -46,11 +47,11 @@ export function ExamList() {
 
     const groupByCategory = (examList: Exam[]) => {
         return examList.reduce((acc, exam) => {
-            const category = exam.category || "General";
-            if (!acc[category]) {
-                acc[category] = [];
+            const categoryId = exam.categoryId || 'general';
+            if (!acc[categoryId]) {
+                acc[categoryId] = [];
             }
-            acc[category].push(exam);
+            acc[categoryId].push(exam);
             return acc;
         }, {} as Record<string, Exam[]>);
     };
@@ -61,8 +62,19 @@ export function ExamList() {
     };
   }, [exams]);
 
-  const upcomingCategories = Object.keys(upcomingExams).sort();
-  const pastCategories = Object.keys(pastExams).sort();
+  const sortedCategories = [...examCategories].sort((a, b) => a.order - b.order);
+  const generalCategoryId = 'general';
+
+  const upcomingCategories = sortedCategories
+      .map(c => c.id)
+      .concat(generalCategoryId)
+      .filter(id => upcomingExams[id] && upcomingExams[id].length > 0);
+
+  const pastCategories = sortedCategories
+      .map(c => c.id)
+      .concat(generalCategoryId)
+      .filter(id => pastExams[id] && pastExams[id].length > 0);
+      
 
   if (exams.length === 0) {
     return (
@@ -73,6 +85,11 @@ export function ExamList() {
     );
   }
 
+  const getCategoryName = (id: string) => {
+      if (id === generalCategoryId) return 'General';
+      return examCategories.find(c => c.id === id)?.name || 'Unnamed Category';
+  }
+
   return (
     <div className="space-y-8">
         <>
@@ -80,8 +97,8 @@ export function ExamList() {
             <div>
               <h2 className="text-2xl font-semibold mb-6">Upcoming</h2>
               <div className="space-y-6">
-                {upcomingCategories.map(category => (
-                    <ExamCategory key={category} title={category} exams={upcomingExams[category]} />
+                {upcomingCategories.map(categoryId => (
+                    <ExamCategory key={categoryId} title={getCategoryName(categoryId)} exams={upcomingExams[categoryId]} />
                 ))}
               </div>
             </div>
@@ -92,8 +109,8 @@ export function ExamList() {
               {upcomingCategories.length > 0 && <Separator className="my-8" />}
               <h2 className="text-2xl font-semibold mb-6">Past</h2>
               <div className="space-y-6">
-                {pastCategories.map(category => (
-                    <ExamCategory key={category} title={category} exams={pastExams[category]} />
+                {pastCategories.map(categoryId => (
+                    <ExamCategory key={categoryId} title={getCategoryName(categoryId)} exams={pastExams[categoryId]} />
                 ))}
               </div>
             </div>

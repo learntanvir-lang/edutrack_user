@@ -47,17 +47,33 @@
       "properties": {
         "id": { "type": "string" },
         "name": { "type": "string" },
+        "categoryId": { "type": "string" },
         "subjectIds": { "type": "array", "items": { "type": "string" } },
         "chapterIds": { "type": "array", "items": { "type": "string" } },
         "date": { "type": "string", "format": "date-time" },
         "isCompleted": { "type": "boolean" },
-        "marksObtained": { "type": "number" },
-        "totalMarks": { "type": "number" },
-        "examPeriodTitle": { "type": "string" },
-        "startDate": { "type": "string", "format": "date-time" },
-        "endDate": { "type": "string", "format": "date-time" }
+        "marksObtained": { "type": ["number", "null"] },
+        "totalMarks": { "type": ["number", "null"] },
+        "examPeriodTitle": { "type": ["string", "null"] },
+        "startDate": { "type": ["string", "null"], "format": "date-time" },
+        "endDate": { "type": ["string", "null"], "format": "date-time" },
+        "isEligible": { "type": "boolean" },
+        "showEligibility": { "type": "boolean" },
+        "examFee": { "type": ["number", "null"] },
+        "isFeePaid": { "type": "boolean" }
       },
       "required": ["id", "name", "date", "isCompleted"]
+    },
+    "ExamCategory": {
+        "title": "Exam Category",
+        "type": "object",
+        "description": "Represents a category for exams with a specific order.",
+        "properties": {
+            "id": { "type": "string" },
+            "name": { "type": "string" },
+            "order": { "type": "number" }
+        },
+        "required": ["id", "name", "order"]
     },
     "Subject": {
       "title": "Subject",
@@ -230,6 +246,10 @@
     "/users/{userId}/exams": {
         "schema": {"$ref": "#/entities/Exam"},
         "description": "Sub-collection for exams belonging to a user."
+    },
+     "/users/{userId}/examCategories": {
+        "schema": {"$ref": "#/entities/ExamCategory"},
+        "description": "Sub-collection for exam categories belonging to a user."
     },
     "/users/{userId}/resources": {
         "schema": {"$ref": "#/entities/Resource"},

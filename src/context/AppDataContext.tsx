@@ -2,7 +2,7 @@
 "use client";
 
 import { createContext, useReducer, useEffect, ReactNode, useContext, useMemo } from "react";
-import { Subject, Exam, Resource, Paper, Chapter, StudyTask, TimeLog, ProgressItem, TodoItem, UserSettings } from "@/lib/types";
+import { Subject, Exam, Resource, Paper, Chapter, StudyTask, TimeLog, ProgressItem, TodoItem, UserSettings, ExamCategory } from "@/lib/types";
 import { initialData } from "@/lib/data";
 import { v4 as uuidv4 } from 'uuid';
 import { useFirebase, useUser } from "@/firebase";
@@ -24,6 +24,7 @@ import { format } from "date-fns";
 type AppState = {
   subjects: Subject[];
   exams: Exam[];
+  examCategories: ExamCategory[];
   resources: Resource[];
   tasks: StudyTask[];
   settings: UserSettings;
@@ -47,6 +48,7 @@ type Action =
   | { type: "ADD_EXAM"; payload: Exam }
   | { type: "UPDATE_EXAM"; payload: Exam }
   | { type: "DELETE_EXAM"; payload: { id: string } }
+  | { type: "ADD_EXAM_CATEGORY"; payload: ExamCategory }
   | { type: "ADD_RESOURCE"; payload: Resource }
   | { type: "UPDATE_RESOURCE"; payload: Resource }
   | { type: "DUPLICATE_RESOURCE"; payload: Resource }
@@ -73,6 +75,7 @@ const appReducer = (state: AppState, action: Action): AppState => {
         ...action.payload,
         subjects: action.payload.subjects || state.subjects || [],
         exams: action.payload.exams || state.exams || [],
+        examCategories: action.payload.examCategories || state.examCategories || [],
         tasks: (action.payload.tasks || state.tasks || []).map(task => ({
           ...task,
           timeLogs: task.timeLogs || [],
@@ -292,6 +295,8 @@ const appReducer = (state: AppState, action: Action): AppState => {
       return { ...state, exams: state.exams.map(e => e.id === action.payload.id ? action.payload : e) };
     case "DELETE_EXAM":
       return { ...state, exams: state.exams.filter(e => e.id !== action.payload.id) };
+    case "ADD_EXAM_CATEGORY":
+        return { ...state, examCategories: [...state.examCategories, action.payload] };
     case "ADD_RESOURCE":
       return { ...state, resources: [...state.resources, action.payload] };
     case "UPDATE_RESOURCE":
@@ -313,7 +318,7 @@ const appReducer = (state: AppState, action: Action): AppState => {
       return { ...state, tasks: [...state.tasks, action.payload] };
     case "UPDATE_TASK": {
       const updatedTask = action.payload;
-      let tasks = state.tasks.map(t => t.id === updatedTask.id ? updatedTask : t);
+      let tasks = state.tasks.map(t => (t.id === updatedTask.id ? { ...t, ...updatedTask } : t));
       
       const rootId = updatedTask.originalId || updatedTask.id;
       
@@ -406,6 +411,7 @@ const appReducer = (state: AppState, action: Action): AppState => {
 const initialState: AppState = {
   subjects: [],
   exams: [],
+  examCategories: [],
   resources: [],
   tasks: [],
   settings: {
@@ -418,6 +424,7 @@ const initialState: AppState = {
 export const AppDataContext = createContext<{
   subjects: Subject[];
   exams: Exam[];
+  examCategories: ExamCategory[];
   resources: Resource[];
   tasks: StudyTask[];
   settings: UserSettings;
@@ -457,12 +464,14 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
         try {
           const subjectsCol = collection(firestore, `users/${user.uid}/subjects`);
           const examsCol = collection(firestore, `users/${user.uid}/exams`);
+          const examCategoriesCol = collection(firestore, `users/${user.uid}/examCategories`);
           const resourcesCol = collection(firestore, `users/${user.uid}/resources`);
           const tasksCol = collection(firestore, `users/${user.uid}/tasks`);
           
-          const [subjectsSnapshot, examsSnapshot, resourcesSnapshot, tasksSnapshot, settingsSnapshot] = await Promise.all([
+          const [subjectsSnapshot, examsSnapshot, examCategoriesSnapshot, resourcesSnapshot, tasksSnapshot, settingsSnapshot] = await Promise.all([
             getDocs(subjectsCol),
             getDocs(examsCol),
+            getDocs(examCategoriesCol),
             getDocs(resourcesCol),
             getDocs(tasksCol),
             getDocs(collection(firestore, `users/${user.uid}/settings`)),
@@ -470,6 +479,7 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
 
           const subjects = subjectsSnapshot.docs.map(doc => doc.data() as Subject);
           const exams = examsSnapshot.docs.map(doc => doc.data() as Exam);
+          const examCategories = examCategoriesSnapshot.docs.map(doc => doc.data() as ExamCategory);
           const resources = resourcesSnapshot.docs.map(doc => doc.data() as Resource);
           const tasks = tasksSnapshot.docs.map(doc => ({ ...doc.data(), timeLogs: doc.data().timeLogs || [] }) as StudyTask);
 
@@ -481,7 +491,7 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
              settings = settingsSnapshot.docs[0].data() as UserSettings;
           }
 
-          const onlineState = { subjects, exams, resources, tasks, settings };
+          const onlineState = { subjects, exams, examCategories, resources, tasks, settings };
           // Sync with online state
           dispatch({ type: "SET_STATE", payload: onlineState });
           localStorage.setItem(`appData-${user.uid}`, JSON.stringify(onlineState));
@@ -565,6 +575,9 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
                     break;
                 case "DELETE_EXAM":
                     deleteDocumentNonBlocking(firestore, `users/${userId}/exams`, action.payload.id);
+                    break;
+                case "ADD_EXAM_CATEGORY":
+                    setDocumentNonBlocking(firestore, `users/${userId}/examCategories`, action.payload.id, action.payload);
                     break;
         
                 case "ADD_RESOURCE":
