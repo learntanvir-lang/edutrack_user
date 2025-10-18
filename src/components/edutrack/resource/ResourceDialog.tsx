@@ -33,6 +33,7 @@ const resourceSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().optional(),
   imageUrl: z.string().url("Must be a valid image URL").min(1, "Image URL is required"),
+  order: z.coerce.number().min(0, "Order must be a positive number"),
 });
 
 type ResourceFormValues = z.infer<typeof resourceSchema>;
@@ -53,24 +54,30 @@ export function ResourceDialog({ open, onOpenChange, resource }: ResourceDialogP
       title: "",
       description: "",
       imageUrl: "",
+      order: 0,
     },
   });
 
   useEffect(() => {
-    if (resource && open) {
-      form.reset({
-        title: resource.title,
-        description: resource.description,
-        imageUrl: resource.imageUrl,
-      });
-    } else if (!isEditing && open) {
-      form.reset({
-        title: "",
-        description: "",
-        imageUrl: `https://picsum.photos/seed/${uuidv4()}/600/400`,
-      });
+    if (open) {
+        if (resource) {
+            form.reset({
+                title: resource.title,
+                description: resource.description || "",
+                imageUrl: resource.imageUrl,
+                order: resource.order,
+            });
+        } else {
+            const nextOrder = resources.length > 0 ? Math.max(...resources.map(r => r.order)) + 1 : 1;
+            form.reset({
+                title: "",
+                description: "",
+                imageUrl: `https://picsum.photos/seed/${uuidv4()}/600/400`,
+                order: nextOrder
+            });
+        }
     }
-  }, [resource, open, form, isEditing, resources]);
+  }, [resource, open, form, resources]);
 
   const onSubmit = (values: ResourceFormValues) => {
     const resourceData: Resource = {
@@ -80,6 +87,7 @@ export function ResourceDialog({ open, onOpenChange, resource }: ResourceDialogP
       imageUrl: values.imageUrl,
       links: resource?.links || [],
       createdAt: resource?.createdAt || new Date().toISOString(),
+      order: values.order
     };
 
     dispatch({
@@ -143,6 +151,19 @@ export function ResourceDialog({ open, onOpenChange, resource }: ResourceDialogP
                         <FormLabel>Description</FormLabel>
                         <FormControl>
                           <Textarea placeholder="A short description of your resource..." {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                   <FormField
+                    control={form.control}
+                    name="order"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Order</FormLabel>
+                        <FormControl>
+                          <Input type="number" placeholder="e.g., 1" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

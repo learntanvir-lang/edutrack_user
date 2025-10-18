@@ -55,6 +55,7 @@ type Action =
   | { type: "UPDATE_RESOURCE"; payload: Resource }
   | { type: "DUPLICATE_RESOURCE"; payload: Resource }
   | { type: "DELETE_RESOURCE"; payload: { id: string } }
+  | { type: "REORDER_RESOURCES"; payload: Resource[] }
   | { type: "ADD_TASK"; payload: StudyTask }
   | { type: "UPDATE_TASK"; payload: StudyTask }
   | { type: "DELETE_TASK"; payload: { id: string } }
@@ -323,11 +324,14 @@ const appReducer = (state: AppState, action: Action): AppState => {
             title: `${resource.title} (Copy)`,
             createdAt: new Date().toISOString(),
             links: resource.links.map(link => ({...link, id: uuidv4()})),
+            order: (state.resources.length > 0 ? Math.max(...state.resources.map(r => r.order)) : 0) + 1,
         };
         return { ...state, resources: [...state.resources, newResource] };
     }
     case "DELETE_RESOURCE":
       return { ...state, resources: state.resources.filter(n => n.id !== action.payload.id) };
+    case "REORDER_RESOURCES":
+      return { ...state, resources: action.payload };
     case "ADD_TASK":
       return { ...state, tasks: [...state.tasks, action.payload] };
     case "UPDATE_TASK": {
@@ -647,6 +651,11 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
                     }
                     break;
                 }
+                case "REORDER_RESOURCES":
+                    action.payload.forEach(resource => {
+                        setDocumentNonBlocking(firestore, `users/${userId}/resources`, resource.id, resource);
+                    });
+                    break;
                 case "DELETE_RESOURCE":
                     deleteDocumentNonBlocking(firestore, `users/${userId}/resources`, action.payload.id);
                     break;

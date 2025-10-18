@@ -9,10 +9,26 @@ import { useUser } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import { ResourceDialog } from '@/components/edutrack/resource/ResourceDialog';
 import ResourceCard from '@/components/edutrack/resource/ResourceCard';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  rectSortingStrategy,
+} from '@dnd-kit/sortable';
+import type { Resource } from '@/lib/types';
 
 export default function ResourcesPage() {
   const [isResourceDialogOpen, setIsResourceDialogOpen] = useState(false);
-  const { resources } = useContext(AppDataContext);
+  const { resources, dispatch } = useContext(AppDataContext);
   const { user, isUserLoading } = useUser();
   const router = useRouter();
 
@@ -27,8 +43,31 @@ export default function ResourcesPage() {
   }, [user, isUserLoading, router]);
 
   const sortedResources = useMemo(() => {
-    return [...resources].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    return [...resources].sort((a, b) => a.order - b.order);
   }, [resources]);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+  
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      const oldIndex = sortedResources.findIndex((r) => r.id === active.id);
+      const newIndex = sortedResources.findIndex((r) => r.id === over.id);
+      const newOrder = arrayMove(sortedResources, oldIndex, newIndex);
+      
+      const updatedResources = newOrder.map((resource, index) => ({
+        ...resource,
+        order: index + 1,
+      }));
+      
+      dispatch({ type: 'REORDER_RESOURCES', payload: updatedResources });
+    }
+  }
   
   if (isUserLoading || !user || !user.emailVerified) {
     return (
@@ -59,17 +98,22 @@ export default function ResourcesPage() {
                 <p className="mt-1 text-sm text-muted-foreground">Click "Add Resource" to create your first resource.</p>
             </div>
         ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {sortedResources.map((resource, index) => (
-                    <div
-                      key={resource.id}
-                      className="animate-fade-in-from-bottom"
-                      style={{ animationDelay: `${index * 0.1}s`, animationFillMode: 'both' }}
-                    >
-                      <ResourceCard resource={resource} />
+            <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+            >
+                <SortableContext
+                    items={sortedResources.map(r => r.id)}
+                    strategy={rectSortingStrategy}
+                >
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {sortedResources.map((resource) => (
+                           <ResourceCard key={resource.id} resource={resource} />
+                        ))}
                     </div>
-                ))}
-            </div>
+                </SortableContext>
+            </DndContext>
         )}
       
       <ResourceDialog open={isResourceDialogOpen} onOpenChange={setIsResourceDialogOpen} />

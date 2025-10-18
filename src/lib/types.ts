@@ -79,6 +79,7 @@ export interface Resource {
   imageUrl: string;
   links: ResourceLink[];
   createdAt: string; // ISO 8601 format
+  order: number;
 }
 
 export interface TimeLog {
@@ -102,7 +103,7 @@ export interface StudyTask {
   subcategory?: string | null;
   timeLogs: TimeLog[];
   activeTimeLogId?: string | null;
-  originalId?: string; // To link a duplicated task to its original
+  originalId?: string | null;
   isArchived?: boolean; // To hide overdue tasks that have been moved
 }
 
