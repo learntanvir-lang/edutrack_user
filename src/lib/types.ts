@@ -76,6 +76,7 @@ export interface Resource {
   title: string;
   description: string;
   imageUrl: string;
+  serialNumber: number;
   links: ResourceLink[];
   createdAt: string; // ISO 8601 format
 }

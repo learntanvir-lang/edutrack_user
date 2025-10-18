@@ -171,13 +171,14 @@
         "title": { "type": "string" },
         "description": { "type": "string" },
         "imageUrl": { "type": "string", "format": "uri" },
+        "serialNumber": { "type": "number" },
         "links": {
           "type": "array",
           "items": { "$ref": "#/entities/ResourceLink" }
         },
         "createdAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["id", "title", "imageUrl", "createdAt"]
+      "required": ["id", "title", "imageUrl", "serialNumber", "createdAt"]
     },
     "TimeLog": {
         "title": "Time Log",
