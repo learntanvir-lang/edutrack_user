@@ -349,7 +349,7 @@ export function TaskDialog({ open, onOpenChange, date, task }: TaskDialogProps) 
                                                         >
                                                             <Check className={cn("mr-2 h-4 w-4", cat === field.value ? "opacity-100" : "opacity-0")} />
                                                             <span className="flex-1">{cat}</span>
-                                                             <DropdownMenu onOpenChange={(e) => e.stopPropagation()}>
+                                                             <DropdownMenu>
                                                               <DropdownMenuTrigger asChild>
                                                                 <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100" onClick={(e) => e.stopPropagation()}>
                                                                   <MoreVertical className="h-4 w-4" />
@@ -410,7 +410,7 @@ export function TaskDialog({ open, onOpenChange, date, task }: TaskDialogProps) 
                                                         >
                                                             <Check className={cn("mr-2 h-4 w-4", subcat === field.value ? "opacity-100" : "opacity-0")} />
                                                             <span className="flex-1">{subcat}</span>
-                                                             <DropdownMenu onOpenChange={(e) => e.stopPropagation()}>
+                                                             <DropdownMenu>
                                                               <DropdownMenuTrigger asChild>
                                                                 <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100" onClick={(e) => e.stopPropagation()}>
                                                                   <MoreVertical className="h-4 w-4" />
