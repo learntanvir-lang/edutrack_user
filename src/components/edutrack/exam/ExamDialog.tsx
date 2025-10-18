@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { z } from "zod";
@@ -33,7 +32,7 @@ import { Exam, ExamCategory } from "@/lib/types";
 import { useContext, useMemo, useState, useEffect } from "react";
 import { AppDataContext } from "@/context/AppDataContext";
 import { v4 as uuidv4 } from 'uuid';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator } from "@/components/ui/command";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
@@ -48,8 +47,8 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { Label } from "@/components/ui/label";
 
 const examSchema = z.object({
   name: z.string().min(1, "Exam name is required"),
