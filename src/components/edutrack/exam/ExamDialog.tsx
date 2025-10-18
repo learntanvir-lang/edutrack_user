@@ -26,7 +26,7 @@ import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
-import { CalendarIcon, Check, ChevronsUpDown, X, Eye, EyeOff, PlusCircle } from "lucide-react";
+import { CalendarIcon, Check, ChevronsUpDown, X, Eye, EyeOff, PlusCircle, MoreVertical, Edit, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { Exam, ExamCategory } from "@/lib/types";
 import { useContext, useMemo, useState, useEffect } from "react";
@@ -49,6 +49,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Label } from "@/components/ui/label";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+
 
 const examSchema = z.object({
   name: z.string().min(1, "Exam name is required"),
@@ -84,9 +86,25 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
   const isEditing = !!exam;
   const isPast = isEditing && exam ? new Date(exam.date) < new Date() : false;
 
+  // State for creating/editing categories
   const [isCategoryCreatorOpen, setIsCategoryCreatorOpen] = useState(false);
-  const [newCategoryName, setNewCategoryName] = useState("");
-  const [newCategoryOrder, setNewCategoryOrder] = useState(() => (examCategories.length > 0 ? Math.max(...examCategories.map(c => c.order)) + 1 : 1));
+  const [editingCategory, setEditingCategory] = useState<ExamCategory | null>(null);
+  const [deletingCategory, setDeletingCategory] = useState<ExamCategory | null>(null);
+  const [categoryName, setCategoryName] = useState("");
+  const [categoryOrder, setCategoryOrder] = useState(1);
+
+  useEffect(() => {
+      if (isCategoryCreatorOpen) {
+          if (editingCategory) {
+              setCategoryName(editingCategory.name);
+              setCategoryOrder(editingCategory.order);
+          } else {
+              const nextOrder = examCategories.length > 0 ? Math.max(...examCategories.map(c => c.order)) + 1 : 1;
+              setCategoryName("");
+              setCategoryOrder(nextOrder);
+          }
+      }
+  }, [isCategoryCreatorOpen, editingCategory, examCategories]);
 
   const form = useForm<ExamFormValues>({
     resolver: zodResolver(examSchema),
@@ -217,22 +235,29 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
     onOpenChange(isOpen);
   };
 
-  const handleCreateCategory = () => {
-      if (newCategoryName && newCategoryOrder > 0) {
-          const newCategory: ExamCategory = {
-              id: uuidv4(),
-              name: newCategoryName,
-              order: newCategoryOrder,
-          };
-          dispatch({ type: 'ADD_EXAM_CATEGORY', payload: newCategory });
-          form.setValue('categoryId', newCategory.id, { shouldValidate: true });
-          setNewCategoryName("");
-          setNewCategoryOrder(newCategoryOrder + 1);
+  const handleSaveCategory = () => {
+      if (categoryName && categoryOrder > 0) {
+          if (editingCategory) {
+              dispatch({ type: 'UPDATE_EXAM_CATEGORY', payload: { ...editingCategory, name: categoryName, order: categoryOrder } });
+          } else {
+              const newCategory: ExamCategory = { id: uuidv4(), name: categoryName, order: categoryOrder };
+              dispatch({ type: 'ADD_EXAM_CATEGORY', payload: newCategory });
+              form.setValue('categoryId', newCategory.id, { shouldValidate: true });
+          }
           setIsCategoryCreatorOpen(false);
+          setEditingCategory(null);
+      }
+  };
+  
+  const handleDeleteCategory = () => {
+      if (deletingCategory) {
+          dispatch({ type: 'DELETE_EXAM_CATEGORY', payload: { id: deletingCategory.id } });
+          setDeletingCategory(null);
       }
   };
   
   return (
+    <>
     <Dialog open={open} onOpenChange={handleDialogChange}>
       <DialogContent className="sm:max-w-2xl max-h-[90vh] flex flex-col">
         <DialogHeader className="flex-shrink-0">
@@ -285,15 +310,31 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
                                                         value={category.name}
                                                         key={category.id}
                                                         onSelect={() => form.setValue("categoryId", category.id)}
+                                                        className="group"
                                                     >
                                                         <Check className={cn("mr-2 h-4 w-4", category.id === field.value ? "opacity-100" : "opacity-0")} />
-                                                        {category.name}
+                                                        <span className="flex-1">{category.name}</span>
+                                                        <DropdownMenu onOpenChange={(e) => e.stopPropagation()}>
+                                                          <DropdownMenuTrigger asChild>
+                                                            <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100">
+                                                              <MoreVertical className="h-4 w-4" />
+                                                            </Button>
+                                                          </DropdownMenuTrigger>
+                                                          <DropdownMenuContent side="right" align="start" onClick={(e) => e.stopPropagation()}>
+                                                              <DropdownMenuItem onClick={() => { setEditingCategory(category); setIsCategoryCreatorOpen(true); }}>
+                                                                  <Edit className="mr-2 h-4 w-4" /> Edit
+                                                              </DropdownMenuItem>
+                                                              <DropdownMenuItem onClick={() => setDeletingCategory(category)} className="text-destructive">
+                                                                  <Trash2 className="mr-2 h-4 w-4" /> Delete
+                                                              </DropdownMenuItem>
+                                                          </DropdownMenuContent>
+                                                        </DropdownMenu>
                                                     </CommandItem>
                                                 ))}
                                             </CommandGroup>
                                             <CommandSeparator />
                                             <CommandGroup>
-                                                <CommandItem onSelect={() => setIsCategoryCreatorOpen(true)}>
+                                                <CommandItem onSelect={() => {setEditingCategory(null); setIsCategoryCreatorOpen(true);}}>
                                                     <PlusCircle className="mr-2 h-4 w-4" />
                                                     Create new category
                                                 </CommandItem>
@@ -714,30 +755,49 @@ export function ExamDialog({ open, onOpenChange, exam }: ExamDialogProps) {
           <Button type="submit" form="exam-form" onClick={form.handleSubmit(onSubmit)} className="font-bold transition-all duration-300 bg-primary text-primary-foreground border-2 border-primary hover:bg-transparent hover:text-primary hover:shadow-lg hover:shadow-primary/20">{isEditing ? "Save Changes" : "Add Exam"}</Button>
         </DialogFooter>
       </DialogContent>
+      </Dialog>
+    
       <AlertDialog open={isCategoryCreatorOpen} onOpenChange={setIsCategoryCreatorOpen}>
         <AlertDialogContent>
             <AlertDialogHeader>
-            <AlertDialogTitle>Create New Category</AlertDialogTitle>
+            <AlertDialogTitle>{editingCategory ? "Edit Category" : "Create New Category"}</AlertDialogTitle>
             <AlertDialogDescription>
-                Add a new category for your exams. The order number determines its position in the list (lower numbers appear first).
+                {editingCategory ? "Update the name and order for this category." : "Add a new category for your exams. The order number determines its position in the list."}
             </AlertDialogDescription>
             </AlertDialogHeader>
             <div className="space-y-4">
                 <div className="space-y-2">
-                    <Label htmlFor="new-category-name">Category Name</Label>
-                    <Input id="new-category-name" value={newCategoryName} onChange={e => setNewCategoryName(e.target.value)} placeholder="e.g., Finals" />
+                    <Label htmlFor="category-name">Category Name</Label>
+                    <Input id="category-name" value={categoryName} onChange={e => setCategoryName(e.target.value)} placeholder="e.g., Finals" />
                 </div>
                 <div className="space-y-2">
-                    <Label htmlFor="new-category-order">Order</Label>
-                    <Input id="new-category-order" type="number" value={newCategoryOrder} onChange={e => setNewCategoryOrder(Number(e.target.value))} />
+                    <Label htmlFor="category-order">Order</Label>
+                    <Input id="category-order" type="number" value={categoryOrder} onChange={e => setCategoryOrder(Number(e.target.value))} />
                 </div>
             </div>
             <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleCreateCategory}>Create</AlertDialogAction>
+            <AlertDialogAction onClick={handleSaveCategory}>{editingCategory ? "Save Changes" : "Create"}</AlertDialogAction>
             </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </Dialog>
+
+      {deletingCategory && (
+          <AlertDialog open={!!deletingCategory} onOpenChange={() => setDeletingCategory(null)}>
+              <AlertDialogContent>
+                  <AlertDialogHeader>
+                      <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                          This will delete the category "{deletingCategory.name}". Exams using this category will become uncategorized. This action cannot be undone.
+                      </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleDeleteCategory} variant="destructive">Delete</AlertDialogAction>
+                  </AlertDialogFooter>
+              </AlertDialogContent>
+          </AlertDialog>
+      )}
+    </>
   );
 }

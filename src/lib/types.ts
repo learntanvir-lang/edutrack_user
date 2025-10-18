@@ -60,14 +60,14 @@ export interface Exam {
   chapterIds: string[];
   date: string; // ISO 8601 format
   isCompleted: boolean;
-  marksObtained?: number;
-  totalMarks?: number;
-  examPeriodTitle?: string;
-  startDate?: string;
-  endDate?: string;
+  marksObtained?: number | null;
+  totalMarks?: number | null;
+  examPeriodTitle?: string | null;
+  startDate?: string | null;
+  endDate?: string | null;
   isEligible?: boolean;
   showEligibility?: boolean;
-  examFee?: number;
+  examFee?: number | null;
   isFeePaid?: boolean;
 }
 

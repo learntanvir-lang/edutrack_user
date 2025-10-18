@@ -29,13 +29,14 @@ import { v4 as uuidv4 } from 'uuid';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, ChevronsUpDown, Check, PlusCircle } from "lucide-react";
+import { CalendarIcon, ChevronsUpDown, Check, PlusCircle, MoreVertical, Edit, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator } from "@/components/ui/command";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 
 const taskSchema = z.object({
@@ -62,8 +63,13 @@ export function TaskDialog({ open, onOpenChange, date, task }: TaskDialogProps) 
 
   const [isCategoryCreatorOpen, setIsCategoryCreatorOpen] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
+  const [editingCategory, setEditingCategory] = useState<string | null>(null);
+  const [deletingCategory, setDeletingCategory] = useState<string | null>(null);
+  
   const [isSubcategoryCreatorOpen, setIsSubcategoryCreatorOpen] = useState(false);
   const [newSubcategoryName, setNewSubcategoryName] = useState("");
+  const [editingSubcategory, setEditingSubcategory] = useState<string | null>(null);
+  const [deletingSubcategory, setDeletingSubcategory] = useState<string | null>(null);
 
   const form = useForm<TaskFormValues>({
     resolver: zodResolver(taskSchema),
@@ -129,7 +135,7 @@ export function TaskDialog({ open, onOpenChange, date, task }: TaskDialogProps) 
 
   const onSubmit = (values: TaskFormValues) => {
     const taskData: StudyTask = {
-      ...(isEditing && task ? task : {}),
+      ...(isEditing ? task : {}),
       id: task?.id || uuidv4(),
       title: values.title,
       description: values.description || null,
@@ -144,7 +150,8 @@ export function TaskDialog({ open, onOpenChange, date, task }: TaskDialogProps) 
       icon: task?.icon || null,
       timeLogs: task?.timeLogs || [],
       activeTimeLogId: task?.activeTimeLogId || null,
-      isArchived: task?.isArchived || false,
+      isArchived: task?.isArchived ?? false,
+      originalId: task?.originalId
     };
 
     dispatch({
@@ -158,20 +165,56 @@ export function TaskDialog({ open, onOpenChange, date, task }: TaskDialogProps) 
       onOpenChange(isOpen);
   }
 
-  const handleCreateCategory = () => {
+  const handleSaveCategory = () => {
     if (newCategoryName) {
-      form.setValue('category', newCategoryName, { shouldValidate: true });
+      if (editingCategory) {
+        dispatch({ type: 'UPDATE_TASK_CATEGORY', payload: { oldName: editingCategory, newName: newCategoryName } });
+        if (form.getValues('category') === editingCategory) {
+            form.setValue('category', newCategoryName);
+        }
+      } else {
+        form.setValue('category', newCategoryName);
+      }
       setNewCategoryName("");
       setIsCategoryCreatorOpen(false);
+      setEditingCategory(null);
     }
   };
 
-  const handleCreateSubcategory = () => {
-    if (newSubcategoryName) {
-        form.setValue('subcategory', newSubcategoryName, { shouldValidate: true });
+  const handleDeleteCategory = () => {
+      if (deletingCategory) {
+          dispatch({ type: 'DELETE_TASK_CATEGORY', payload: { name: deletingCategory } });
+          if (form.getValues('category') === deletingCategory) {
+            form.setValue('category', 'General');
+          }
+          setDeletingCategory(null);
+      }
+  };
+
+  const handleSaveSubcategory = () => {
+    if (newSubcategoryName && watchedCategory) {
+        if (editingSubcategory) {
+            dispatch({ type: 'UPDATE_TASK_SUBCATEGORY', payload: { category: watchedCategory, oldName: editingSubcategory, newName: newSubcategoryName } });
+            if (form.getValues('subcategory') === editingSubcategory) {
+                form.setValue('subcategory', newSubcategoryName);
+            }
+        } else {
+            form.setValue('subcategory', newSubcategoryName);
+        }
         setNewSubcategoryName("");
         setIsSubcategoryCreatorOpen(false);
+        setEditingSubcategory(null);
     }
+  };
+
+  const handleDeleteSubcategory = () => {
+      if (deletingSubcategory && watchedCategory) {
+          dispatch({ type: 'DELETE_TASK_SUBCATEGORY', payload: { category: watchedCategory, name: deletingSubcategory } });
+          if (form.getValues('subcategory') === deletingSubcategory) {
+            form.setValue('subcategory', '');
+          }
+          setDeletingSubcategory(null);
+      }
   };
 
   return (
@@ -291,6 +334,7 @@ export function TaskDialog({ open, onOpenChange, date, task }: TaskDialogProps) 
                                                 <CommandEmpty onSelect={() => {
                                                     const currentVal = form.getValues('category');
                                                     setNewCategoryName(currentVal);
+                                                    setEditingCategory(null);
                                                     setIsCategoryCreatorOpen(true);
                                                 }}>
                                                     No category found. Create new?
@@ -301,13 +345,30 @@ export function TaskDialog({ open, onOpenChange, date, task }: TaskDialogProps) 
                                                             value={cat}
                                                             key={cat}
                                                             onSelect={() => form.setValue("category", cat)}
+                                                            className="group"
                                                         >
                                                             <Check className={cn("mr-2 h-4 w-4", cat === field.value ? "opacity-100" : "opacity-0")} />
-                                                            {cat}
+                                                            <span className="flex-1">{cat}</span>
+                                                             <DropdownMenu onOpenChange={(e) => e.stopPropagation()}>
+                                                              <DropdownMenuTrigger asChild>
+                                                                <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100" onClick={(e) => e.stopPropagation()}>
+                                                                  <MoreVertical className="h-4 w-4" />
+                                                                </Button>
+                                                              </DropdownMenuTrigger>
+                                                              <DropdownMenuContent side="right" align="start" onClick={(e) => e.stopPropagation()}>
+                                                                  <DropdownMenuItem onClick={() => { setEditingCategory(cat); setNewCategoryName(cat); setIsCategoryCreatorOpen(true); }}>
+                                                                      <Edit className="mr-2 h-4 w-4" /> Edit
+                                                                  </DropdownMenuItem>
+                                                                  <DropdownMenuItem onClick={() => setDeletingCategory(cat)} className="text-destructive">
+                                                                      <Trash2 className="mr-2 h-4 w-4" /> Delete
+                                                                  </DropdownMenuItem>
+                                                              </DropdownMenuContent>
+                                                            </DropdownMenu>
                                                         </CommandItem>
                                                     ))}
                                                 </CommandGroup>
-                                                <CommandItem onSelect={() => setIsCategoryCreatorOpen(true)}>
+                                                <CommandSeparator />
+                                                <CommandItem onSelect={() => {setEditingCategory(null); setNewCategoryName(""); setIsCategoryCreatorOpen(true);}}>
                                                     <PlusCircle className="mr-2 h-4 w-4" />
                                                     Create new category
                                                 </CommandItem>
@@ -338,20 +399,37 @@ export function TaskDialog({ open, onOpenChange, date, task }: TaskDialogProps) 
                                         <Command>
                                             <CommandInput placeholder="Search or create..." />
                                             <CommandList>
-                                                <CommandEmpty>No subcategory found. Create new?</CommandEmpty>
+                                                <CommandEmpty>No subcategory found.</CommandEmpty>
                                                 <CommandGroup>
                                                     {(subcategoriesByCategory[watchedCategory] || []).map((subcat) => (
                                                         <CommandItem
                                                             value={subcat}
                                                             key={subcat}
                                                             onSelect={() => form.setValue("subcategory", subcat)}
+                                                             className="group"
                                                         >
                                                             <Check className={cn("mr-2 h-4 w-4", subcat === field.value ? "opacity-100" : "opacity-0")} />
-                                                            {subcat}
+                                                            <span className="flex-1">{subcat}</span>
+                                                             <DropdownMenu onOpenChange={(e) => e.stopPropagation()}>
+                                                              <DropdownMenuTrigger asChild>
+                                                                <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100" onClick={(e) => e.stopPropagation()}>
+                                                                  <MoreVertical className="h-4 w-4" />
+                                                                </Button>
+                                                              </DropdownMenuTrigger>
+                                                              <DropdownMenuContent side="right" align="start" onClick={(e) => e.stopPropagation()}>
+                                                                  <DropdownMenuItem onClick={() => { setEditingSubcategory(subcat); setNewSubcategoryName(subcat); setIsSubcategoryCreatorOpen(true); }}>
+                                                                      <Edit className="mr-2 h-4 w-4" /> Edit
+                                                                  </DropdownMenuItem>
+                                                                  <DropdownMenuItem onClick={() => setDeletingSubcategory(subcat)} className="text-destructive">
+                                                                      <Trash2 className="mr-2 h-4 w-4" /> Delete
+                                                                  </DropdownMenuItem>
+                                                              </DropdownMenuContent>
+                                                            </DropdownMenu>
                                                         </CommandItem>
                                                     ))}
                                                 </CommandGroup>
-                                                 <CommandItem onSelect={() => setIsSubcategoryCreatorOpen(true)}>
+                                                 <CommandSeparator />
+                                                 <CommandItem onSelect={() => {setEditingSubcategory(null); setNewSubcategoryName(""); setIsSubcategoryCreatorOpen(true);}}>
                                                     <PlusCircle className="mr-2 h-4 w-4" />
                                                     Create new subcategory
                                                 </CommandItem>
@@ -377,9 +455,9 @@ export function TaskDialog({ open, onOpenChange, date, task }: TaskDialogProps) 
     <AlertDialog open={isCategoryCreatorOpen} onOpenChange={setIsCategoryCreatorOpen}>
         <AlertDialogContent>
             <AlertDialogHeader>
-                <AlertDialogTitle>Create New Category</AlertDialogTitle>
+                <AlertDialogTitle>{editingCategory ? "Edit Category" : "Create New Category"}</AlertDialogTitle>
                 <AlertDialogDescription>
-                    Enter a name for the new task category.
+                    {editingCategory ? `Rename the category "${editingCategory}". This will update it for all tasks.` : "Enter a name for the new task category."}
                 </AlertDialogDescription>
             </AlertDialogHeader>
             <div className="space-y-2">
@@ -388,17 +466,34 @@ export function TaskDialog({ open, onOpenChange, date, task }: TaskDialogProps) 
             </div>
             <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleCreateCategory}>Create</AlertDialogAction>
+                <AlertDialogAction onClick={handleSaveCategory}>{editingCategory ? "Save" : "Create"}</AlertDialogAction>
             </AlertDialogFooter>
         </AlertDialogContent>
     </AlertDialog>
 
+    {deletingCategory && (
+      <AlertDialog open={!!deletingCategory} onOpenChange={() => setDeletingCategory(null)}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                    This will delete the category "{deletingCategory}" from all tasks and move them to "General". This action cannot be undone.
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDeleteCategory} variant="destructive">Delete</AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    )}
+
     <AlertDialog open={isSubcategoryCreatorOpen} onOpenChange={setIsSubcategoryCreatorOpen}>
         <AlertDialogContent>
             <AlertDialogHeader>
-                <AlertDialogTitle>Create New Subcategory</AlertDialogTitle>
+                <AlertDialogTitle>{editingSubcategory ? "Edit Subcategory" : "Create New Subcategory"}</AlertDialogTitle>
                 <AlertDialogDescription>
-                   Enter a name for the new subcategory under "{watchedCategory}".
+                   {editingSubcategory ? `Rename the subcategory "${editingSubcategory}". This will update it for all tasks in the "${watchedCategory}" category.` : `Enter a name for the new subcategory under "${watchedCategory}".`}
                 </AlertDialogDescription>
             </AlertDialogHeader>
             <div className="space-y-2">
@@ -407,10 +502,27 @@ export function TaskDialog({ open, onOpenChange, date, task }: TaskDialogProps) 
             </div>
             <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleCreateSubcategory}>Create</AlertDialogAction>
+                <AlertDialogAction onClick={handleSaveSubcategory}>{editingSubcategory ? "Save" : "Create"}</AlertDialogAction>
             </AlertDialogFooter>
         </AlertDialogContent>
     </AlertDialog>
+
+     {deletingSubcategory && (
+      <AlertDialog open={!!deletingSubcategory} onOpenChange={() => setDeletingSubcategory(null)}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                   This will delete the subcategory "{deletingSubcategory}" from all tasks in the "{watchedCategory}" category. This action cannot be undone.
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDeleteSubcategory} variant="destructive">Delete</AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    )}
     </>
   );
 }

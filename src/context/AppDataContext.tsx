@@ -49,6 +49,8 @@ type Action =
   | { type: "UPDATE_EXAM"; payload: Exam }
   | { type: "DELETE_EXAM"; payload: { id: string } }
   | { type: "ADD_EXAM_CATEGORY"; payload: ExamCategory }
+  | { type: "UPDATE_EXAM_CATEGORY"; payload: ExamCategory }
+  | { type: "DELETE_EXAM_CATEGORY"; payload: { id: string } }
   | { type: "ADD_RESOURCE"; payload: Resource }
   | { type: "UPDATE_RESOURCE"; payload: Resource }
   | { type: "DUPLICATE_RESOURCE"; payload: Resource }
@@ -57,6 +59,10 @@ type Action =
   | { type: "UPDATE_TASK"; payload: StudyTask }
   | { type: "DELETE_TASK"; payload: { id: string } }
   | { type: "DUPLICATE_TASK_TO_TODAY", payload: { id: string } }
+  | { type: "UPDATE_TASK_CATEGORY", payload: { oldName: string, newName: string } }
+  | { type: "DELETE_TASK_CATEGORY", payload: { name: string } }
+  | { type: "UPDATE_TASK_SUBCATEGORY", payload: { category: string, oldName: string, newName: string } }
+  | { type: "DELETE_TASK_SUBCATEGORY", payload: { category: string, name: string } }
   | { type: "ADD_TIME_LOG"; payload: { taskId: string; log: TimeLog } }
   | { type: "UPDATE_TIME_LOG"; payload: { taskId: string; log: TimeLog } }
   | { type: "DELETE_TIME_LOG"; payload: { taskId: string; logId: string } }
@@ -296,7 +302,15 @@ const appReducer = (state: AppState, action: Action): AppState => {
     case "DELETE_EXAM":
       return { ...state, exams: state.exams.filter(e => e.id !== action.payload.id) };
     case "ADD_EXAM_CATEGORY":
-        return { ...state, examCategories: [...state.examCategories, action.payload] };
+      return { ...state, examCategories: [...state.examCategories, action.payload] };
+    case "UPDATE_EXAM_CATEGORY":
+        return { ...state, examCategories: state.examCategories.map(c => c.id === action.payload.id ? action.payload : c) };
+    case "DELETE_EXAM_CATEGORY":
+      return { 
+          ...state, 
+          examCategories: state.examCategories.filter(c => c.id !== action.payload.id),
+          exams: state.exams.map(e => e.categoryId === action.payload.id ? { ...e, categoryId: undefined } : e)
+      };
     case "ADD_RESOURCE":
       return { ...state, resources: [...state.resources, action.payload] };
     case "UPDATE_RESOURCE":
@@ -307,6 +321,7 @@ const appReducer = (state: AppState, action: Action): AppState => {
             ...resource,
             id: uuidv4(),
             title: `${resource.title} (Copy)`,
+            serialNumber: Math.max(...state.resources.map(r => r.serialNumber), 0) + 1,
             createdAt: new Date().toISOString(),
             links: resource.links.map(link => ({...link, id: uuidv4()})),
         };
@@ -317,24 +332,32 @@ const appReducer = (state: AppState, action: Action): AppState => {
     case "ADD_TASK":
       return { ...state, tasks: [...state.tasks, action.payload] };
     case "UPDATE_TASK": {
-      const updatedTask = action.payload;
-      let tasks = state.tasks.map(t => (t.id === updatedTask.id ? { ...t, ...updatedTask } : t));
-      
-      const rootId = updatedTask.originalId || updatedTask.id;
-      
-      tasks = tasks.map(t => {
-          const isRelated = t.id === rootId || t.originalId === rootId;
-          if (isRelated) {
-              return { 
-                  ...t, 
-                  isCompleted: updatedTask.isCompleted,
-                  isArchived: updatedTask.isCompleted ? true : t.isArchived,
-              };
-          }
-          return t;
-      });
+        const updatedTask = action.payload;
+        
+        // This is a complex operation due to potential cascading updates (isCompleted)
+        // Find the original task before this update
+        const originalTask = state.tasks.find(t => t.id === updatedTask.id);
+        
+        let tasks = state.tasks.map(t => (t.id === updatedTask.id ? updatedTask : t));
 
-      return { ...state, tasks };
+        // If 'isCompleted' has changed to true, we might need to update all related tasks
+        if (updatedTask.isCompleted && !originalTask?.isCompleted) {
+            const rootId = updatedTask.originalId || updatedTask.id;
+            
+            tasks = tasks.map(t => {
+                const isRelated = t.id === rootId || t.originalId === rootId;
+                if (isRelated) {
+                    return { 
+                        ...t, 
+                        isCompleted: true,
+                        isArchived: true, // Archive all related tasks
+                    };
+                }
+                return t;
+            });
+        }
+
+        return { ...state, tasks };
     }
     case "DELETE_TASK": {
         const taskToDelete = state.tasks.find(t => t.id === action.payload.id);
@@ -362,14 +385,38 @@ const appReducer = (state: AppState, action: Action): AppState => {
         isCompleted: false, // New task is not completed
         timeLogs: [], // Reset time logs
         activeTimeLogId: null,
-        originalId: taskToDuplicate.id, // Link back to the original task
+        originalId: taskToDuplicate.originalId || taskToDuplicate.id, // Link back to the ultimate original task
         isArchived: false,
       };
 
-      // Archive the original task
+      // Archive the task that was just actioned upon
       const updatedTasks = state.tasks.map(t => t.id === taskToDuplicate.id ? { ...t, isArchived: true } : t);
 
       return { ...state, tasks: [...updatedTasks, newTask] };
+    }
+    case "UPDATE_TASK_CATEGORY": {
+        return {
+            ...state,
+            tasks: state.tasks.map(t => t.category === action.payload.oldName ? { ...t, category: action.payload.newName } : t)
+        };
+    }
+    case "DELETE_TASK_CATEGORY": {
+        return {
+            ...state,
+            tasks: state.tasks.map(t => t.category === action.payload.name ? { ...t, category: 'General', subcategory: null } : t)
+        };
+    }
+    case "UPDATE_TASK_SUBCATEGORY": {
+        return {
+            ...state,
+            tasks: state.tasks.map(t => (t.category === action.payload.category && t.subcategory === action.payload.oldName) ? { ...t, subcategory: action.payload.newName } : t)
+        };
+    }
+    case "DELETE_TASK_SUBCATEGORY": {
+        return {
+            ...state,
+            tasks: state.tasks.map(t => (t.category === action.payload.category && t.subcategory === action.payload.name) ? { ...t, subcategory: null } : t)
+        };
     }
     case "ADD_TIME_LOG": {
         return {
@@ -518,9 +565,8 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
     
     return (action: Action) => {
         // 1. Optimistically update local state
-        originalDispatch(action);
-        
         const newState = appReducer(state, action);
+        originalDispatch(action);
 
         // 2. Queue up the Firestore/localStorage operation
         if (user && firestore) {
@@ -533,7 +579,7 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
                     setDocumentNonBlocking(firestore, `users/${userId}/subjects`, action.payload.id, action.payload);
                     break;
                 case "DUPLICATE_SUBJECT": {
-                    const newSubject = newState.subjects.find(s => s.name === `${action.payload.name} (Copy)`);
+                    const newSubject = newState.subjects.find(s => s.id !== action.payload.id && s.name === `${action.payload.name} (Copy)`);
                     if (newSubject) {
                         setDocumentNonBlocking(firestore, `users/${userId}/subjects`, newSubject.id, newSubject);
                     }
@@ -552,7 +598,7 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
                 case "DUPLICATE_CHAPTER":
                 case "DELETE_CHAPTER":
                 case "REORDER_CHAPTERS": {
-                    const subjectToUpdate = newState.subjects.find(s => s.id === action.payload.subjectId);
+                    const subjectToUpdate = newState.subjects.find(s => s.id === (action.payload as any).subjectId);
                     if (subjectToUpdate) {
                         setDocumentNonBlocking(firestore, `users/${userId}/subjects`, subjectToUpdate.id, subjectToUpdate);
                     }
@@ -562,7 +608,7 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
                 case "UPDATE_PROGRESS_ITEM":
                 case "DELETE_PROGRESS_ITEM":
                 case "TOGGLE_TODO": {
-                    const subjectToUpdate = newState.subjects.find(s => s.id === action.payload.subjectId);
+                    const subjectToUpdate = newState.subjects.find(s => s.id === (action.payload as any).subjectId);
                     if (subjectToUpdate) {
                         setDocumentNonBlocking(firestore, `users/${userId}/subjects`, subjectToUpdate.id, subjectToUpdate);
                     }
@@ -577,7 +623,18 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
                     deleteDocumentNonBlocking(firestore, `users/${userId}/exams`, action.payload.id);
                     break;
                 case "ADD_EXAM_CATEGORY":
+                case "UPDATE_EXAM_CATEGORY":
                     setDocumentNonBlocking(firestore, `users/${userId}/examCategories`, action.payload.id, action.payload);
+                    break;
+                case "DELETE_EXAM_CATEGORY":
+                     deleteDocumentNonBlocking(firestore, `users/${userId}/examCategories`, action.payload.id);
+                     // Also update exams that used this category
+                     state.exams.forEach(exam => {
+                         if (exam.categoryId === action.payload.id) {
+                            const updatedExam = { ...exam, categoryId: undefined };
+                            setDocumentNonBlocking(firestore, `users/${userId}/exams`, exam.id, updatedExam);
+                         }
+                     });
                     break;
         
                 case "ADD_RESOURCE":
@@ -585,7 +642,7 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
                     setDocumentNonBlocking(firestore, `users/${userId}/resources`, action.payload.id, action.payload);
                     break;
                 case "DUPLICATE_RESOURCE": {
-                    const newResource = newState.resources.find(n => n.title === `${action.payload.title} (Copy)`);
+                    const newResource = newState.resources.find(r => r.id !== action.payload.id && r.title === `${action.payload.title} (Copy)`);
                     if (newResource) {
                         setDocumentNonBlocking(firestore, `users/${userId}/resources`, newResource.id, newResource);
                     }
@@ -599,20 +656,19 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
                     setDocumentNonBlocking(firestore, `users/${userId}/tasks`, action.payload.id, action.payload);
                     break;
                 case "UPDATE_TASK": {
-                    // Find all related tasks that need to be updated in Firestore
-                    const rootId = action.payload.originalId || action.payload.id;
-                    newState.tasks.forEach(task => {
-                        const isRelated = task.id === rootId || task.originalId === rootId;
-                        const oldTask = state.tasks.find(t => t.id === task.id);
-                        // Only write to Firestore if the task has actually changed
-                        if (isRelated && JSON.stringify(task) !== JSON.stringify(oldTask)) {
-                            setDocumentNonBlocking(firestore, `users/${userId}/tasks`, task.id, task);
-                        }
-                    });
-                     // Also update the currently dispatched task if it wasn't caught above
-                    const oldUpdatedTask = state.tasks.find(t => t.id === action.payload.id);
-                    if(JSON.stringify(action.payload) !== JSON.stringify(oldUpdatedTask)) {
-                        setDocumentNonBlocking(firestore, `users/${userId}/tasks`, action.payload.id, action.payload);
+                    // This logic is now inside the reducer to handle complex state changes first
+                    const updatedTaskInNewState = newState.tasks.find(t => t.id === action.payload.id);
+                    if(updatedTaskInNewState) {
+                       setDocumentNonBlocking(firestore, `users/${userId}/tasks`, updatedTaskInNewState.id, updatedTaskInNewState);
+                    }
+                    
+                    if (action.payload.isCompleted) {
+                        const rootId = action.payload.originalId || action.payload.id;
+                        newState.tasks.forEach(task => {
+                             if (task.id === rootId || task.originalId === rootId) {
+                                setDocumentNonBlocking(firestore, `users/${userId}/tasks`, task.id, task);
+                             }
+                        });
                     }
                     break;
                 }
@@ -628,7 +684,7 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
                     break;
                 }
                 case "DUPLICATE_TASK_TO_TODAY": {
-                    const newTask = newState.tasks.find(t => t.originalId === action.payload.id);
+                    const newTask = newState.tasks.find(t => t.originalId === action.payload.id && !state.tasks.some(st => st.id === t.id));
                      if (newTask) {
                         setDocumentNonBlocking(firestore, `users/${userId}/tasks`, newTask.id, newTask);
                     }
@@ -638,7 +694,18 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
                     }
                     break;
                 }
-                
+                case "UPDATE_TASK_CATEGORY":
+                case "DELETE_TASK_CATEGORY":
+                case "UPDATE_TASK_SUBCATEGORY":
+                case "DELETE_TASK_SUBCATEGORY": {
+                    newState.tasks.forEach(task => {
+                        const oldTask = state.tasks.find(t => t.id === task.id);
+                        if (JSON.stringify(task) !== JSON.stringify(oldTask)) {
+                           setDocumentNonBlocking(firestore, `users/${userId}/tasks`, task.id, task);
+                        }
+                    });
+                    break;
+                }
                 case "ADD_TIME_LOG":
                 case "UPDATE_TIME_LOG":
                 case "DELETE_TIME_LOG": {
