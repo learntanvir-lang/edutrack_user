@@ -62,7 +62,7 @@ export function ResourceDialog({ open, onOpenChange, resource }: ResourceDialogP
     if (resource && open) {
       form.reset({
         title: resource.title,
-        description: resource.description,
+        description: resource.description || "",
         imageUrl: resource.imageUrl,
         serialNumber: resource.serialNumber,
       });
