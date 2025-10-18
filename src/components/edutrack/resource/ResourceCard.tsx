@@ -78,11 +78,6 @@ function ResourceCard({ resource }: ResourceCardProps) {
         <>
             <Card className="flex flex-col overflow-hidden rounded-lg shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-1 bg-card border-border/50 group">
                 <div className="relative aspect-video w-full overflow-hidden">
-                    <div className="absolute top-2 left-2 z-10">
-                        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/80 text-primary-foreground font-bold text-lg shadow-lg backdrop-blur-sm">
-                            {resource.serialNumber}
-                        </div>
-                    </div>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                         src={resource.imageUrl}

@@ -33,7 +33,6 @@ const resourceSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().optional(),
   imageUrl: z.string().url("Must be a valid image URL").min(1, "Image URL is required"),
-  serialNumber: z.coerce.number().min(1, "Serial number is required"),
 });
 
 type ResourceFormValues = z.infer<typeof resourceSchema>;
@@ -54,7 +53,6 @@ export function ResourceDialog({ open, onOpenChange, resource }: ResourceDialogP
       title: "",
       description: "",
       imageUrl: "",
-      serialNumber: 1,
     },
   });
 
@@ -62,17 +60,14 @@ export function ResourceDialog({ open, onOpenChange, resource }: ResourceDialogP
     if (resource && open) {
       form.reset({
         title: resource.title,
-        description: resource.description || "",
+        description: resource.description,
         imageUrl: resource.imageUrl,
-        serialNumber: resource.serialNumber,
       });
     } else if (!isEditing && open) {
-      const nextSerialNumber = resources.length > 0 ? Math.max(...resources.map(r => r.serialNumber)) + 1 : 1;
       form.reset({
         title: "",
         description: "",
         imageUrl: `https://picsum.photos/seed/${uuidv4()}/600/400`,
-        serialNumber: nextSerialNumber,
       });
     }
   }, [resource, open, form, isEditing, resources]);
@@ -83,7 +78,6 @@ export function ResourceDialog({ open, onOpenChange, resource }: ResourceDialogP
       title: values.title,
       description: values.description || "",
       imageUrl: values.imageUrl,
-      serialNumber: values.serialNumber,
       links: resource?.links || [],
       createdAt: resource?.createdAt || new Date().toISOString(),
     };
@@ -128,20 +122,6 @@ export function ResourceDialog({ open, onOpenChange, resource }: ResourceDialogP
                       </FormItem>
                     )}
                   />
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <FormField
-                        control={form.control}
-                        name="serialNumber"
-                        render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Serial Number</FormLabel>
-                            <FormControl>
-                            <Input type="number" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                        )}
-                    />
                     <FormField
                         control={form.control}
                         name="imageUrl"
@@ -155,7 +135,6 @@ export function ResourceDialog({ open, onOpenChange, resource }: ResourceDialogP
                         </FormItem>
                         )}
                     />
-                  </div>
                   <FormField
                     control={form.control}
                     name="description"

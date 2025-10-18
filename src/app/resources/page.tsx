@@ -27,7 +27,7 @@ export default function ResourcesPage() {
   }, [user, isUserLoading, router]);
 
   const sortedResources = useMemo(() => {
-    return [...resources].sort((a, b) => a.serialNumber - b.serialNumber);
+    return [...resources].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   }, [resources]);
   
   if (isUserLoading || !user || !user.emailVerified) {

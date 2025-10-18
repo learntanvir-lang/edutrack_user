@@ -321,7 +321,6 @@ const appReducer = (state: AppState, action: Action): AppState => {
             ...resource,
             id: uuidv4(),
             title: `${resource.title} (Copy)`,
-            serialNumber: Math.max(...state.resources.map(r => r.serialNumber), 0) + 1,
             createdAt: new Date().toISOString(),
             links: resource.links.map(link => ({...link, id: uuidv4()})),
         };
